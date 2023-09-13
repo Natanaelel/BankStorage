@@ -1,0 +1,44 @@
+{
+	"schemaVersion": 1,
+	"id": "bankstorage",
+	"version": "0.0.1",
+	"name": "Bank Storage",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Natte!"
+	],
+	"contact": {
+		"homepage": "https://github.com/Natanaelel/BankStorage",
+		"sources": "https://github.com/Natanaelel/BankStorage"
+	},
+	"license": "MIT",
+	"icon": "assets/bankstorage/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"net.natte.bankstorage.BankStorage"
+		],
+		"client": [
+			"net.natte.bankstorage.BankStorageClient"
+		],
+		"fabric-datagen": [
+			"net.natte.bankstorage.BankStorageDataGenerator"
+		]
+	},
+	"mixins": [
+		"bankstorage.mixins.json",
+		{
+			"config": "bankstorage.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.14.22",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
