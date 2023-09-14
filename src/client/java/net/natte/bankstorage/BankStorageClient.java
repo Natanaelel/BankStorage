@@ -7,8 +7,10 @@ import net.natte.bankstorage.screen.BankScreen;
 public class BankStorageClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
+		for(BankType bankType : BankStorage.bankTypes){
 
-		HandledScreens.register(BankStorage.BANK_SCREEN_HANDLER_TYPE, BankScreen::new);
+			HandledScreens.register(bankType.getScreenHandlerType(), BankScreen.fromType(bankType));
+		}
 
 	}
 }

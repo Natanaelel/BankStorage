@@ -9,37 +9,55 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.text.Text;
 import net.minecraft.util.collection.DefaultedList;
+import net.natte.bankstorage.BankStorage;
+import net.natte.bankstorage.BankType;
 import net.natte.bankstorage.screen.BankScreenHandler;
 
 public class BankItemStorage extends SimpleInventory implements NamedScreenHandlerFactory {
 
     public DefaultedList<ItemStack> inventory;
 
-    public BankItemStorage() {
-        this.inventory = DefaultedList.ofSize(9, ItemStack.EMPTY);
+    public int rows;
+    public int cols;
+
+    private BankType type;
+
+    private Text displayName;
+
+    public BankItemStorage(BankType type) {
+        this.type = type;
+        this.rows = this.type.rows;
+        this.cols = this.type.cols;
+        this.inventory = DefaultedList.ofSize(this.rows * this.cols, ItemStack.EMPTY);
+
+    }
+
+    public BankItemStorage withDisplayName(Text displayName){
+        this.displayName = displayName;
+        return this;
     }
 
     @Override
     public BankScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity playerEntity) {
         // return GenericContainerScreenHandler.createGeneric9x1(syncId,
         // playerInventory, (Inventory) this);
-        return new BankScreenHandler(syncId, playerInventory, this);
+        return new BankScreenHandler(syncId, playerInventory, this, this.type);
     }
 
     @Override
     public Text getDisplayName() {
-        return Text.literal("Bank");
+        return displayName;
     }
 
     @Override
     public void clear() {
         this.inventory.clear();
-        this.inventory = DefaultedList.ofSize(9, ItemStack.EMPTY);
+        this.inventory = DefaultedList.ofSize(this.rows * this.cols, ItemStack.EMPTY);
     }
 
     @Override
     public int size() {
-        return 9;
+        return this.type.size();
     }
 
     @Override
@@ -70,7 +88,7 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     @Override
     public boolean isValid(int slot, ItemStack stack) {
-        return true;
+        return super.isValid(slot, stack);
     }
 
     @Override
@@ -98,13 +116,16 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     public NbtCompound saveToNbt() {
         NbtCompound nbtCompound = new NbtCompound();
+        nbtCompound.putString("type", this.type.getName());
         Inventories.writeNbt(nbtCompound, this.inventory);
         return nbtCompound;
     }
 
     public static BankItemStorage createFromNbt(NbtCompound nbtCompound) {
-        BankItemStorage bankItemStorage = new BankItemStorage();
+        System.out.println("fromNBT");
+        BankItemStorage bankItemStorage = new BankItemStorage( BankStorage.getBankTypeFromName(nbtCompound.getString("type")));
         Inventories.readNbt(nbtCompound, bankItemStorage.inventory);
+        System.out.println("fromNBT done");
         return bankItemStorage;
     }
 

@@ -20,9 +20,6 @@
 		],
 		"client": [
 			"net.natte.bankstorage.BankStorageClient"
-		],
-		"fabric-datagen": [
-			"net.natte.bankstorage.BankStorageDataGenerator"
 		]
 	},
 	"mixins": [

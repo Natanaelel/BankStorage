@@ -1,0 +1,6 @@
+{
+  "parent": "bankstorage:bank_cube",
+  "textures": {
+    "1": "bankstorage:item/bank_7"
+  }
+}
