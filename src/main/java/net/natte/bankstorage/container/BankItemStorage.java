@@ -6,8 +6,12 @@ import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.Registries;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.BankType;
@@ -32,7 +36,7 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     }
 
-    public BankItemStorage withDisplayName(Text displayName){
+    public BankItemStorage withDisplayName(Text displayName) {
         this.displayName = displayName;
         return this;
     }
@@ -106,7 +110,7 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     @Override
     public void markDirty() {
-
+        // super.markDirty();
     }
 
     @Override
@@ -114,26 +118,65 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         return true;
     }
 
+    // same format as vanilla except itemstack count and slot saved as int instead of byte
     public NbtCompound saveToNbt() {
         NbtCompound nbtCompound = new NbtCompound();
         nbtCompound.putString("type", this.type.getName());
-        Inventories.writeNbt(nbtCompound, this.inventory);
+
+        NbtList nbtList = new NbtList();
+        for (int i = 0; i < this.inventory.size(); ++i) {
+            ItemStack itemStack = this.inventory.get(i);
+            if (itemStack.isEmpty())
+                continue;
+            NbtCompound itemNbtCompound = new NbtCompound();
+            itemNbtCompound.putInt("Slot", i);
+
+            Identifier identifier = Registries.ITEM.getId(itemStack.getItem());
+            itemNbtCompound.putString("id", identifier == null ? "minecraft:air" : identifier.toString());
+            itemNbtCompound.putInt("Count", itemStack.getCount());
+            if (itemStack.getNbt() != null) {
+                itemNbtCompound.put("tag", itemStack.getNbt().copy());
+            }
+
+            nbtList.add(itemNbtCompound);
+        }
+        nbtCompound.put("Items", nbtList);
+        System.out.println(nbtCompound);
         return nbtCompound;
     }
 
+    // same format as vanilla except itemstack count and slot saved as int instead of byte
     public static BankItemStorage createFromNbt(NbtCompound nbtCompound) {
         System.out.println("fromNBT");
-        BankItemStorage bankItemStorage = new BankItemStorage( BankStorage.getBankTypeFromName(nbtCompound.getString("type")));
+        BankItemStorage bankItemStorage = new BankItemStorage(
+                BankStorage.getBankTypeFromName(nbtCompound.getString("type")));
+
         Inventories.readNbt(nbtCompound, bankItemStorage.inventory);
+        NbtList nbtList = nbtCompound.getList("Items", NbtElement.COMPOUND_TYPE);
+        for (int i = 0; i < nbtList.size(); ++i) {
+            NbtCompound nbt = nbtList.getCompound(i);
+            int j = nbt.getInt("Slot");
+            if (j < 0 || j >= bankItemStorage.inventory.size())
+                continue;
+
+            ItemStack itemStack = Registries.ITEM.get(new Identifier(nbt.getString("id"))).getDefaultStack();
+            itemStack.setCount(nbt.getInt("Count"));
+            if (nbt.contains("tag", NbtElement.COMPOUND_TYPE)) {
+                itemStack.setNbt(nbt.getCompound("tag"));
+            }
+            bankItemStorage.inventory.set(j, itemStack);
+            System.out.println(itemStack.streamTags());
+        }
+
         System.out.println("fromNBT done");
         return bankItemStorage;
     }
-
 
     @Override
     public boolean canInsert(ItemStack stack) {
         return super.canInsert(stack);
     }
+
     @Override
     public ItemStack addStack(ItemStack stack) {
         return super.addStack(stack);

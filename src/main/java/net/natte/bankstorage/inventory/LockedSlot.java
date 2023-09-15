@@ -14,4 +14,5 @@ public class LockedSlot extends Slot {
     public boolean canTakeItems(PlayerEntity playerEntity) {
         return false;
     }
+    
 }

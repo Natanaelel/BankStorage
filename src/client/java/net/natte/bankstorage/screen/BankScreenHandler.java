@@ -111,21 +111,21 @@ public class BankScreenHandler extends ScreenHandler {
         if (fromLast) {
             i = endIndex - 1;
         }
-        int m = this.type.slotStorageMultiplier;
+        // int m = this.type.slotStorageMultiplier;
         if (stack.isStackable()) {
             while (!stack.isEmpty() && (fromLast ? i >= startIndex : i < endIndex)) {
                 slot = this.slots.get(i);
                 itemStack = slot.getStack();
                 if (!itemStack.isEmpty() && ItemStack.canCombine(stack, itemStack)) {
                     int j = itemStack.getCount() + stack.getCount();
-                    if (j <= stack.getMaxCount() * m) {
+                    if (j <= stack.getMaxCount()) {
                         stack.setCount(0);
                         itemStack.setCount(j);
                         slot.markDirty();
                         bl = true;
-                    } else if (itemStack.getCount() < stack.getMaxCount() * m) {
-                        stack.decrement(stack.getMaxCount() * m - itemStack.getCount());
-                        itemStack.setCount(stack.getMaxCount() * m);
+                    } else if (itemStack.getCount() < stack.getMaxCount()) {
+                        stack.decrement(stack.getMaxCount() - itemStack.getCount());
+                        itemStack.setCount(stack.getMaxCount());
                         slot.markDirty();
                         bl = true;
                     }
