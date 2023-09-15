@@ -7,8 +7,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
-import net.natte.bankstorage.BankType;
 import net.natte.bankstorage.container.BankItemStorage;
+import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.inventory.LockedSlot;
 
