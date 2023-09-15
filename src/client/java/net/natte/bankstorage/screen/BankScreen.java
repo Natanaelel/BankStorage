@@ -1,6 +1,10 @@
 package net.natte.bankstorage.screen;
 
-import org.spongepowered.asm.mixin.Shadow;
+import java.util.Set;
+
+import org.jetbrains.annotations.Nullable;
+
+import com.mojang.datafixers.util.Pair;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
@@ -14,6 +18,7 @@ import net.minecraft.screen.slot.Slot;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 import net.natte.bankstorage.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
 
@@ -71,71 +76,76 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         if (slot instanceof BankSlot bankSlot) {
             // System.out.println("yes");
             // bankSlot.render(context);
+            drawBankSlot(context, slot);
         } else {
             // System.out.println("no");
+            super.drawSlot(context, slot);
         }
-        super.drawSlot(context, slot);
 
     }
-    // com.mojang.datafixers.util.Pair<Identifier, Identifier> pair;
-    // int i = slot.x;
-    // int j = slot.y;
-    // ItemStack itemStack = slot.getStack();
-    // boolean bl = false;
-    // /* */
-    // Slot touchDragSlotStart = null;
-    // ItemStack touchDragStack = ItemStack.EMPTY;
-    // boolean touchIsRightClickDrag = false;
+    private void drawBankSlot(DrawContext context, Slot slot) {
+        Pair<Identifier, Identifier> pair;
+        int i = slot.x;
+        int j = slot.y;
+        ItemStack itemStack = slot.getStack();
+        boolean bl = false;
+        boolean bl2 = slot == this.touchDragSlotStart && !this.touchDragStack.isEmpty() && !this.touchIsRightClickDrag;
+        ItemStack itemStack2 = this.handler.getCursorStack();
+        String string = null;
+        if (slot == this.touchDragSlotStart && !this.touchDragStack.isEmpty() && this.touchIsRightClickDrag && !itemStack.isEmpty()) {
+            itemStack = itemStack.copyWithCount(itemStack.getCount() / 2);
+        } else if (this.cursorDragging && this.cursorDragSlots.contains(slot) && !itemStack2.isEmpty()) {
+            if (this.cursorDragSlots.size() == 1) {
+                return;
+            }
+            if (ScreenHandler.canInsertItemIntoSlot((Slot)slot, (ItemStack)itemStack2, (boolean)true) && this.handler.canInsertIntoSlot(slot)) {
+                bl = true;
+                int k = slot.getMaxItemCount(itemStack2);
+                int l = slot.getStack().isEmpty() ? 0 : slot.getStack().getCount();
+                int m = this.calculateStackSize(this.cursorDragSlots, (int)this.heldButtonType, (ItemStack)itemStack2) + l;
+                if (m > k) {
+                    m = k;
+                    string = Formatting.YELLOW.toString() + k;
+                }
+                itemStack = itemStack2.copyWithCount(m);
+            } else {
+                this.cursorDragSlots.remove(slot);
+                this.calculateOffset();
+            }
+        }
+        context.getMatrices().push();
+        context.getMatrices().translate(0.0f, 0.0f, 100.0f);
+        if (itemStack.isEmpty() && slot.isEnabled() && (pair = slot.getBackgroundSprite()) != null) {
+            Sprite sprite = this.client.getSpriteAtlas((Identifier)pair.getFirst()).apply((Identifier)pair.getSecond());
+            context.drawSprite(i, j, 0, 16, 16, sprite);
+            bl2 = true;
+        }
+        if (!bl2) {
+            if (bl) {
+                context.fill(i, j, i + 16, j + 16, -2130706433);
+            }
+            context.drawItem(itemStack, i, j, slot.x + slot.y * this.backgroundWidth);
+            context.drawItemInSlot(this.textRenderer, itemStack, i, j, string);
+        }
+        context.getMatrices().pop();
+    }
 
-    // int heldButtonType = 0;
-    // /* */
-    // boolean bl2 = slot == touchDragSlotStart && !touchDragStack.isEmpty() &&
-    // !touchIsRightClickDrag;
-    // ItemStack itemStack2 = this.handler.getCursorStack();
-    // String string = null;
-    // if (slot == touchDragSlotStart && !touchDragStack.isEmpty() &&
-    // touchIsRightClickDrag && !itemStack.isEmpty()) {
-    // itemStack = itemStack.copyWithCount(itemStack.getCount() / 2);
-    // } else if (this.cursorDragging && this.cursorDragSlots.contains(slot) &&
-    // !itemStack2.isEmpty()) {
-    // if (this.cursorDragSlots.size() == 1) {
-    // return;
-    // }
-    // if (ScreenHandler.canInsertItemIntoSlot((Slot)slot, (ItemStack)itemStack2,
-    // (boolean)true) && this.handler.canInsertIntoSlot(slot)) {
-    // bl = true;
-    // int k = Math.min(itemStack2.getMaxCount() * this.type.slotStorageMultiplier,
-    // slot.getMaxItemCount(itemStack2));
-    // int l = slot.getStack().isEmpty() ? 0 : slot.getStack().getCount();
-    // int m = ScreenHandler.calculateStackSize(this.cursorDragSlots,
-    // (int)heldButtonType, (ItemStack)itemStack2) + l;
-    // if (m > k) {
-    // m = k;
-    // string = Formatting.YELLOW.toString() + k;
-    // }
-    // itemStack = itemStack2.copyWithCount(m);
-    // } else {
-    // this.cursorDragSlots.remove(slot);
-    // // this.calculateOffset();
-    // }
-    // }
-    // context.getMatrices().push();
-    // context.getMatrices().translate(0.0f, 0.0f, 100.0f);
-    // if (itemStack.isEmpty() && slot.isEnabled() && (pair =
-    // slot.getBackgroundSprite()) != null) {
-    // Sprite sprite =
-    // this.client.getSpriteAtlas((Identifier)pair.getFirst()).apply((Identifier)pair.getSecond());
-    // context.drawSprite(i, j, 0, 16, 16, sprite);
-    // bl2 = true;
-    // }
-    // if (!bl2) {
-    // if (bl) {
-    // context.fill(i, j, i + 16, j + 16, -2130706433);
-    // }
-    // context.drawItem(itemStack, i, j, slot.x + slot.y * this.backgroundWidth);
-    // context.drawItemInSlot(this.textRenderer, itemStack, i, j, "900");
-    // }
-    // context.getMatrices().pop();
-    // }
+    public int calculateStackSize(Set<Slot> slots, int mode, ItemStack stack) {
+        return switch (mode) {
+            case 0 -> MathHelper.floor((float)stack.getCount() / (float)slots.size());
+            case 1 -> 1;
+            case 2 -> stack.getItem().getMaxCount() * this.type.slotStorageMultiplier;
+            default -> stack.getCount();
+        };
+    }
+
+    public boolean canInsertItemIntoSlot(/* @Nullable */ Slot slot, ItemStack stack, boolean allowOverflow) {
+        // boolean bl = slot == null || !slot.hasStack();
+        boolean bl = !slot.hasStack();
+        if (!bl && ItemStack.canCombine(stack, slot.getStack())) {
+            return slot.getStack().getCount() + (allowOverflow ? 0 : stack.getCount()) <= slot.getMaxItemCount(stack);
+        }
+        return bl;
+    }
 
 }

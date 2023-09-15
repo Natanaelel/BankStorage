@@ -1,12 +1,23 @@
 package net.natte.bankstorage;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.minecraft.command.CommandSource;
+import net.minecraft.item.ItemStack;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
+import net.natte.bankstorage.container.BankItemStorage;
+import net.natte.bankstorage.item.BankItem;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.mojang.brigadier.Command;
 
 public class BankStorage implements ModInitializer {
 
@@ -37,6 +48,20 @@ public class BankStorage implements ModInitializer {
 		BANK_6.register(bankTypes);
 		BANK_7.register(bankTypes);
 
+
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+			dispatcher.register(CommandManager.literal("bankdata").executes(context -> {
+				ServerPlayerEntity player = context.getSource().getPlayer();
+				ItemStack item = player.getStackInHand(player.getActiveHand());
+
+				if(item.getItem() instanceof BankItem bankItem){
+					BankItemStorage bankItemStorage = bankItem.getBankItemStorage(item, context.getSource().getWorld());
+					player.sendMessage(Text.literal(bankItemStorage.saveToNbt().asString()));
+				}
+
+				return Command.SINGLE_SUCCESS;
+			}));
+		});
 	}
 
 	public static BankType getBankTypeFromName(String name) {

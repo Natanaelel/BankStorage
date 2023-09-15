@@ -1,3 +1,10 @@
 accessWidener v2 named
 
-extendable method net/minecraft/client/gui/screen/ingame/HandledScreen drawSlot (Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/screen/slot/Slot;)V
+# HandledScreen
+extendable  method  net/minecraft/client/gui/screen/ingame/HandledScreen    drawSlot                (Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/screen/slot/Slot;)V
+extendable  method  net/minecraft/client/gui/screen/ingame/HandledScreen    calculateOffset         ()V
+
+accessible  field   net/minecraft/client/gui/screen/ingame/HandledScreen    touchDragSlotStart      Lnet/minecraft/screen/slot/Slot;
+accessible  field   net/minecraft/client/gui/screen/ingame/HandledScreen    touchDragStack          Lnet/minecraft/item/ItemStack;
+accessible  field   net/minecraft/client/gui/screen/ingame/HandledScreen    touchIsRightClickDrag   Z
+accessible  field   net/minecraft/client/gui/screen/ingame/HandledScreen    heldButtonType          I

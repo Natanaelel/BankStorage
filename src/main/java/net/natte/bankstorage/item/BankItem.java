@@ -42,7 +42,7 @@ public class BankItem extends Item {
         return this.type;
     }
 
-    private BankItemStorage getBankItemStorage(ItemStack bank, World world) {
+    public BankItemStorage getBankItemStorage(ItemStack bank, World world) {
 
         NbtCompound nbt = bank.getOrCreateNbt();
         UUID uuid;

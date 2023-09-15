@@ -3,11 +3,12 @@ package net.natte.bankstorage.screen;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.screen.slot.SlotActionType;
 import net.natte.bankstorage.BankType;
+import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.inventory.LockedSlot;
 
@@ -20,19 +21,22 @@ public class BankScreenHandler extends ScreenHandler {
 
     private BankType type;
 
-
-    public static net.minecraft.screen.ScreenHandlerType.Factory<BankScreenHandler> fromType(BankType type){
+    public static net.minecraft.screen.ScreenHandlerType.Factory<BankScreenHandler> fromType(BankType type) {
         return (syncId, playerInventory) -> {
-            return new BankScreenHandler(syncId, playerInventory, new SimpleInventory(type.size()), type);
+            // return new BankScreenHandler(syncId, playerInventory, new
+            // SimpleInventory(type.size()), type);
+            return new BankScreenHandler(syncId, playerInventory, new BankItemStorage(type), type);
         };
     }
 
-    //This constructor gets called from the BlockEntity on the server without calling the other constructor first, the server knows the inventory of the container
-    //and can therefore directly provide it as an argument. This inventory will then be synced to the client.
+    // This constructor gets called from the BlockEntity on the server without
+    // calling the other constructor first, the server knows the inventory of the
+    // container
+    // and can therefore directly provide it as an argument. This inventory will
+    // then be synced to the client.
     public BankScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, BankType type) {
-        super(type.getScreenHandlerType() , syncId);
+        super(type.getScreenHandlerType(), syncId);
 
-        
         this.type = type;
         this.rows = this.type.rows;
         this.cols = this.type.cols;
@@ -40,15 +44,15 @@ public class BankScreenHandler extends ScreenHandler {
         checkSize(inventory, type.size());
         this.inventory = inventory;
         inventory.onOpen(playerInventory.player);
-        
-        
+
         int rows = this.type.rows;
         int cols = this.type.cols;
-        
+
         // bank
         for (int y = 0; y < rows; ++y) {
             for (int x = 0; x < cols; ++x) {
-                this.addSlot(new BankSlot(inventory, x + y * cols, 8 + x * 18, 18 + y * 18, this.type.slotStorageMultiplier));
+                this.addSlot(new BankSlot(inventory, x + y * cols, 8 + x * 18, 18 + y * 18,
+                        this.type.slotStorageMultiplier));
             }
         }
 
@@ -62,20 +66,20 @@ public class BankScreenHandler extends ScreenHandler {
         // hotbar
         for (int x = 0; x < 9; ++x) {
             // cannot move opened dank
-            if(playerInventory.selectedSlot == x){
+            if (playerInventory.selectedSlot == x) {
                 this.addSlot(new LockedSlot(playerInventory, x, 8 + x * 18, inventoryY + 58));
+            } else {
+                this.addSlot(new Slot(playerInventory, x, 8 + x * 18, inventoryY + 58));
             }
-            this.addSlot(new Slot(playerInventory, x, 8 + x * 18, inventoryY + 58));
         }
- 
+
     }
 
-    
     @Override
     public boolean canUse(PlayerEntity player) {
         return this.inventory.canPlayerUse(player);
     }
- 
+
     // Shift + Player Inv Slot
     @Override
     public ItemStack quickMove(PlayerEntity player, int invSlot) {
@@ -85,20 +89,23 @@ public class BankScreenHandler extends ScreenHandler {
             ItemStack originalStack = slot.getStack();
             newStack = originalStack.copy();
             if (invSlot < this.inventory.size()) {
-                if (!super.insertItem(originalStack, this.inventory.size(), this.slots.size(), true)) {
+                // move from bank to player
+                if (!this.insertItem(originalStack, this.inventory.size(), this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!this.insertItem(originalStack, 0, this.inventory.size(), false)) {
+
+            } // move from player to bank
+            else if (!this.insertItem(originalStack, 0, this.inventory.size(), false)) {
                 return ItemStack.EMPTY;
             }
- 
+
             if (originalStack.isEmpty()) {
                 slot.setStack(ItemStack.EMPTY);
             } else {
                 slot.markDirty();
             }
         }
- 
+
         return newStack;
     }
 
@@ -111,21 +118,21 @@ public class BankScreenHandler extends ScreenHandler {
         if (fromLast) {
             i = endIndex - 1;
         }
-        // int m = this.type.slotStorageMultiplier;
-        if (stack.isStackable()) {
+        if (stack.isStackable() || !stack.isStackable()) {
             while (!stack.isEmpty() && (fromLast ? i >= startIndex : i < endIndex)) {
                 slot = this.slots.get(i);
+                int maxStackCount = slot.getMaxItemCount(stack);
                 itemStack = slot.getStack();
                 if (!itemStack.isEmpty() && ItemStack.canCombine(stack, itemStack)) {
                     int j = itemStack.getCount() + stack.getCount();
-                    if (j <= stack.getMaxCount()) {
+                    if (j <= maxStackCount) {
                         stack.setCount(0);
                         itemStack.setCount(j);
                         slot.markDirty();
                         bl = true;
-                    } else if (itemStack.getCount() < stack.getMaxCount()) {
-                        stack.decrement(stack.getMaxCount() - itemStack.getCount());
-                        itemStack.setCount(stack.getMaxCount());
+                    } else if (itemStack.getCount() < maxStackCount) {
+                        stack.decrement(maxStackCount - itemStack.getCount());
+                        itemStack.setCount(maxStackCount);
                         slot.markDirty();
                         bl = true;
                     }
@@ -146,7 +153,7 @@ public class BankScreenHandler extends ScreenHandler {
                     if (stack.getCount() > slot.getMaxItemCount()) {
                         slot.setStack(stack.split(slot.getMaxItemCount()));
                     } else {
-                        slot.setStack(stack.split(stack.getCount()));
+                        slot.setStack(stack.split(Math.min(stack.getCount(), stack.getMaxCount())));
                     }
                     slot.markDirty();
                     bl = true;
@@ -162,4 +169,10 @@ public class BankScreenHandler extends ScreenHandler {
         return bl;
     }
 
+    @Override
+    public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player) {
+        // cannot move BankItem with numbers
+        if(actionType == SlotActionType.SWAP && button == player.getInventory().selectedSlot) return;
+        super.onSlotClick(slotIndex, button, actionType, player);
+    }
 }
