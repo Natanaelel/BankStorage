@@ -14,7 +14,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
 import net.natte.bankstorage.BankStorage;
-import net.natte.bankstorage.BankType;
 import net.natte.bankstorage.screen.BankScreenHandler;
 
 public class BankItemStorage extends SimpleInventory implements NamedScreenHandlerFactory {

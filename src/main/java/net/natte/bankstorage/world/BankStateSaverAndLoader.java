@@ -13,8 +13,8 @@ import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.World;
 import net.natte.bankstorage.BankStorage;
-import net.natte.bankstorage.BankType;
 import net.natte.bankstorage.container.BankItemStorage;
+import net.natte.bankstorage.container.BankType;
 
 public class BankStateSaverAndLoader extends PersistentState {
     public Map<UUID, BankItemStorage> bankMap = new HashMap<>();

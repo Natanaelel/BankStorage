@@ -1,4 +1,4 @@
-package net.natte.bankstorage;
+package net.natte.bankstorage.container;
 
 import java.util.List;
 
@@ -9,6 +9,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
+import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.screen.BankScreenHandler;
 

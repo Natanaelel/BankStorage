@@ -2,10 +2,8 @@ package net.natte.bankstorage;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.command.CommandSource;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.natte.bankstorage.container.BankItemStorage;
@@ -25,12 +23,12 @@ public class BankStorage implements ModInitializer {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-	public static final BankType BANK_1 = new BankType("bank_1", (int)Math.pow(2, 2), 1, 9, 0, 34, 0, 0, 176, 114 + 18 * 1);
-	public static final BankType BANK_2 = new BankType("bank_2", (int)Math.pow(2, 4), 2, 9, 0, 34, 0, 0, 176, 114 + 18 * 2);
-	public static final BankType BANK_3 = new BankType("bank_3", (int)Math.pow(2, 6), 3, 9, 0, 34, 0, 0, 176, 114 + 18 * 3);
-	public static final BankType BANK_4 = new BankType("bank_4", (int)Math.pow(2, 8), 4, 9, 0, 34, 0, 0, 176, 114 + 18 * 4);
-	public static final BankType BANK_5 = new BankType("bank_5", (int)Math.pow(2,10), 5, 9, 0, 34, 0, 0, 176, 114 + 18 * 5);
-	public static final BankType BANK_6 = new BankType("bank_6", (int)Math.pow(2,12), 6, 9, 0, 34, 0, 0, 176, 114 + 18 * 6);
+	public static final BankType BANK_1 = new BankType("bank_1",        4, 1, 9, 0, 34, 0, 0, 176, 114 + 18 * 1);
+	public static final BankType BANK_2 = new BankType("bank_2",       16, 2, 9, 0, 34, 0, 0, 176, 114 + 18 * 2);
+	public static final BankType BANK_3 = new BankType("bank_3",       64, 3, 9, 0, 34, 0, 0, 176, 114 + 18 * 3);
+	public static final BankType BANK_4 = new BankType("bank_4",      256, 4, 9, 0, 34, 0, 0, 176, 114 + 18 * 4);
+	public static final BankType BANK_5 = new BankType("bank_5",     1024, 5, 9, 0, 34, 0, 0, 176, 114 + 18 * 5);
+	public static final BankType BANK_6 = new BankType("bank_6",     4096, 6, 9, 0, 34, 0, 0, 176, 114 + 18 * 6);
 	public static final BankType BANK_7 = new BankType("bank_7", 15625000, 7, 9, 0, 34, 0, 0, 176, 114 + 18 * 7);
 
 	public static final List<BankType> bankTypes = new ArrayList<>();

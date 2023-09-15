@@ -16,9 +16,6 @@ public class BankScreenHandler extends ScreenHandler {
 
     public Inventory inventory;
 
-    public int rows;
-    public int cols;
-
     private BankType type;
 
     public static net.minecraft.screen.ScreenHandlerType.Factory<BankScreenHandler> fromType(BankType type) {
@@ -38,8 +35,6 @@ public class BankScreenHandler extends ScreenHandler {
         super(type.getScreenHandlerType(), syncId);
 
         this.type = type;
-        this.rows = this.type.rows;
-        this.cols = this.type.cols;
 
         checkSize(inventory, type.size());
         this.inventory = inventory;

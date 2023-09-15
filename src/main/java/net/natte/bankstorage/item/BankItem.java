@@ -13,8 +13,8 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
-import net.natte.bankstorage.BankType;
 import net.natte.bankstorage.container.BankItemStorage;
+import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.world.BankStateSaverAndLoader;
 
 public class BankItem extends Item {

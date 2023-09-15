@@ -2,6 +2,7 @@ package net.natte.bankstorage;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
+import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.screen.BankScreen;
 
 public class BankStorageClient implements ClientModInitializer {

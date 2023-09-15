@@ -2,8 +2,6 @@ package net.natte.bankstorage.screen;
 
 import java.util.Set;
 
-import org.jetbrains.annotations.Nullable;
-
 import com.mojang.datafixers.util.Pair;
 
 import net.minecraft.client.gui.DrawContext;
@@ -19,7 +17,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
-import net.natte.bankstorage.BankType;
+import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
 
 public class BankScreen extends HandledScreen<BankScreenHandler> {
