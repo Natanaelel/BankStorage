@@ -49,7 +49,7 @@ public class BankType {
 
     public void register(List<BankType> types){
         
-        Item bankItem = new BankItem(new Settings(), this);
+        Item bankItem = new BankItem(new Settings().maxCount(1), this);
         Identifier identifier = new Identifier(BankStorage.MOD_ID, this.name);
         Registry.register(Registries.ITEM, identifier, bankItem);
         this.screenHandlerType = new ScreenHandlerType<>(BankScreenHandler.fromType(this), FeatureFlags.VANILLA_FEATURES);

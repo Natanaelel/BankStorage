@@ -96,7 +96,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
             if (this.cursorDragSlots.size() == 1) {
                 return;
             }
-            if (ScreenHandler.canInsertItemIntoSlot((Slot)slot, (ItemStack)itemStack2, (boolean)true) && this.handler.canInsertIntoSlot(slot)) {
+            if (this.canInsertItemIntoSlot((Slot)slot, (ItemStack)itemStack2, (boolean)true) && this.handler.canInsertIntoSlot(slot)) {
                 bl = true;
                 int k = slot.getMaxItemCount(itemStack2);
                 int l = slot.getStack().isEmpty() ? 0 : slot.getStack().getCount();

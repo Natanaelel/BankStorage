@@ -31,8 +31,10 @@ public class BankItem extends Item {
 
         ItemStack bank = user.getStackInHand(hand);
         if (!world.isClient) {
-            BankItemStorage bankItemStorage = getBankItemStorage(bank, world);
-            user.openHandledScreen(bankItemStorage);
+            if(bank.getCount() == 1){
+                BankItemStorage bankItemStorage = getBankItemStorage(bank, world);
+                user.openHandledScreen(bankItemStorage);
+            }
         }
 
         return super.use(world, user, hand);

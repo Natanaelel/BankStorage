@@ -1,5 +1,9 @@
 package net.natte.bankstorage.screen;
 
+// import org.jetbrains.annotations.Nullable;
+
+// import java.util.Optional;
+
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -7,6 +11,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
+// import net.minecraft.util.ClickType;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
@@ -166,8 +171,26 @@ public class BankScreenHandler extends ScreenHandler {
 
     @Override
     public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player) {
+        System.out.println("slotindex " + slotIndex + " button " + button + " action " + actionType + " player " + player);
+        
         // cannot move BankItem with numbers
         if(actionType == SlotActionType.SWAP && button == player.getInventory().selectedSlot) return;
+
+
+        // throw stacks of max size stack.maxsize, not slot size
+        // prevent dropping 2+ saddles in a single stack
+        // if (actionType == SlotActionType.THROW && this.getCursorStack().isEmpty() && slotIndex >= 0) {
+        //     Slot slot3 = this.slots.get(slotIndex);
+        //     int j = button == 0 ? 1 : slot3.getStack().getCount();
+        //     ItemStack itemStack = slot3.takeStackRange(j, Integer.MAX_VALUE, player);
+        //     while(!itemStack.isEmpty()){
+        //         player.dropItem(itemStack.split(itemStack.getItem().getMaxCount()), true);
+        //     }
+        //     return;
+        // } 
+
         super.onSlotClick(slotIndex, button, actionType, player);
     }
+
+ 
 }

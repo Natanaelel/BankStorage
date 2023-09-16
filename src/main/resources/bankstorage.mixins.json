@@ -2,7 +2,9 @@
 	"required": true,
 	"package": "net.natte.bankstorage.mixin",
 	"compatibilityLevel": "JAVA_17",
-	"mixins": [],
+	"mixins": [
+		"ScreenHandlerMixin"
+	],
 	"injectors": {
 		"defaultRequire": 1
 	}
