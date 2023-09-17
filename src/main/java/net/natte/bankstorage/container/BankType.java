@@ -2,7 +2,6 @@ package net.natte.bankstorage.container;
 
 import java.util.List;
 
-import net.minecraft.item.Item;
 import net.minecraft.item.Item.Settings;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -29,6 +28,7 @@ public class BankType {
     private ScreenHandlerType<BankScreenHandler> screenHandlerType;
 
     public int slotStorageMultiplier;
+    public BankItem item;
     
     public BankType(String name, int slotStorageMultiplier, int rows, int cols, int guiXOffset, int guiYOffset, int titleXOffset, int titleYOffset, int guiTextureWidth, int guiTextureHeight){
         this.name = name;
@@ -49,12 +49,11 @@ public class BankType {
 
     public void register(List<BankType> types){
         
-        Item bankItem = new BankItem(new Settings().maxCount(1), this);
+        this.item = new BankItem(new Settings().maxCount(1), this);
         Identifier identifier = new Identifier(BankStorage.MOD_ID, this.name);
-        Registry.register(Registries.ITEM, identifier, bankItem);
+        Registry.register(Registries.ITEM, identifier, this.item);
         this.screenHandlerType = new ScreenHandlerType<>(BankScreenHandler.fromType(this), FeatureFlags.VANILLA_FEATURES);
         Registry.register(Registries.SCREEN_HANDLER, identifier, screenHandlerType);
-
         types.add(this);
     }
 

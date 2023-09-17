@@ -56,7 +56,6 @@ public class BankItem extends Item {
         }
 
         BankType type = ((BankItem) bank.getItem()).getType();
-        System.out.println("type: " + type.getName());
         BankStateSaverAndLoader serverState = BankStateSaverAndLoader.getServerState(world.getServer());
         BankItemStorage bankItemStorage = serverState.getOrCreate(uuid, type, bank.getName());
         return bankItemStorage;

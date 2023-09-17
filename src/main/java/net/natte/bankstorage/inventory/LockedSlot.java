@@ -26,16 +26,12 @@ public class LockedSlot extends Slot {
     @Override
     public boolean isEnabled() {
         return true;
-        // super.isEnabled()
     }
     @Override
     public ItemStack takeStack(int amount) {
-        // TODO Auto-generated method stub
         return ItemStack.EMPTY;
     }
     @Override
     public void setStack(ItemStack stack) {
-        // TODO Auto-generated method stub
-        // super.setStack(stack);
     }
 }

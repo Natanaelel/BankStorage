@@ -2,6 +2,8 @@ package net.natte.bankstorage;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -37,8 +39,6 @@ public class BankStorage implements ModInitializer {
 	@Override
 	public void onInitialize() {
 
-		LOGGER.info("Hello Fabric world!");
-
 		BANK_1.register(bankTypes);
 		BANK_2.register(bankTypes);
 		BANK_3.register(bankTypes);
@@ -46,6 +46,12 @@ public class BankStorage implements ModInitializer {
 		BANK_5.register(bankTypes);
 		BANK_6.register(bankTypes);
 		BANK_7.register(bankTypes);
+
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.SEARCH).register(group -> {
+			bankTypes.forEach(type -> {
+				group.add(type.item);
+			});
+		});
 
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {

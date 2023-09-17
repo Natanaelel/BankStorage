@@ -49,14 +49,28 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         this.renderBackground(context);
         super.render(context, mouseX, mouseY, delta);
         this.drawMouseoverTooltip(context, mouseX, mouseY);
-        if (this.focusedSlot instanceof BankSlot bankSlot) {
-            // System.out.println("ok");
-            // context.getMatrices().push();
-            // context.getMatrices().translate(this.x, this.y, 0);
-            // bankSlot.render(context);
-            // context.getMatrices().pop();
+    }
+
+    @Override
+    protected void calculateOffset() {
+        ItemStack itemStack = this.handler.getCursorStack();
+        if (itemStack.isEmpty() || !this.cursorDragging) {
+            return;
+        }
+        if (this.heldButtonType == 2) {
+            this.draggedStackRemainder = itemStack.getMaxCount();
+            return;
+        }
+        this.draggedStackRemainder = itemStack.getCount();
+        for (Slot slot : this.cursorDragSlots) {
+            ItemStack itemStack2 = slot.getStack();
+            int i = itemStack2.isEmpty() ? 0 : itemStack2.getCount();
+            int j = slot.getMaxItemCount(itemStack);
+            int k = Math.min(ScreenHandler.calculateStackSize(this.cursorDragSlots, (int)this.heldButtonType, (ItemStack)itemStack) + i, j);
+            this.draggedStackRemainder -= k - i;
         }
     }
+
 
     @Override
     protected void drawBackground(DrawContext drawContext, float timeDelta, int mouseX, int mouseY) {
@@ -64,19 +78,13 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         int x = (width - backgroundWidth) / 2;
         int y = (height - backgroundHeight) / 2;
         drawContext.drawTexture(this.texture, x, y, 0, 0, backgroundWidth, backgroundHeight);
-        // re
     }
 
-    // @Shadow
     @Override
-    // @
     public void drawSlot(DrawContext context, Slot slot) {
         if (slot instanceof BankSlot bankSlot) {
-            // System.out.println("yes");
-            // bankSlot.render(context);
             drawBankSlot(context, slot);
         } else {
-            // System.out.println("no");
             super.drawSlot(context, slot);
         }
 

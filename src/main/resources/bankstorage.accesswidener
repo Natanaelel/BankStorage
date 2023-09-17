@@ -8,3 +8,4 @@ accessible  field   net/minecraft/client/gui/screen/ingame/HandledScreen    touc
 accessible  field   net/minecraft/client/gui/screen/ingame/HandledScreen    touchDragStack          Lnet/minecraft/item/ItemStack;
 accessible  field   net/minecraft/client/gui/screen/ingame/HandledScreen    touchIsRightClickDrag   Z
 accessible  field   net/minecraft/client/gui/screen/ingame/HandledScreen    heldButtonType          I
+accessible  field   net/minecraft/client/gui/screen/ingame/HandledScreen    draggedStackRemainder   I

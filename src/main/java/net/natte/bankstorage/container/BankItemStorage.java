@@ -105,9 +105,7 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     @Override
     public void setStack(int slot, ItemStack itemStack) {
-        System.out.println("bankitemstorage.java setstack " + itemStack);
         this.inventory.set(slot, itemStack);
-        System.out.println("bankitemstorage.java setstack result" + itemStack);
     }
 
     @Override
@@ -143,13 +141,12 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
             nbtList.add(itemNbtCompound);
         }
         nbtCompound.put("Items", nbtList);
-        System.out.println(nbtCompound);
         return nbtCompound;
     }
 
     // same format as vanilla except itemstack count and slot saved as int instead of byte
     public static BankItemStorage createFromNbt(NbtCompound nbtCompound) {
-        System.out.println("fromNBT");
+
         BankItemStorage bankItemStorage = new BankItemStorage(
                 BankStorage.getBankTypeFromName(nbtCompound.getString("type")));
 
@@ -167,10 +164,8 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
                 itemStack.setNbt(nbt.getCompound("tag"));
             }
             bankItemStorage.inventory.set(j, itemStack);
-            // System.out.println(itemStack.streamTags());
         }
 
-        System.out.println("fromNBT done");
         return bankItemStorage;
     }
 

@@ -90,7 +90,7 @@ public class BankScreenHandler extends ScreenHandler {
             newStack = originalStack.copy();
             if (invSlot < this.inventory.size()) {
                 // move from bank to player
-                if (!this.insertItem(originalStack, this.inventory.size(), this.slots.size(), true)) {
+                if (!this.insertItemToPlayer(originalStack, this.inventory.size(), this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
 
@@ -169,28 +169,74 @@ public class BankScreenHandler extends ScreenHandler {
         return bl;
     }
 
+    protected boolean insertItemToPlayer(ItemStack stack, int startIndex, int endIndex, boolean fromLast) {
+        ItemStack itemStack;
+        Slot slot;
+        boolean bl = false;
+        int i = startIndex;
+        if (fromLast) {
+            i = endIndex - 1;
+        }
+        if (stack.isStackable()) {
+            while (!stack.isEmpty() && (fromLast ? i >= startIndex : i < endIndex)) {
+                slot = this.slots.get(i);
+                int maxStackCount = slot.getMaxItemCount(stack);
+                itemStack = slot.getStack();
+                if (!itemStack.isEmpty() && ItemStack.canCombine(stack, itemStack)) {
+                    int j = itemStack.getCount() + stack.getCount();
+                    if (j <= maxStackCount) {
+                        stack.setCount(0);
+                        itemStack.setCount(j);
+                        slot.markDirty();
+                        bl = true;
+                    } else if (itemStack.getCount() < maxStackCount) {
+                        stack.decrement(maxStackCount - itemStack.getCount());
+                        itemStack.setCount(maxStackCount);
+                        slot.markDirty();
+                        bl = true;
+                    }
+                }
+                if (fromLast) {
+                    --i;
+                    continue;
+                }
+                ++i;
+            }
+        }
+        if (!stack.isEmpty()) {
+            i = fromLast ? endIndex - 1 : startIndex;
+            while (fromLast ? i >= startIndex : i < endIndex) {
+                slot = this.slots.get(i);
+                itemStack = slot.getStack();
+                if (itemStack.isEmpty() && slot.canInsert(stack)) {
+                    // if (stack.getCount() > slot.getMaxItemCount()) {
+                    // slot.setStack(stack.split(slot.getMaxItemCount()));
+                    // } else {
+                    slot.setStack(stack
+                            .split(Math.min(slot.getMaxItemCount(), Math.min(stack.getCount(), stack.getMaxCount()))));
+                    // }
+                    slot.markDirty();
+                    bl = true;
+                    break;
+                }
+                if (fromLast) {
+                    --i;
+                    continue;
+                }
+                ++i;
+            }
+        }
+        return bl;
+    }
+
     @Override
     public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player) {
-        System.out.println("slotindex " + slotIndex + " button " + button + " action " + actionType + " player " + player);
-        
-        // cannot move BankItem with numbers
-        if(actionType == SlotActionType.SWAP && button == player.getInventory().selectedSlot) return;
 
-
-        // throw stacks of max size stack.maxsize, not slot size
-        // prevent dropping 2+ saddles in a single stack
-        // if (actionType == SlotActionType.THROW && this.getCursorStack().isEmpty() && slotIndex >= 0) {
-        //     Slot slot3 = this.slots.get(slotIndex);
-        //     int j = button == 0 ? 1 : slot3.getStack().getCount();
-        //     ItemStack itemStack = slot3.takeStackRange(j, Integer.MAX_VALUE, player);
-        //     while(!itemStack.isEmpty()){
-        //         player.dropItem(itemStack.split(itemStack.getItem().getMaxCount()), true);
-        //     }
-        //     return;
-        // } 
+        // cannot move opened BankItem with numbers
+        if (actionType == SlotActionType.SWAP && button == player.getInventory().selectedSlot)
+            return;
 
         super.onSlotClick(slotIndex, button, actionType, player);
     }
 
- 
 }
