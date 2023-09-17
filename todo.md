@@ -1,11 +1,16 @@
 
-stack size text rendering, make smaller and add suffix
 textures
 pickup
 filter
 build
+sort
 
 
+[x] add count to tooltip
+[x] stack size text rendering, make smaller and add suffix
+
+[x] upgrading resizes inventory
+[x] upgrading keeps nbt
 [x] quick move bug
 [x] should make cursorstack be item max size? yes
 [x] if so, fix ctrl dropping and picking up half stack

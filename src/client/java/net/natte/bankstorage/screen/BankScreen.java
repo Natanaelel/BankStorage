@@ -1,13 +1,24 @@
 package net.natte.bankstorage.screen;
 
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.mojang.datafixers.util.Pair;
 
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens.Provider;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.texture.Sprite;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
@@ -19,11 +30,15 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
+import net.natte.bankstorage.rendering.ItemCountUtils;
 
 public class BankScreen extends HandledScreen<BankScreenHandler> {
 
     public static final ScreenHandlerType<BankScreenHandler> BANK_SCREEN_HANDLER_TYPE = new ScreenHandlerType<>(null,
             null);
+
+    private static final NumberFormat FORMAT = NumberFormat.getNumberInstance(Locale.US);
+
 
     private BankType type;
     private Identifier texture;
@@ -97,7 +112,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         boolean bl = false;
         boolean bl2 = slot == this.touchDragSlotStart && !this.touchDragStack.isEmpty() && !this.touchIsRightClickDrag;
         ItemStack itemStack2 = this.handler.getCursorStack();
-        String string = null;
+        boolean drawInYellow = false;
         if (slot == this.touchDragSlotStart && !this.touchDragStack.isEmpty() && this.touchIsRightClickDrag && !itemStack.isEmpty()) {
             itemStack = itemStack.copyWithCount(itemStack.getCount() / 2);
         } else if (this.cursorDragging && this.cursorDragSlots.contains(slot) && !itemStack2.isEmpty()) {
@@ -111,7 +126,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
                 int m = this.calculateStackSize(this.cursorDragSlots, (int)this.heldButtonType, (ItemStack)itemStack2) + l;
                 if (m > k) {
                     m = k;
-                    string = Formatting.YELLOW.toString() + k;
+                    drawInYellow = true;
                 }
                 itemStack = itemStack2.copyWithCount(m);
             } else {
@@ -131,7 +146,8 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
                 context.fill(i, j, i + 16, j + 16, -2130706433);
             }
             context.drawItem(itemStack, i, j, slot.x + slot.y * this.backgroundWidth);
-            context.drawItemInSlot(this.textRenderer, itemStack, i, j, string);
+            // context.drawItemInSlot(this.textRenderer, itemStack, i, j, string);
+            this.drawItemCountInSlot(context, this.textRenderer, itemStack, i, j, drawInYellow);
         }
         context.getMatrices().pop();
     }
@@ -152,6 +168,62 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
             return slot.getStack().getCount() + (allowOverflow ? 0 : stack.getCount()) <= slot.getMaxItemCount(stack);
         }
         return bl;
+    }
+
+
+    public void drawItemCountInSlot(DrawContext context, TextRenderer textRenderer, ItemStack stack, int x, int y, boolean drawInYellow) {
+        ClientPlayerEntity clientPlayerEntity;
+        float f;
+        int l;
+        int k;
+        if (stack.isEmpty()) {
+            return;
+        }
+        MatrixStack matrices = context.getMatrices();
+
+        matrices.push();
+        if (stack.getCount() != 1 || drawInYellow) {
+            String count = ItemCountUtils.toConsiseString(stack.getCount());
+            String string = drawInYellow ? Formatting.YELLOW.toString() + count : count;
+            matrices.translate(0.0f, 0.0f, 200.0f);
+            // matrices.translate(x, y, k);
+            float scale = ItemCountUtils.scale(string);
+
+            matrices.translate(x * (1 - scale), y * (1 - scale) + (1 - scale) * 16, 0);
+            matrices.scale(scale, scale, 1);
+
+            int textWidth = (int)(textRenderer.getWidth(string) * scale);
+            context.drawText(textRenderer, string, x + 19 - 2 - textWidth, y + 6 + 3, 0xFFFFFF, true);
+        }
+        if (stack.isItemBarVisible()) {
+            int i = stack.getItemBarStep();
+            int j = stack.getItemBarColor();
+            k = x + 2;
+            l = y + 13;
+            context.fill(RenderLayer.getGuiOverlay(), k, l, k + 13, l + 2, -16777216);
+            context.fill(RenderLayer.getGuiOverlay(), k, l, k + i, l + 1, j | 0xFF000000);
+        }
+        f = (clientPlayerEntity = this.client.player) == null ? 0.0f : clientPlayerEntity.getItemCooldownManager().getCooldownProgress(stack.getItem(), this.client.getTickDelta());
+        if (f > 0.0f) {
+            k = y + MathHelper.floor((float)(16.0f * (1.0f - f)));
+            l = k + MathHelper.ceil((float)(16.0f * f));
+            context.fill(RenderLayer.getGuiOverlay(), x, k, x + 16, l, Integer.MAX_VALUE);
+        }
+        matrices.pop();
+    }
+
+    
+   
+
+    protected void drawMouseoverTooltip(DrawContext context, int x, int y) {
+        if (this.handler.getCursorStack().isEmpty() && this.focusedSlot != null && this.focusedSlot.hasStack()) {
+            ItemStack itemStack = this.focusedSlot.getStack();
+            List<Text> tooltip = this.getTooltipFromItem(itemStack);
+            if (itemStack.getCount() > 9999) {
+                tooltip.add(1, Text.literal(FORMAT.format(itemStack.getCount())).formatted(Formatting.GRAY));
+            }    
+            context.drawTooltip(this.textRenderer, tooltip, itemStack.getTooltipData(), x, y);
+        }
     }
 
 }

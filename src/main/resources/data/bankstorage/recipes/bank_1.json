@@ -1,0 +1,20 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"pattern": [
+		"AAA",
+		"ABA",
+		"AAA"
+	],
+	"key": {
+		"A": {
+			"tag": "minecraft:coals"
+		},
+		"B": {
+			"item": "minecraft:barrel"
+		}
+	},
+	"result": {
+		"item": "bankstorage:bank_1",
+		"count": 1
+	}
+}

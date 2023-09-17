@@ -1,0 +1,20 @@
+{
+	"type": "bankstorage:bank_upgrade",
+	"pattern": [
+		"AAA",
+		"ABA",
+		"AAA"
+	],
+	"key": {
+		"A": {
+			"item": "minecraft:gold_block"
+		},
+		"B": {
+			"item": "bankstorage:bank_2"
+		}
+	},
+	"result": {
+		"item": "bankstorage:bank_3",
+		"count": 1
+	}
+}

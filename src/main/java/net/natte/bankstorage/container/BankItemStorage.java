@@ -35,9 +35,28 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     }
 
+    
     public BankItemStorage withDisplayName(Text displayName) {
         this.displayName = displayName;
         return this;
+    }
+
+    public BankItemStorage asType(BankType type){
+        if(this.type != type){
+            changeType(type);
+        }
+        return this;
+    }
+
+    public void changeType(BankType type){
+        this.type = type;
+        this.rows = this.type.rows;
+        this.cols = this.type.cols;
+        DefaultedList<ItemStack> oldInventory = this.inventory;
+        this.inventory = DefaultedList.ofSize(this.rows * this.cols, ItemStack.EMPTY);
+        for(int i = 0; i < oldInventory.size(); ++i) {
+            this.inventory.set(i, oldInventory.get(i));
+        }
     }
 
     @Override

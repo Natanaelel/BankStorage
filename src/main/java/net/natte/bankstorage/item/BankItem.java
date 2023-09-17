@@ -19,6 +19,8 @@ import net.natte.bankstorage.world.BankStateSaverAndLoader;
 
 public class BankItem extends Item {
 
+    public static final String UUID_KEY = "bank:uuid";
+    
     private BankType type;
 
     public BankItem(Settings settings, BankType type) {
@@ -32,7 +34,7 @@ public class BankItem extends Item {
         ItemStack bank = user.getStackInHand(hand);
         if (!world.isClient) {
             if(bank.getCount() == 1){
-                BankItemStorage bankItemStorage = getBankItemStorage(bank, world);
+                BankItemStorage bankItemStorage = BankItem.getBankItemStorage(bank, world);
                 user.openHandledScreen(bankItemStorage);
             }
         }
@@ -44,15 +46,15 @@ public class BankItem extends Item {
         return this.type;
     }
 
-    public BankItemStorage getBankItemStorage(ItemStack bank, World world) {
+    public static BankItemStorage getBankItemStorage(ItemStack bank, World world) {
 
         NbtCompound nbt = bank.getOrCreateNbt();
         UUID uuid;
-        if (nbt.contains("uuid")) {
-            uuid = nbt.getUuid("uuid");
+        if (nbt.contains(UUID_KEY)) {
+            uuid = nbt.getUuid(UUID_KEY);
         } else {
             uuid = UUID.randomUUID();
-            nbt.putUuid("uuid", uuid);
+            nbt.putUuid(UUID_KEY, uuid);
         }
 
         BankType type = ((BankItem) bank.getItem()).getType();
@@ -66,8 +68,8 @@ public class BankItem extends Item {
     public void appendTooltip(ItemStack stack, World world, List<Text> tooltip, TooltipContext context) {
 
         if (context.isAdvanced())
-            if (stack.hasNbt() && stack.getNbt().contains("uuid"))
-                tooltip.add(Text.literal(stack.getNbt().getUuid("uuid").toString()).formatted(Formatting.GRAY));
+            if (stack.hasNbt() && stack.getNbt().contains(UUID_KEY))
+                tooltip.add(Text.literal(stack.getNbt().getUuid(UUID_KEY).toString()).formatted(Formatting.GRAY));
 
         super.appendTooltip(stack, world, tooltip, context);
     }

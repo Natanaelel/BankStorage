@@ -15,6 +15,7 @@ import net.minecraft.world.World;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
+import net.natte.bankstorage.item.BankItem;
 
 public class BankStateSaverAndLoader extends PersistentState {
     public Map<UUID, BankItemStorage> bankMap = new HashMap<>();
@@ -28,7 +29,7 @@ public class BankStateSaverAndLoader extends PersistentState {
 
         bankMap.forEach((uuid, bankItemStorage) -> {
             NbtCompound nbt = new NbtCompound();
-            nbt.putUuid("uuid", uuid);
+            nbt.putUuid(BankItem.UUID_KEY, uuid);
             nbt.put("bank", bankItemStorage.saveToNbt());
             nbtList.add(nbt);
         });
@@ -52,7 +53,7 @@ public class BankStateSaverAndLoader extends PersistentState {
 
         for (NbtElement nbtElement : nbtList) {
             NbtCompound nbt = (NbtCompound) nbtElement;
-            UUID uuid = nbt.getUuid("uuid");
+            UUID uuid = nbt.getUuid(BankItem.UUID_KEY);
             BankItemStorage bankItemStorage = BankItemStorage.createFromNbt(nbt.getCompound("bank"));
             state.bankMap.put(uuid, bankItemStorage);
         }
@@ -86,7 +87,7 @@ public class BankStateSaverAndLoader extends PersistentState {
 
     public BankItemStorage getOrCreate(UUID uuid, BankType type, Text name) {
         if (this.bankMap.containsKey(uuid)) {
-            return this.bankMap.get(uuid).withDisplayName(name);
+            return this.bankMap.get(uuid).withDisplayName(name).asType(type);
         } else {
             BankItemStorage bankItemStorage = new BankItemStorage(type);
             this.bankMap.put(uuid, bankItemStorage);

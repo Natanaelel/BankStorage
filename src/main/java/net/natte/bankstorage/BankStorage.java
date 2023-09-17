@@ -5,12 +5,16 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.BankItem;
+import net.natte.bankstorage.recipe.BankRecipeSerializer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +40,8 @@ public class BankStorage implements ModInitializer {
 
 	public static final List<BankType> bankTypes = new ArrayList<>();
 
+	public static final BankRecipeSerializer bankRecipeSerializer = new BankRecipeSerializer();
+
 	@Override
 	public void onInitialize() {
 
@@ -53,6 +59,8 @@ public class BankStorage implements ModInitializer {
 			});
 		});
 
+		Registry.register(Registries.RECIPE_SERIALIZER, new Identifier(MOD_ID, "bank_upgrade"), bankRecipeSerializer);
+
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(CommandManager.literal("bankdata").executes(context -> {
@@ -60,7 +68,7 @@ public class BankStorage implements ModInitializer {
 				ItemStack item = player.getStackInHand(player.getActiveHand());
 
 				if(item.getItem() instanceof BankItem bankItem){
-					BankItemStorage bankItemStorage = bankItem.getBankItemStorage(item, context.getSource().getWorld());
+					BankItemStorage bankItemStorage = BankItem.getBankItemStorage(item, context.getSource().getWorld());
 					player.sendMessage(Text.literal(bankItemStorage.saveToNbt().asString()));
 				}
 

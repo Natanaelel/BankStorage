@@ -1,0 +1,20 @@
+{
+	"type": "bankstorage:bank_upgrade",
+	"pattern": [
+		"AAA",
+		"ABA",
+		"AAA"
+	],
+	"key": {
+		"A": {
+			"item": "minecraft:diamond_block"
+		},
+		"B": {
+			"item": "bankstorage:bank_4"
+		}
+	},
+	"result": {
+		"item": "bankstorage:bank_5",
+		"count": 1
+	}
+}

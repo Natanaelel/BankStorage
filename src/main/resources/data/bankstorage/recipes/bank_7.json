@@ -1,0 +1,20 @@
+{
+	"type": "bankstorage:bank_upgrade",
+	"pattern": [
+		"AAA",
+		"ABA",
+		"AAA"
+	],
+	"key": {
+		"A": {
+			"item": "minecraft:nether_star"
+		},
+		"B": {
+			"item": "bankstorage:bank_6"
+		}
+	},
+	"result": {
+		"item": "bankstorage:bank_7",
+		"count": 1
+	}
+}
