@@ -76,10 +76,10 @@ public class BankSlot extends Slot {
             return Optional.empty();
         }
 
-        boolean isTryingToTakeHalf = min == (this.getStack().getCount() + 1) / 2;
+        // boolean isTryingToTakeHalf = min == (this.getStack().getCount() + 1) / 2;
         int stackMaxCount = this.getStack().getMaxCount();
-        int takeCount = isTryingToTakeHalf ? (stackMaxCount + 1) / 2 : stackMaxCount;
-        ItemStack itemStack = this.takeStack(Math.min(Math.min(min, max), takeCount));
+        // int takeCount = isTryingToTakeHalf ? (stackMaxCount + 1) / 2 : stackMaxCount;
+        ItemStack itemStack = this.takeStack(Math.min(Math.min(min, max), stackMaxCount));
 
         if (itemStack.isEmpty()) {
             return Optional.empty();

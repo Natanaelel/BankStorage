@@ -1,17 +1,18 @@
 package net.natte.bankstorage.screen;
 
-// import org.jetbrains.annotations.Nullable;
+import java.util.Optional;
 
-// import java.util.Optional;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
-// import net.minecraft.util.ClickType;
+import net.minecraft.util.ClickType;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
@@ -237,6 +238,267 @@ public class BankScreenHandler extends ScreenHandler {
             return;
 
         super.onSlotClick(slotIndex, button, actionType, player);
+    }
+
+    @Override
+    public void internalOnSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player) {
+        ItemStack itemStack;
+        ItemStack itemStack2;
+        PlayerInventory playerInventory;
+        ClickType clickType;
+        ItemStack itemStack3;
+
+        playerInventory = player.getInventory();
+        if (actionType == SlotActionType.QUICK_CRAFT) {
+            int lastQuickCraftStage = this.quickCraftStage;
+            this.quickCraftStage = ScreenHandler.unpackQuickCraftStage(button);
+            if (!(lastQuickCraftStage == 1 && this.quickCraftStage == 2
+                    || lastQuickCraftStage == this.quickCraftStage)) {
+                this.endQuickCraft();
+            } else if (this.getCursorStack().isEmpty()) {
+                this.endQuickCraft();
+            } else if (this.quickCraftStage == 0) {
+                this.quickCraftButton = ScreenHandler.unpackQuickCraftButton(button);
+                if (ScreenHandler.shouldQuickCraftContinue(this.quickCraftButton, player)) {
+                    this.quickCraftStage = 1;
+                    this.quickCraftSlots.clear();
+                } else {
+                    this.endQuickCraft();
+                }
+            } else if (this.quickCraftStage == 1) {
+                Slot slot = this.slots.get(slotIndex);
+                if (!BankScreenHandler.canInsertItemIntoSlot(slot, itemStack3 = this.getCursorStack(), true)
+                        || !slot.canInsert(itemStack3)
+                        || this.quickCraftButton != 2 && itemStack3.getCount() <= this.quickCraftSlots.size()
+                        || !this.canInsertIntoSlot(slot))
+                    return;
+                this.quickCraftSlots.add(slot);
+            } else if (this.quickCraftStage == 2) {
+                if (!this.quickCraftSlots.isEmpty()) {
+                    if (this.quickCraftSlots.size() == 1) {
+                        int j = this.quickCraftSlots.iterator().next().id;
+                        this.endQuickCraft();
+                        this.internalOnSlotClick(j, this.quickCraftButton, SlotActionType.PICKUP, player);
+                        return;
+                    }
+                    ItemStack itemStack22 = this.getCursorStack().copy();
+                    if (itemStack22.isEmpty()) {
+                        this.endQuickCraft();
+                        return;
+                    }
+                    int k = this.getCursorStack().getCount();
+                    for (Slot slot2 : this.quickCraftSlots) {
+                        ItemStack itemStack4 = this.getCursorStack();
+                        if (slot2 == null || !BankScreenHandler.canInsertItemIntoSlot(slot2, itemStack4, true)
+                                || !slot2.canInsert(itemStack4)
+                                || this.quickCraftButton != 2 && itemStack4.getCount() < this.quickCraftSlots.size()
+                                || !this.canInsertIntoSlot(slot2))
+                            continue;
+                        int l = slot2.hasStack() ? slot2.getStack().getCount() : 0;
+                        int m = itemStack22.getMaxCount();
+                        if (slot2 instanceof BankSlot) {
+                            m = slot2.getMaxItemCount(itemStack22);
+                        }
+                        int n = Math.min(ScreenHandler.calculateStackSize(this.quickCraftSlots, this.quickCraftButton,
+                                itemStack22) + l, m);
+                        k -= n - l;
+                        slot2.setStack(itemStack22.copyWithCount(n));
+                    }
+                    itemStack22.setCount(k);
+                    this.setCursorStack(itemStack22);
+                }
+                this.endQuickCraft();
+            } else {
+                this.endQuickCraft();
+            }
+        } else if (this.quickCraftStage != 0) {
+            this.endQuickCraft();
+        } else if ((actionType == SlotActionType.PICKUP || actionType == SlotActionType.QUICK_MOVE)
+                && (button == 0 || button == 1)) {
+            clickType = button == 0 ? ClickType.LEFT : ClickType.RIGHT;
+            if (slotIndex == EMPTY_SPACE_SLOT_INDEX) {
+
+                if (!this.getCursorStack().isEmpty()) {
+
+                    if (clickType == ClickType.LEFT) {
+                        player.dropItem(this.getCursorStack(), true);
+                        this.setCursorStack(ItemStack.EMPTY);
+                    } else {
+                        player.dropItem(this.getCursorStack().split(1), true);
+                    }
+                }
+
+                return;
+            }
+            if (actionType == SlotActionType.QUICK_MOVE) {
+                if (slotIndex >= 0) {
+                    Slot slot = this.slots.get(slotIndex);
+                    if (slot.canTakeItems(player)) {
+                        ItemStack itemStack4 = this.quickMove(player, slotIndex);
+                        while (!itemStack4.isEmpty() && ItemStack.areItemsEqual(slot.getStack(), itemStack4)) {
+                            itemStack4 = this.quickMove(player, slotIndex);
+                        }
+                    }
+                }
+            } else {
+                if (slotIndex < 0) {
+                    return;
+                }
+                Slot slot = this.slots.get(slotIndex);
+                ItemStack hoveredStack = slot.getStack();
+                ItemStack cursorStack = this.getCursorStack();
+                player.onPickupSlotClick(cursorStack, slot.getStack(), clickType);
+                if (!this.handleSlotClick(player, clickType, slot, hoveredStack, cursorStack)) {
+                    if (hoveredStack.isEmpty()) {
+                        if (!cursorStack.isEmpty()) {
+                            int o = clickType == ClickType.LEFT ? cursorStack.getCount() : 1;
+                            this.setCursorStack(slot.insertStack(cursorStack, o));
+                        }
+                    } else if (slot.canTakeItems(player)) {
+                        if (cursorStack.isEmpty()) {
+                            int o = clickType == ClickType.LEFT
+                                    ? Math.min(hoveredStack.getCount(), hoveredStack.getMaxCount())
+                                    : Math.min((hoveredStack.getCount() + 1) / 2, hoveredStack.getMaxCount());
+                            Optional<ItemStack> optional = slot.tryTakeStackRange(o, Integer.MAX_VALUE, player);
+                            optional.ifPresent(stack -> {
+                                this.setCursorStack((ItemStack) stack);
+                                slot.onTakeItem(player, (ItemStack) stack);
+                            });
+                        } else if (slot.canInsert(cursorStack)) {
+                            if (ItemStack.canCombine(hoveredStack, cursorStack)) {
+                                int o = clickType == ClickType.LEFT ? cursorStack.getCount() : 1;
+                                this.setCursorStack(slot.insertStack(cursorStack, o));
+                            } else if (cursorStack.getCount() <= slot.getMaxItemCount(cursorStack)) {
+                                if (hoveredStack.getCount() <= hoveredStack.getMaxCount()) {
+                                    this.setCursorStack(hoveredStack);
+                                    slot.setStack(cursorStack);
+                                }
+                            }
+                        } else if (ItemStack.canCombine(hoveredStack, cursorStack)) {
+                            Optional<ItemStack> optional2 = slot.tryTakeStackRange(hoveredStack.getCount(),
+                                    cursorStack.getMaxCount() - cursorStack.getCount(), player);
+                            optional2.ifPresent(stack -> {
+                                cursorStack.increment(stack.getCount());
+                                slot.onTakeItem(player, (ItemStack) stack);
+                            });
+                        }
+                    }
+                }
+                slot.markDirty();
+            }
+            return;
+        }
+        if (actionType == SlotActionType.SWAP) {
+            Slot slot3 = this.slots.get(slotIndex);
+            itemStack2 = playerInventory.getStack(button);
+            itemStack = slot3.getStack();
+            if (itemStack2.isEmpty() && itemStack.isEmpty())
+                return;
+            if (itemStack2.isEmpty()) {
+                ;
+                if (!slot3.canTakeItems(player))
+                    return;
+                playerInventory.setStack(button, itemStack);
+                // slot3.onTake(itemStack.getCount());
+                slot3.setStack(ItemStack.EMPTY);
+                slot3.onTakeItem(player, itemStack);
+                return;
+            }
+            if (itemStack.isEmpty()) {
+                if (!slot3.canInsert(itemStack2))
+                    return;
+                int p = slot3.getMaxItemCount(itemStack2);
+                if (itemStack2.getCount() > p) {
+                    slot3.setStack(itemStack2.split(p));
+                } else {
+                    playerInventory.setStack(button, ItemStack.EMPTY);
+                    slot3.setStack(itemStack2);
+                }
+                return;
+            }
+            if (!slot3.canTakeItems(player) || !slot3.canInsert(itemStack2))
+                return;
+            int p = slot3.getMaxItemCount(itemStack2);
+            if (itemStack2.getCount() > p) {
+                slot3.setStack(itemStack2.split(p));
+                slot3.onTakeItem(player, itemStack);
+                if (playerInventory.insertStack(itemStack))
+                    return;
+                player.dropItem(itemStack, true);
+                return;
+            }
+            playerInventory.setStack(button, itemStack);
+            slot3.setStack(itemStack2);
+            slot3.onTakeItem(player, itemStack);
+            return;
+        }
+
+        if (actionType == SlotActionType.CLONE && player.getAbilities().creativeMode && this.getCursorStack().isEmpty()
+                && slotIndex >= 0) {
+            Slot slot3 = this.slots.get(slotIndex);
+            if (!slot3.hasStack())
+                return;
+            ItemStack itemStack5 = slot3.getStack();
+            this.setCursorStack(itemStack5.copyWithCount(itemStack5.getMaxCount()));
+            return;
+        }
+
+        if (actionType == SlotActionType.THROW && this.getCursorStack().isEmpty() && slotIndex >= 0) {
+            Slot slot3 = this.slots.get(slotIndex);
+            int j = button == 0 ? 1 : slot3.getStack().getCount();
+            ItemStack itemStack6 = slot3.takeStackRange(j, Integer.MAX_VALUE, player);
+            player.dropItem(itemStack6, true);
+        } else if (actionType == SlotActionType.PICKUP_ALL && slotIndex >= 0) {
+            Slot slot3 = this.slots.get(slotIndex);
+            ItemStack itemStack7 = this.getCursorStack();
+            if (!(itemStack7.isEmpty() || slot3.hasStack() && slot3.canTakeItems(player))) {
+                int k = button == 0 ? 0 : this.slots.size() - 1;
+                int p = button == 0 ? 1 : -1;
+                for (int o = 0; o < 2; ++o) {
+                    for (int q = k; q >= 0 && q < this.slots.size()
+                            && itemStack7.getCount() < itemStack7.getMaxCount(); q += p) {
+                        Slot slot4 = this.slots.get(q);
+                        if (!slot4.hasStack() || !BankScreenHandler.canInsertItemIntoSlot(slot4, itemStack7, true)
+                                || !slot4.canTakeItems(player) || !this.canInsertIntoSlot(itemStack7, slot4))
+                            continue;
+                        ItemStack itemStack5 = slot4.getStack();
+                        if (o == 0 && itemStack5.getCount() == itemStack5.getMaxCount())
+                            continue;
+                        ItemStack itemStack6 = slot4.takeStackRange(itemStack5.getCount(),
+                                itemStack7.getMaxCount() - itemStack7.getCount(), player);
+                        itemStack7.increment(itemStack6.getCount());
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean handleSlotClick(PlayerEntity player, ClickType clickType, Slot slot, ItemStack stack,
+            ItemStack cursorStack) {
+
+        // prevent dupe by putting item inside multiple bundles at the same time
+        FeatureSet featureSet = player.getWorld().getEnabledFeatures();
+        if (cursorStack.isItemEnabled(featureSet) && cursorStack.onStackClicked(slot, clickType, player)) {
+            return true;
+        }
+        if (stack.getCount() > stack.getMaxCount()) {
+            return false;
+        }
+
+        return super.handleSlotClick(player, clickType, slot, stack, cursorStack);
+    }
+
+    public static boolean canInsertItemIntoSlot(@Nullable Slot slot, ItemStack stack, boolean allowOverflow) {
+        boolean bl = slot == null || !slot.hasStack();
+        if (!bl && ItemStack.canCombine(stack, slot.getStack())) {
+            if (slot instanceof BankSlot bankSlot) {
+                return slot.getStack().getCount() + (allowOverflow ? 0 : stack.getCount()) <= bankSlot
+                        .getMaxItemCount(stack);
+
+            }
+        }
+        return ScreenHandler.canInsertItemIntoSlot(slot, stack, allowOverflow);
     }
 
 }

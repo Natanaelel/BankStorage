@@ -9,3 +9,11 @@ accessible  field   net/minecraft/client/gui/screen/ingame/HandledScreen    touc
 accessible  field   net/minecraft/client/gui/screen/ingame/HandledScreen    touchIsRightClickDrag   Z
 accessible  field   net/minecraft/client/gui/screen/ingame/HandledScreen    heldButtonType          I
 accessible  field   net/minecraft/client/gui/screen/ingame/HandledScreen    draggedStackRemainder   I
+
+
+extendable  method  net/minecraft/screen/ScreenHandler                      internalOnSlotClick     (IILnet/minecraft/screen/slot/SlotActionType;Lnet/minecraft/entity/player/PlayerEntity;)V
+extendable  method  net/minecraft/screen/ScreenHandler                      handleSlotClick         (Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/ClickType;Lnet/minecraft/screen/slot/Slot;Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z
+
+accessible  field   net/minecraft/screen/ScreenHandler                      quickCraftSlots         Ljava/util/Set;
+accessible  field   net/minecraft/screen/ScreenHandler                      quickCraftButton        I
+accessible  field   net/minecraft/screen/ScreenHandler                      quickCraftStage         I
