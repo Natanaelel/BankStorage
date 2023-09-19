@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.minecraft.block.Block;
 import net.minecraft.block.MapColor;
 import net.minecraft.block.entity.BlockEntityType;
@@ -85,7 +86,9 @@ public class BankStorage implements ModInitializer {
 				new Identifier(MOD_ID, "bank_dock_block_entity"),
 				FabricBlockEntityTypeBuilder.create(BankDockBlockEntity::new, BANK_DOCK_BLOCK).build());
 
-				
+			
+		ItemStorage.SIDED.registerForBlockEntity((bankDockBlockEntity, direction ) -> bankDockBlockEntity.getItemStorage(), BANK_DOCK_BLOCK_ENTITY);
+
 		Registry.register(Registries.RECIPE_SERIALIZER, new Identifier(MOD_ID, "bank_upgrade"), bankRecipeSerializer);
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {

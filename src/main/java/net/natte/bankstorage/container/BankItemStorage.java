@@ -105,8 +105,11 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     @Override
     public int getMaxCountPerStack() {
-        // return super.getMaxCountPerStack();
-        return 32;
+        return 64 * type.slotStorageMultiplier;
+    }
+    
+    public int getStorageMultiplier(){
+        return type.slotStorageMultiplier;
     }
 
     @Override
