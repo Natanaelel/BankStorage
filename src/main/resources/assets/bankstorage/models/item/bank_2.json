@@ -1,5 +1,5 @@
 {
-  "parent": "bankstorage:bank_cube",
+  "parent": "bankstorage:model/bank_cube",
   "textures": {
     "1": "bankstorage:item/bank_2"
   }

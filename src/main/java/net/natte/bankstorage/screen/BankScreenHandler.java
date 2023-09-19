@@ -358,7 +358,7 @@ public class BankScreenHandler extends ScreenHandler {
                         if (cursorStack.isEmpty()) {
                             int o = clickType == ClickType.LEFT
                                     ? Math.min(hoveredStack.getCount(), hoveredStack.getMaxCount())
-                                    : Math.min((hoveredStack.getCount() + 1) / 2, hoveredStack.getMaxCount());
+                                    : (Math.min(hoveredStack.getCount(), hoveredStack.getMaxCount()) + 1) / 2;
                             Optional<ItemStack> optional = slot.tryTakeStackRange(o, Integer.MAX_VALUE, player);
                             optional.ifPresent(stack -> {
                                 this.setCursorStack((ItemStack) stack);

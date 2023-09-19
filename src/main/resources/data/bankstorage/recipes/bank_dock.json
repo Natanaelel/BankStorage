@@ -1,0 +1,20 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"pattern": [
+		"IVI",
+		"I I",
+		"IVI"
+	],
+	"key": {
+		"V": {
+			"item": "minecraft:hopper"
+		},
+		"I": {
+			"item": "minecraft:iron_bars"
+		}
+	},
+	"result": {
+		"item": "bankstorage:bank_dock",
+		"count": 1
+	}
+}

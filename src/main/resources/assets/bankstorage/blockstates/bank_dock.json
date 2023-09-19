@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "bankstorage:block/bank_dock"
+    }
+  }
+}

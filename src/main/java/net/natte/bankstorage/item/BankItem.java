@@ -36,6 +36,7 @@ public class BankItem extends Item {
             if(bank.getCount() == 1){
                 BankItemStorage bankItemStorage = BankItem.getBankItemStorage(bank, world);
                 user.openHandledScreen(bankItemStorage);
+                return TypedActionResult.success(bank);
             }
         }
 
