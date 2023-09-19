@@ -12,7 +12,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.collection.DefaultedList;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.options.BankOptions;
@@ -20,24 +19,24 @@ import net.natte.bankstorage.screen.BankScreenHandler;
 
 public class BankItemStorage extends SimpleInventory implements NamedScreenHandlerFactory {
 
-    public DefaultedList<ItemStack> inventory;
+    // public DefaultedList<ItemStack> inventory;
 
     public BankOptions options;
 
     public int rows;
     public int cols;
 
-    private BankType type;
+    public BankType type;
 
     private Text displayName;
 
     public BankItemStorage(BankType type) {
-        // super(type.rows * type.cols);
+        super(type.rows * type.cols);
         this.type = type;
         this.options = new BankOptions();
         this.rows = this.type.rows;
         this.cols = this.type.cols;
-        this.inventory = DefaultedList.ofSize(this.rows * this.cols, ItemStack.EMPTY);
+        // this.inventory = DefaultedList.ofSize(this.rows * this.cols, ItemStack.EMPTY);
 
     }
 
@@ -54,13 +53,16 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     }
 
     public void changeType(BankType type) {
+        int sizeDiff = type.size() - this.size();
+        assert sizeDiff >= 0;
         this.type = type;
         this.rows = this.type.rows;
         this.cols = this.type.cols;
-        DefaultedList<ItemStack> oldInventory = this.inventory;
-        this.inventory = DefaultedList.ofSize(this.rows * this.cols, ItemStack.EMPTY);
-        for (int i = 0; i < oldInventory.size(); ++i) {
-            this.inventory.set(i, oldInventory.get(i));
+        // for()
+        // DefaultedList<ItemStack> oldInventory = this.inventory;
+        // this.inventory = DefaultedList.ofSize(this.rows * this.cols, ItemStack.EMPTY);
+        for (int i = 0; i < sizeDiff; ++i) {
+            this.stacks.set(i, ItemStack.EMPTY);
         }
     }
 
@@ -78,8 +80,8 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     @Override
     public void clear() {
-        this.inventory.clear();
-        this.inventory = DefaultedList.ofSize(this.rows * this.cols, ItemStack.EMPTY);
+        this.stacks.clear();
+        // this.inventory = DefaultedList.ofSize(this.rows * this.cols, ItemStack.EMPTY);
     }
 
     @Override
@@ -89,22 +91,25 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     @Override
     public boolean isEmpty() {
-        for (ItemStack itemStack : this.inventory) {
-            if (itemStack.isEmpty())
-                continue;
-            return false;
-        }
-        return true;
+        return super.isEmpty();
+        // for (ItemStack itemStack : this.inventory) {
+        //     if (itemStack.isEmpty())
+        //         continue;
+        //     return false;
+        // }
+        // return true;
     }
 
     @Override
     public ItemStack getStack(int slot) {
-        return this.inventory.get(slot);
+        return super.getStack(slot);
+        // return this.inventory.get(slot);
     }
 
     @Override
     public ItemStack removeStack(int slot, int amount) {
-        return this.inventory.get(slot).split(amount);
+        return super.removeStack(slot, amount);
+        // return this.inventory.get(slot).split(amount);
 
     }
 
@@ -124,21 +129,18 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     @Override
     public ItemStack removeStack(int slot) {
-
-        ItemStack itemStack = this.inventory.get(slot);
-        this.inventory.set(slot, ItemStack.EMPTY);
-        return itemStack;
+        return super.removeStack(slot);
+        // ItemStack itemStack = this.inventory.get(slot);
+        // this.inventory.set(slot, ItemStack.EMPTY);
+        // return itemStack;
     }
 
     @Override
     public void setStack(int slot, ItemStack itemStack) {
-        this.inventory.set(slot, itemStack);
+        super.setStack(slot, itemStack);
+        // this.inventory.set(slot, itemStack);
     }
 
-    @Override
-    public void markDirty() {
-        // super.markDirty();
-    }
 
     @Override
     public boolean canPlayerUse(PlayerEntity playerEntity) {
@@ -149,11 +151,14 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     // of byte
     public NbtCompound saveToNbt() {
         NbtCompound nbtCompound = new NbtCompound();
+
+        nbtCompound.put("options", this.options.asNbt());
+
         nbtCompound.putString("type", this.type.getName());
 
         NbtList nbtList = new NbtList();
-        for (int i = 0; i < this.inventory.size(); ++i) {
-            ItemStack itemStack = this.inventory.get(i);
+        for (int i = 0; i < this.stacks.size(); ++i) {
+            ItemStack itemStack = this.stacks.get(i);
             if (itemStack.isEmpty())
                 continue;
             NbtCompound itemNbtCompound = new NbtCompound();
@@ -179,12 +184,14 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         BankItemStorage bankItemStorage = new BankItemStorage(
                 BankStorage.getBankTypeFromName(nbtCompound.getString("type")));
 
-        Inventories.readNbt(nbtCompound, bankItemStorage.inventory);
+        bankItemStorage.options = BankOptions.fromNbt(nbtCompound.getCompound("options"));
+
+        Inventories.readNbt(nbtCompound, bankItemStorage.stacks);
         NbtList nbtList = nbtCompound.getList("Items", NbtElement.COMPOUND_TYPE);
         for (int i = 0; i < nbtList.size(); ++i) {
             NbtCompound nbt = nbtList.getCompound(i);
             int j = nbt.getInt("Slot");
-            if (j < 0 || j >= bankItemStorage.inventory.size())
+            if (j < 0 || j >= bankItemStorage.stacks.size())
                 continue;
 
             ItemStack itemStack = Registries.ITEM.get(new Identifier(nbt.getString("id"))).getDefaultStack();
@@ -192,7 +199,7 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
             if (nbt.contains("tag", NbtElement.COMPOUND_TYPE)) {
                 itemStack.setNbt(nbt.getCompound("tag"));
             }
-            bankItemStorage.inventory.set(j, itemStack);
+            bankItemStorage.stacks.set(j, itemStack);
         }
 
         return bankItemStorage;

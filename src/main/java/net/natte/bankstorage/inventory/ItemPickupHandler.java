@@ -11,14 +11,15 @@ import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.util.Util;
 
 public class ItemPickupHandler {
-    public static void onItemPickup(ItemStack pickedUpStack, PlayerInventory playerInventory) {
+    public static boolean onItemPickup(ItemStack pickedUpStack, PlayerInventory playerInventory) {
         System.out.println("hope I am on server");
         World world = playerInventory.player.getWorld();
         if (world.isClient)
-            return;
-
+            return false;
+        if (pickedUpStack.isEmpty())
+            return false;
         if (!Util.isAllowedInBank(pickedUpStack))
-            return;
+            return false;
 
         Iterable<ItemStack> items = Iterables.concat(
                 playerInventory.main,
@@ -34,17 +35,16 @@ public class ItemPickupHandler {
 
                 BankItemStorage bankItemStorage = BankItem.getBankItemStorage(itemStack, world);
                 PickupMode mode = bankItemStorage.options.pickupMode;
-
-                if (mode == PickupMode.NONE){
-                    System.out.println("none, continue");
+                System.out.println(mode);
+                if (mode == PickupMode.NONE) {
                     continue;
                 }
 
                 if (mode == PickupMode.ALL) {
-                    System.out.println("all, add");
-                    System.out.println("before: " + pickedUpStack);
-                    System.out.println(bankItemStorage.addStack(pickedUpStack));
-                    System.out.println("after: " + pickedUpStack);
+                    addToExistingSlot(bankItemStorage, pickedUpStack);
+                    if (pickedUpStack.isEmpty()) return true;
+                    addToAnySlot(bankItemStorage, pickedUpStack);
+                    if (pickedUpStack.isEmpty()) return true;
                 }
 
                 if (mode == PickupMode.FILTERED || mode == PickupMode.VOID) {
@@ -56,26 +56,75 @@ public class ItemPickupHandler {
                         }
                     }
                     if (canInsert) {
-                        bankItemStorage.addStack(pickedUpStack);
+                        addToExistingSlot(bankItemStorage, pickedUpStack);
+                        if (pickedUpStack.isEmpty()) return true;
+                        addToAnySlot(bankItemStorage, pickedUpStack);
+                        if (pickedUpStack.isEmpty()) return true;
+
                         if (mode == PickupMode.VOID) {
                             pickedUpStack.setCount(0);
+                            return true;
                         }
                     }
                 }
 
-                if (pickedUpStack.isEmpty())
-                    return;
-                // return;
-                // return;
-                // }
 
-                // }
-
-                // if(bankItemStorage.canInsert(pickedUpStack)){
-                // bankItemStorage.
-                // }
             }
         }
+        return false;
+    }
 
+    public static void addToExistingSlot(BankItemStorage bankItemStorage, ItemStack pickedUpStack) {
+
+        int slotSize = pickedUpStack.getMaxCount() * bankItemStorage.type.slotStorageMultiplier;
+
+        for (int slot = 0; slot < bankItemStorage.size(); ++slot) {
+
+            ItemStack stackInSlot = bankItemStorage.getStack(slot);
+
+            if (ItemStack.canCombine(stackInSlot, pickedUpStack)) {
+
+                int spaceLeft = slotSize - stackInSlot.getCount();
+                int toMove = Math.min(pickedUpStack.getCount(), spaceLeft);
+
+                if (toMove > 0) {
+                    stackInSlot.increment(toMove);
+                    pickedUpStack.decrement(toMove);
+                    bankItemStorage.markDirty();
+                    if (pickedUpStack.isEmpty())
+                        return;
+                }
+            }
+        }
+    }
+
+    public static void addToAnySlot(BankItemStorage bankItemStorage, ItemStack pickedUpStack) {
+
+        int slotSize = pickedUpStack.getMaxCount() * bankItemStorage.type.slotStorageMultiplier;
+
+        for (int slot = 0; slot < bankItemStorage.size(); ++slot) {
+
+            ItemStack stackInSlot = bankItemStorage.getStack(slot);
+
+            if (stackInSlot.isEmpty()) {
+                int toMove = Math.min(pickedUpStack.getCount(), slotSize);
+                bankItemStorage.setStack(slot, pickedUpStack.copyWithCount(toMove));
+                pickedUpStack.decrement(toMove);
+                if (pickedUpStack.isEmpty())
+                    return;
+            } else if (ItemStack.canCombine(stackInSlot, pickedUpStack)) {
+
+                int spaceLeft = slotSize - stackInSlot.getCount();
+                int toMove = Math.min(pickedUpStack.getCount(), spaceLeft);
+
+                if (toMove > 0) {
+                    stackInSlot.increment(toMove);
+                    pickedUpStack.decrement(toMove);
+                    bankItemStorage.markDirty();
+                    if (pickedUpStack.isEmpty())
+                        return;
+                }
+            }
+        }
     }
 }

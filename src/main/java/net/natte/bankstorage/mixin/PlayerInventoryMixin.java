@@ -12,8 +12,8 @@ import net.natte.bankstorage.inventory.ItemPickupHandler;
 @Mixin(PlayerInventory.class)
 public abstract class PlayerInventoryMixin {
     
-    @Inject(method = "insertStack(Lnet/minecraft/item/ItemStack;)Z", at = @At("HEAD"))
+    @Inject(method = "insertStack(Lnet/minecraft/item/ItemStack;)Z", at = @At("HEAD"), cancellable = true)
     public void onInsertStack(ItemStack stack, CallbackInfoReturnable<Boolean> cir){
-        ItemPickupHandler.onItemPickup(stack, (PlayerInventory)(Object)this);
+        if(ItemPickupHandler.onItemPickup(stack, (PlayerInventory)(Object)this)) cir.setReturnValue(true);;
     }
 }
