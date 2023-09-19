@@ -16,24 +16,29 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.text.Text;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.natte.bankstorage.block.BankDockBlock;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.BankItem;
+import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.recipe.BankRecipeSerializer;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.function.BiFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.context.CommandContext;
 
 public class BankStorage implements ModInitializer {
 
@@ -75,22 +80,34 @@ public class BankStorage implements ModInitializer {
 			});
 		});
 
-
 		Registry.register(Registries.BLOCK, new Identifier(MOD_ID, "bank_dock"), BANK_DOCK_BLOCK);
 		Registry.register(Registries.ITEM, new Identifier(MOD_ID, "bank_dock"),
 				new BlockItem(BANK_DOCK_BLOCK, new FabricItemSettings()));
-
 
 		BANK_DOCK_BLOCK_ENTITY = Registry.register(
 				Registries.BLOCK_ENTITY_TYPE,
 				new Identifier(MOD_ID, "bank_dock_block_entity"),
 				FabricBlockEntityTypeBuilder.create(BankDockBlockEntity::new, BANK_DOCK_BLOCK).build());
 
-			
-		ItemStorage.SIDED.registerForBlockEntity((bankDockBlockEntity, direction ) -> bankDockBlockEntity.getItemStorage(), BANK_DOCK_BLOCK_ENTITY);
+		ItemStorage.SIDED.registerForBlockEntity(
+				(bankDockBlockEntity, direction) -> bankDockBlockEntity.getItemStorage(), BANK_DOCK_BLOCK_ENTITY);
 
 		Registry.register(Registries.RECIPE_SERIALIZER, new Identifier(MOD_ID, "bank_upgrade"), bankRecipeSerializer);
 
+		registerCommands();
+	}
+
+	public static BankType getBankTypeFromName(String name) {
+		for (BankType bankType : bankTypes) {
+			if (bankType.getName().equals(name)) {
+				return bankType;
+			}
+		}
+
+		throw new Error("Cannot get BankType of name '" + name + "'");
+	}
+
+	public void registerCommands() {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(CommandManager.literal("bankdata").executes(context -> {
 				ServerPlayerEntity player = context.getSource().getPlayer();
@@ -103,17 +120,31 @@ public class BankStorage implements ModInitializer {
 
 				return Command.SINGLE_SUCCESS;
 			}));
+
+			BiFunction<CommandContext<ServerCommandSource>, PickupMode, Integer> setPickupMode = (context,
+					pickupMode) -> {
+				ServerWorld world = context.getSource().getWorld();
+				BankItemStorage bankItemStorage = BankItem.getBankItemStorage(context.getSource().getPlayer().getStackInHand(Hand.MAIN_HAND),
+						world);
+					bankItemStorage.options.pickupMode = pickupMode;
+						context.getSource().sendMessage(Text.literal(bankItemStorage.options.pickupMode + " " + bankItemStorage.options.buildMode));
+				return Command.SINGLE_SUCCESS;
+			};
+
+			dispatcher.register(
+					CommandManager.literal("bankoption")
+							.then(CommandManager.literal("pickup")
+									.then(CommandManager.literal("none")
+											.executes(context -> setPickupMode.apply(context, PickupMode.NONE)))
+									.then(CommandManager.literal("all")
+											.executes(context -> setPickupMode.apply(context, PickupMode.ALL)))
+									.then(CommandManager.literal("filtered")
+											.executes(context -> setPickupMode.apply(context, PickupMode.FILTERED)))
+									.then(CommandManager.literal("void")
+											.executes(context -> setPickupMode.apply(context, PickupMode.VOID)))
+
+							));
 		});
-	}
-
-	public static BankType getBankTypeFromName(String name) {
-		for (BankType bankType : bankTypes) {
-			if (bankType.getName().equals(name)) {
-				return bankType;
-			}
-		}
-
-		throw new Error("Cannot get BankType of name '" + name + "'");
 	}
 
 }

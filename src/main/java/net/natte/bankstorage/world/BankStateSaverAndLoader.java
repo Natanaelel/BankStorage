@@ -71,15 +71,6 @@ public class BankStateSaverAndLoader extends PersistentState {
                 BankStateSaverAndLoader::new,
                 BankStorage.MOD_ID);
 
-        // If state is not marked dirty, when Minecraft closes, 'writeNbt' won't be
-        // called and therefore nothing will be saved.
-        // Technically it's 'cleaner' if you only mark state as dirty when there was
-        // actually a change, but the vast majority
-        // of mod writers are just going to be confused when their data isn't being
-        // saved, and so it's best just to 'markDirty' for them.
-        // Besides, it's literally just setting a bool to true, and the only time
-        // there's a 'cost' is when the file is written to disk when
-        // there were no actual change to any of the mods state (INCREDIBLY RARE).
         state.markDirty();
 
         return state;

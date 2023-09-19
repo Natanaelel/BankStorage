@@ -69,6 +69,7 @@ public class BankDockBlock extends Block implements BlockEntityProvider {
         return ActionResult.PASS;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
         if (state.isOf(newState.getBlock())) {

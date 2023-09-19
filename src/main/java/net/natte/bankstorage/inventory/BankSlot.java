@@ -27,12 +27,14 @@ public class BankSlot extends Slot {
 
     @Override
     public int getMaxItemCount() {
-        return 64 * this.slotStorageMultiplier;
+        // return 64 * this.slotStorageMultiplier;
+        return 1;
     }
 
     @Override
     public int getMaxItemCount(ItemStack stack) {
-        return Math.min(this.getMaxItemCount(), stack.getMaxCount() * this.slotStorageMultiplier);
+        // return Math.min(this.getMaxItemCount(), stack.getMaxCount() * this.slotStorageMultiplier);
+        return stack.getMaxCount() * this.slotStorageMultiplier;
     }
 
     @Override

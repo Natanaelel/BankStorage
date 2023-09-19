@@ -152,7 +152,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         return switch (mode) {
             case 0 -> MathHelper.floor((float)stack.getCount() / (float)slots.size());
             case 1 -> 1;
-            case 2 -> stack.getItem().getMaxCount() * this.type.slotStorageMultiplier;
+            case 2 -> stack.getItem().getMaxCount();
             default -> stack.getCount();
         };
     }

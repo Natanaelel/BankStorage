@@ -17,6 +17,7 @@ import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.inventory.LockedSlot;
+import net.natte.bankstorage.item.BankItem;
 
 public class BankScreenHandler extends ScreenHandler {
 
@@ -67,7 +68,8 @@ public class BankScreenHandler extends ScreenHandler {
         // hotbar
         for (int x = 0; x < 9; ++x) {
             // cannot move opened dank
-            if (playerInventory.selectedSlot == x) {
+            if (playerInventory.selectedSlot == x
+                    && playerInventory.getStack(playerInventory.selectedSlot).getItem() instanceof BankItem) {
                 this.addSlot(new LockedSlot(playerInventory, x, 8 + x * 18, inventoryY + 58));
             } else {
                 this.addSlot(new Slot(playerInventory, x, 8 + x * 18, inventoryY + 58));
@@ -242,6 +244,8 @@ public class BankScreenHandler extends ScreenHandler {
 
     @Override
     public void internalOnSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player) {
+        // super.internalOnSlotClick(slotIndex, button, actionType, player);
+        // if(Math.random() > 10)return;
         ItemStack itemStack;
         ItemStack itemStack2;
         PlayerInventory playerInventory;
@@ -299,8 +303,9 @@ public class BankScreenHandler extends ScreenHandler {
                         if (slot2 instanceof BankSlot) {
                             m = slot2.getMaxItemCount(itemStack22);
                         }
-                        int n = Math.min(ScreenHandler.calculateStackSize(this.quickCraftSlots, this.quickCraftButton,
-                                itemStack22) + l, m);
+                        int n = Math
+                                .min(BankScreenHandler.calculateStackSize(this.quickCraftSlots, this.quickCraftButton,
+                                        itemStack22) + l, m);
                         k -= n - l;
                         slot2.setStack(itemStack22.copyWithCount(n));
                     }
@@ -395,7 +400,6 @@ public class BankScreenHandler extends ScreenHandler {
             if (itemStack2.isEmpty() && itemStack.isEmpty())
                 return;
             if (itemStack2.isEmpty()) {
-                ;
                 if (!slot3.canTakeItems(player))
                     return;
                 playerInventory.setStack(button, itemStack);
@@ -483,21 +487,25 @@ public class BankScreenHandler extends ScreenHandler {
             return true;
         }
         if (stack.getCount() > stack.getMaxCount()) {
-            return false;
+            // return false;
         }
 
         return super.handleSlotClick(player, clickType, slot, stack, cursorStack);
     }
 
     public static boolean canInsertItemIntoSlot(@Nullable Slot slot, ItemStack stack, boolean allowOverflow) {
-        boolean bl = slot == null || !slot.hasStack();
-        if (!bl && ItemStack.canCombine(stack, slot.getStack())) {
+        System.out.println("check");
+        boolean bl = slot != null && slot.hasStack();
+        if (bl && ItemStack.canCombine(stack, slot.getStack())) {
             if (slot instanceof BankSlot bankSlot) {
                 return slot.getStack().getCount() + (allowOverflow ? 0 : stack.getCount()) <= bankSlot
                         .getMaxItemCount(stack);
 
             }
+            System.out.println("no bankslot");
         }
+        System.out.println("super");
+        System.out.println(slot instanceof BankSlot);
         return ScreenHandler.canInsertItemIntoSlot(slot, stack, allowOverflow);
     }
 

@@ -57,16 +57,11 @@ public class BankDockBlockEntity extends BlockEntity {
         NbtCompound itemAsNbt = new NbtCompound();
         this.bankItem.writeNbt(itemAsNbt);
         nbt.put("bank", itemAsNbt);
-        // System.out.println("saving " + nbt);
-        // System.out.println("saved " + this.bankItem);
     }
 
     @Override
     public void readNbt(NbtCompound nbt) {
-        // System.out.println("loading " + nbt);
-
         this.bankItem = ItemStack.fromNbt(nbt.getCompound("bank"));
-        // System.out.println("loaded " + this.bankItem);
     }
 
     @Nullable

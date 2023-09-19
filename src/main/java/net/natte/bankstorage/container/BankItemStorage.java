@@ -14,11 +14,15 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
 import net.natte.bankstorage.BankStorage;
+import net.natte.bankstorage.item.BankItem;
+import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.screen.BankScreenHandler;
 
 public class BankItemStorage extends SimpleInventory implements NamedScreenHandlerFactory {
 
     public DefaultedList<ItemStack> inventory;
+
+    public BankOptions options;
 
     public int rows;
     public int cols;
@@ -28,33 +32,34 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     private Text displayName;
 
     public BankItemStorage(BankType type) {
+        // super(type.rows * type.cols);
         this.type = type;
+        this.options = new BankOptions();
         this.rows = this.type.rows;
         this.cols = this.type.cols;
         this.inventory = DefaultedList.ofSize(this.rows * this.cols, ItemStack.EMPTY);
 
     }
 
-    
     public BankItemStorage withDisplayName(Text displayName) {
         this.displayName = displayName;
         return this;
     }
 
-    public BankItemStorage asType(BankType type){
-        if(this.type != type){
+    public BankItemStorage asType(BankType type) {
+        if (this.type != type) {
             changeType(type);
         }
         return this;
     }
 
-    public void changeType(BankType type){
+    public void changeType(BankType type) {
         this.type = type;
         this.rows = this.type.rows;
         this.cols = this.type.cols;
         DefaultedList<ItemStack> oldInventory = this.inventory;
         this.inventory = DefaultedList.ofSize(this.rows * this.cols, ItemStack.EMPTY);
-        for(int i = 0; i < oldInventory.size(); ++i) {
+        for (int i = 0; i < oldInventory.size(); ++i) {
             this.inventory.set(i, oldInventory.get(i));
         }
     }
@@ -107,8 +112,8 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     public int getMaxCountPerStack() {
         return 64 * type.slotStorageMultiplier;
     }
-    
-    public int getStorageMultiplier(){
+
+    public int getStorageMultiplier() {
         return type.slotStorageMultiplier;
     }
 
@@ -140,7 +145,8 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         return true;
     }
 
-    // same format as vanilla except itemstack count and slot saved as int instead of byte
+    // same format as vanilla except itemstack count and slot saved as int instead
+    // of byte
     public NbtCompound saveToNbt() {
         NbtCompound nbtCompound = new NbtCompound();
         nbtCompound.putString("type", this.type.getName());
@@ -166,7 +172,8 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         return nbtCompound;
     }
 
-    // same format as vanilla except itemstack count and slot saved as int instead of byte
+    // same format as vanilla except itemstack count and slot saved as int instead
+    // of byte
     public static BankItemStorage createFromNbt(NbtCompound nbtCompound) {
 
         BankItemStorage bankItemStorage = new BankItemStorage(
@@ -193,7 +200,7 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     @Override
     public boolean canInsert(ItemStack stack) {
-        return super.canInsert(stack);
+        return !(stack.getItem() instanceof BankItem) && super.canInsert(stack);
     }
 
     @Override
