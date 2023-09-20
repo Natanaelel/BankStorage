@@ -17,10 +17,6 @@ public class BankType {
     private String name;
     public int rows;
     public int cols;
-    public int guiXOffset;
-    public int guiYOffset;
-    public int titleXOffset;
-    public int titleYOffset;
     public int guiTextureWidth;
     public int guiTextureHeight;
 
@@ -30,15 +26,10 @@ public class BankType {
     public int slotStorageMultiplier;
     public BankItem item;
     
-    public BankType(String name, int slotStorageMultiplier, int rows, int cols, int guiXOffset, int guiYOffset, int titleXOffset, int titleYOffset, int guiTextureWidth, int guiTextureHeight){
+    public BankType(String name, int slotStorageMultiplier, int rows, int cols, int guiTextureWidth, int guiTextureHeight){
         this.name = name;
         this.rows = rows;
         this.cols = cols;
-
-        this.guiXOffset = guiXOffset;
-        this.guiYOffset = guiYOffset;
-        this.titleXOffset = titleXOffset;
-        this.titleYOffset = titleYOffset;
 
         this.guiTextureWidth = guiTextureWidth;
         this.guiTextureHeight = guiTextureHeight;

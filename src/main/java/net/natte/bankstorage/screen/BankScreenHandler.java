@@ -494,7 +494,6 @@ public class BankScreenHandler extends ScreenHandler {
     }
 
     public static boolean canInsertItemIntoSlot(@Nullable Slot slot, ItemStack stack, boolean allowOverflow) {
-        System.out.println("check");
         boolean bl = slot != null && slot.hasStack();
         if (bl && ItemStack.canCombine(stack, slot.getStack())) {
             if (slot instanceof BankSlot bankSlot) {
@@ -502,10 +501,7 @@ public class BankScreenHandler extends ScreenHandler {
                         .getMaxItemCount(stack);
 
             }
-            System.out.println("no bankslot");
         }
-        System.out.println("super");
-        System.out.println(slot instanceof BankSlot);
         return ScreenHandler.canInsertItemIntoSlot(slot, stack, allowOverflow);
     }
 

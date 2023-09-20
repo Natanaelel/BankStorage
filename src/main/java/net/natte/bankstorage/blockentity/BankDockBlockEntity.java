@@ -49,7 +49,7 @@ public class BankDockBlockEntity extends BlockEntity {
 
     public void putBank(ItemStack bank) {
         this.bankItem = bank.copy();
-        this.markDirty();
+        this.markDirty();            
     }
 
     @Override

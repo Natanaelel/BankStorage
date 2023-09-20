@@ -17,3 +17,5 @@ extendable  method  net/minecraft/screen/ScreenHandler                      hand
 accessible  field   net/minecraft/screen/ScreenHandler                      quickCraftSlots         Ljava/util/Set;
 accessible  field   net/minecraft/screen/ScreenHandler                      quickCraftButton        I
 accessible  field   net/minecraft/screen/ScreenHandler                      quickCraftStage         I
+
+accessible  field   net/minecraft/item/ItemUsageContext                     hit                     Lnet/minecraft/util/hit/BlockHitResult;

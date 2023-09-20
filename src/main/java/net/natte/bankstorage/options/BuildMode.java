@@ -19,4 +19,7 @@ public enum BuildMode {
             default -> NONE;
         };
     }
+    public static BuildMode from(int n){
+        return BuildMode.from((byte)n);
+    }
 }

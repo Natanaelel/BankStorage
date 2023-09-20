@@ -1,10 +1,12 @@
-dock
+bug when moving items from bank with number keys
 textures
-pickup
-filter
 build
 sort
+change mode buttons
 
+[x] pickup
+[x] filter
+[x] dock
 
 [x] add count to tooltip
 [x] stack size text rendering, make smaller and add suffix
@@ -20,5 +22,4 @@ sort
 [x] dropping respects item max stack size
 [x] left-dragging stack size not over 64 bug
 [x] bigger stacks
-
-[x] cant move dank
+[x] cant move bank

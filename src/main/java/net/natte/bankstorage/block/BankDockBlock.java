@@ -61,6 +61,10 @@ public class BankDockBlock extends Block implements BlockEntityProvider {
                 if (player.getStackInHand(hand).getItem() instanceof BankItem) {
                     bankDockBlockEntity.putBank(player.getStackInHand(hand));
                     player.setStackInHand(hand, ItemStack.EMPTY);
+                    // BlockPos pos = bankDockBlockEntity.getPos();
+                    world.playSound(pos.getX() + 0.5f, pos.getY() +  0.5f, pos.getZ() + 0.5f, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2f, 0.0f, false);
+
+
                     return ActionResult.SUCCESS;
                 }
             }

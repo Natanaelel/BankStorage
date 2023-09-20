@@ -189,7 +189,8 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         }
         if (stack.getCount() != 1 || drawInYellow) {
             String count = ItemCountUtils.toConsiseString(stack.getCount());
-            String string = drawInYellow ? Formatting.YELLOW.toString() + count : count;
+            String string = count;
+            String formattedString = drawInYellow ? Formatting.YELLOW.toString() + count : count;
             matrices.translate(0.0f, 0.0f, 200.0f);
             // matrices.translate(x, y, k);
             float scale = ItemCountUtils.scale(string);
@@ -198,7 +199,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
             matrices.scale(scale, scale, 1);
 
             int textWidth = (int)(textRenderer.getWidth(string) * scale);
-            context.drawText(textRenderer, string, x + 19 - 2 - textWidth, y + 6 + 3, 0xFFFFFF, true);
+            context.drawText(textRenderer, formattedString, x + 19 - 2 - textWidth, y + 6 + 3, 0xFFFFFF, true);
         }
         f = (clientPlayerEntity = this.client.player) == null ? 0.0f : clientPlayerEntity.getItemCooldownManager().getCooldownProgress(stack.getItem(), this.client.getTickDelta());
         if (f > 0.0f) {
