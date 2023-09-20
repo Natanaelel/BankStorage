@@ -12,7 +12,7 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+// import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.impl.client.rendering.BlockEntityRendererRegistryImpl;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
@@ -21,11 +21,11 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.natte.bankstorage.container.BankType;
-import net.natte.bankstorage.item.BuildModePreviewRenderer;
-import net.natte.bankstorage.item.CachedBankStorage;
+// import net.natte.bankstorage.item.BuildModePreviewRenderer;
+// import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.network.BuildOptionPacket;
 import net.natte.bankstorage.network.ItemStackBobbingAnimationS2C;
-import net.natte.bankstorage.network.RequestBankStorage;
+// import net.natte.bankstorage.network.RequestBankStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.rendering.BankDockBlockEntityRenderer;
 import net.natte.bankstorage.screen.BankScreen;
@@ -38,26 +38,30 @@ public class BankStorageClient implements ClientModInitializer {
 
 	public static KeyBinding toggleBuildModeKeyBinding;
 
-	public static BuildModePreviewRenderer buildModePreviewRenderer;
+	// public static BuildModePreviewRenderer buildModePreviewRenderer;
 
 	@Override
 	public void onInitializeClient() {
 
-		BlockEntityRendererRegistryImpl.register(BankStorage.BANK_DOCK_BLOCK_ENTITY, BankDockBlockEntityRenderer::new);
+		registerDockRenderer();
 
 		registerHandledScreens();
 
 		registerKeyBinds();
 		registerKeyBindListeners();
 
-		buildModePreviewRenderer = BuildModePreviewRenderer.Instance;
+		// buildModePreviewRenderer = BuildModePreviewRenderer.Instance;
 
-		ClientTickEvents.END_CLIENT_TICK.register(buildModePreviewRenderer);
+		// ClientTickEvents.END_CLIENT_TICK.register(buildModePreviewRenderer);
 
-		HudRenderCallback.EVENT.register(buildModePreviewRenderer::render);
+		// HudRenderCallback.EVENT.register(buildModePreviewRenderer::render);
 
 		registerNetworkListeners();
 
+	}
+
+	private void registerDockRenderer() {
+		BlockEntityRendererRegistryImpl.register(BankStorage.BANK_DOCK_BLOCK_ENTITY, BankDockBlockEntityRenderer::new);
 	}
 
 	private void registerHandledScreens() {
@@ -88,12 +92,12 @@ public class BankStorageClient implements ClientModInitializer {
 	}
 
 	private void registerNetworkListeners() {
-		
+
 		ClientPlayNetworking.registerGlobalReceiver(BuildOptionPacket.S2C_PACKET_ID,
 				(client, handler, buf, responseSender) -> {
 					UUID uuid = buf.readUuid();
-					CachedBankStorage cachedBankStorage = CachedBankStorage.BANK_CACHE.get(uuid);
-					cachedBankStorage.options = BankOptions.readPacketByteBuf(buf);
+					// CachedBankStorage cachedBankStorage = CachedBankStorage.BANK_CACHE.get(uuid);
+					// cachedBankStorage.options = BankOptions.readPacketByteBuf(buf);
 				});
 
 		ClientPlayNetworking.registerGlobalReceiver(ItemStackBobbingAnimationS2C.PACKET_ID,
@@ -111,11 +115,11 @@ public class BankStorageClient implements ClientModInitializer {
 					stack.setBobbingAnimationTime(5);
 				});
 
-		ClientPlayNetworking.registerGlobalReceiver(RequestBankStorage.S2C_PACKET_ID,
-				(client, handler, buf, responseSender) -> {
-					CachedBankStorage bankStorage = RequestBankStorage.readPacketS2C(buf);
+		// ClientPlayNetworking.registerGlobalReceiver(RequestBankStorage.S2C_PACKET_ID,
+		// 		(client, handler, buf, responseSender) -> {
+		// 			CachedBankStorage bankStorage = RequestBankStorage.readPacketS2C(buf);
 
-					CachedBankStorage.BANK_CACHE.put(bankStorage.uuid, bankStorage);
-				});
+		// 			CachedBankStorage.BANK_CACHE.put(bankStorage.uuid, bankStorage);
+		// 		});
 	}
 }

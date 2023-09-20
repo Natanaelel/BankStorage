@@ -68,28 +68,30 @@ public class BankItem extends Item {
         PlayerEntity user = context.getPlayer();
         World world = context.getWorld();
         ItemStack bank = user.getStackInHand(user.getActiveHand());
-        // if (!world.isClient) {
+        if (world.isClient) {
+            return ActionResult.PASS;
+        }
         if (bank.getCount() == 1) {
             BankOptions options;
-            if (world.isClient) {
-                CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(bank);
-                options = cachedBankStorage == null ? new BankOptions() : cachedBankStorage.options;
-            } else {
-                BankItemStorage bankItemStorage = BankItem.getBankItemStorage(bank, world);
-                options = bankItemStorage.options;
-            }
+            // if (world.isClient) {
+            //     CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(bank);
+            //     options = cachedBankStorage == null ? new BankOptions() : cachedBankStorage.options;
+            // } else {
+            BankItemStorage bankItemStorage = BankItem.getBankItemStorage(bank, world);
+            options = bankItemStorage.options;
+            // }
             System.out.println(world.isClient ? "client" : "server");
             System.out.println(options.buildMode);
             if (options.buildMode == BuildMode.NORMAL) {
                 ItemStack itemStack;
-                if (world.isClient) {
-                    CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(bank);
-                    itemStack = cachedBankStorage == null ? ItemStack.EMPTY : cachedBankStorage.getSelectedItem();
-                } else {
-                    BankItemStorage bankItemStorage = BankItem.getBankItemStorage(bank, world);
-                    List<ItemStack> items = bankItemStorage.getUniqueItems();
-                    itemStack = items.get(bankItemStorage.selectedItemSlot % items.size());
-                }
+                // if (world.isClient) {
+                //     CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(bank);
+                //     itemStack = cachedBankStorage == null ? ItemStack.EMPTY : cachedBankStorage.getSelectedItem();
+                // } else {
+                // BankItemStorage bankItemStorage = BankItem.getBankItemStorage(bank, world);
+                List<ItemStack> items = bankItemStorage.getUniqueItems();
+                itemStack = items.get(bankItemStorage.selectedItemSlot % items.size());
+                // }
                 // itemStack = BuildModePreviewRenderer.Instance.stackInHand;
                 // BuildModePreviewRenderer.Instance
                 System.out.println(world.isClient ? "client" : "server");

@@ -32,8 +32,8 @@ import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.network.BuildOptionPacket;
-import net.natte.bankstorage.network.OptionPacket;
-import net.natte.bankstorage.network.RequestBankStorage;
+import net.natte.bankstorage.network.OptionPackets;
+// import net.natte.bankstorage.network.RequestBankStorage;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.recipe.BankRecipeSerializer;
@@ -96,10 +96,11 @@ public class BankStorage implements ModInitializer {
 		BANK_6.register(bankTypes);
 		BANK_7.register(bankTypes);
 
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.SEARCH).register(group -> {
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(group -> {
 			bankTypes.forEach(type -> {
 				group.add(type.item);
 			});
+			group.add(BANK_DOCK_BLOCK);
 		});
 	}
 
@@ -206,35 +207,41 @@ public class BankStorage implements ModInitializer {
 
 		ServerPlayNetworking.registerGlobalReceiver(BuildOptionPacket.C2S_PACKET_ID,
 				(server, player, handler, buf, responseSender) -> {
-					ItemStack stackInHand = player.getStackInHand(player.getActiveHand());
-					if (Util.isBank(stackInHand)) {
-						BankItemStorage bankItemStorage = BankItem.getBankItemStorage(stackInHand, player.getWorld());
-						bankItemStorage.options.buildMode = BuildMode
-								.from((bankItemStorage.options.buildMode.number + 1) % 3);
-						player.sendMessage(Text.translatable("popup.bankstorage.buildmode."
-								+ bankItemStorage.options.buildMode.toString().toLowerCase()), true);
+					server.execute(() -> {
 
-						PacketByteBuf packet = PacketByteBufs.create();
-						packet.writeUuid(Util.getUUID(stackInHand));
-						bankItemStorage.options.writeToPacketByteBuf(packet);
+						ItemStack stackInHand = player.getStackInHand(player.getActiveHand());
+						if (Util.isBank(stackInHand)) {
+							BankItemStorage bankItemStorage = BankItem.getBankItemStorage(stackInHand,
+									player.getWorld());
+							bankItemStorage.options.buildMode = BuildMode
+									.from((bankItemStorage.options.buildMode.number + 1) % 3);
+							player.sendMessage(Text.translatable("popup.bankstorage.buildmode."
+									+ bankItemStorage.options.buildMode.toString().toLowerCase()), true);
 
-						responseSender.sendPacket(OptionPacket.S2C_PACKET_ID, packet);
-					}
+							PacketByteBuf packet = PacketByteBufs.create();
+							packet.writeUuid(Util.getUUID(stackInHand));
+							bankItemStorage.options.writeToPacketByteBuf(packet);
+
+							responseSender.sendPacket(OptionPackets.S2C_PACKET_ID, packet);
+						}
+					});
 				});
 
-		ServerPlayNetworking.registerGlobalReceiver(RequestBankStorage.C2S_PACKET_ID,
-				(server, player, handler, buf, responseSender) -> {
+		// ServerPlayNetworking.registerGlobalReceiver(RequestBankStorage.C2S_PACKET_ID,
+		// 		(server, player, handler, buf, responseSender) -> {
+		// 			ItemStack itemStack = buf.readItemStack();
+		// 			server.execute(() -> {
 
-					ItemStack itemStack = buf.readItemStack();
+		// 				BankItemStorage bankItemStorage = BankItem.getBankItemStorage(itemStack, player.getWorld());
+		// 				List<ItemStack> items = bankItemStorage.getUniqueItems();
+		// 				PacketByteBuf packet = RequestBankStorage.createPacketS2C(items,
+		// 						bankItemStorage.selectedItemSlot,
+		// 						Util.getUUID(itemStack), bankItemStorage.options);
 
-					BankItemStorage bankItemStorage = BankItem.getBankItemStorage(itemStack, player.getWorld());
-					List<ItemStack> items = bankItemStorage.getUniqueItems();
-					PacketByteBuf packet = RequestBankStorage.createPacketS2C(items, bankItemStorage.selectedItemSlot,
-							Util.getUUID(itemStack), bankItemStorage.options);
+		// 				responseSender.sendPacket(RequestBankStorage.S2C_PACKET_ID, packet);
+		// 			});
 
-					responseSender.sendPacket(RequestBankStorage.S2C_PACKET_ID, packet);
-
-				});
+		// 		});
 	}
 
 }
