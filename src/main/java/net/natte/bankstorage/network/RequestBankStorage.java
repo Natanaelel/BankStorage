@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
@@ -14,29 +11,28 @@ import net.minecraft.util.Identifier;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.options.BankOptions;
+import net.natte.bankstorage.util.Util;
 
-@Environment(EnvType.CLIENT)
 public class RequestBankStorage {
     
-    public static Identifier C2S_PACKET_ID = new Identifier(BankStorage.MOD_ID, "requeststorage_c2s");
-    public static Identifier S2C_PACKET_ID = new Identifier(BankStorage.MOD_ID, "requeststorage_s2c");
+    public static final Identifier C2S_PACKET_ID = new Identifier(BankStorage.MOD_ID, "requeststorage_c2s");
+    public static final Identifier S2C_PACKET_ID = new Identifier(BankStorage.MOD_ID, "requeststorage_s2c");
 
-    public static void requestC2S(ItemStack itemStack){
+    public static PacketByteBuf createRequestC2S(UUID uuid){
         PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeItemStack(itemStack);
-        ClientPlayNetworking.send(C2S_PACKET_ID, buf);
+        buf.writeUuid(uuid);
+        return buf;
     }
 
-    public static PacketByteBuf createPacketS2C(List<ItemStack> items, int selectedItemSlot, UUID uuid, BankOptions options, ItemStack bank){
+    public static PacketByteBuf createPacketS2C(List<ItemStack> items, UUID uuid, BankOptions options, long randomSeed){
         PacketByteBuf buf =  PacketByteBufs.create();
         buf.writeInt(items.size());
         for(ItemStack itemStack : items){
-            buf.writeItemStack(itemStack);
+            buf.writeNbt(Util.largeStackAsNbt(itemStack));
         }
-        buf.writeInt(selectedItemSlot);
         buf.writeUuid(uuid);
-        buf.writeItemStack(bank);
-        options.writeToPacketByteBuf(buf);
+        buf.writeLong(randomSeed);
+        buf.writeNbt(options.asNbt());
         return buf;
     }
 
@@ -44,13 +40,12 @@ public class RequestBankStorage {
         int size = buf.readInt();
         List<ItemStack> items = new ArrayList<>(size);
         for(int i = 0; i < size; ++i){
-            items.add(buf.readItemStack());
+            items.add(Util.largeStackFromNbt(buf.readNbt()));
         }
-        int selectedItemSlot = buf.readInt();
         UUID uuid = buf.readUuid();
-        ItemStack bank = buf.readItemStack();
-        BankOptions options = BankOptions.readPacketByteBuf(buf);
+        Long randomSeed = buf.readLong();
+        BankOptions options = BankOptions.fromNbt(buf.readNbt());
 
-        return new CachedBankStorage(items, selectedItemSlot, uuid, options, bank);
+        return new CachedBankStorage(items, uuid, options, randomSeed);
     }
 }

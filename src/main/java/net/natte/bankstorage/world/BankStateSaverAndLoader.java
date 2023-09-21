@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -77,13 +76,17 @@ public class BankStateSaverAndLoader extends PersistentState {
         return state;
     }
 
-    public BankItemStorage getOrCreate(UUID uuid, BankType type, Text name, ItemStack bank) {
+    public BankItemStorage getOrCreate(UUID uuid, BankType type, Text name) {
         if (this.bankMap.containsKey(uuid)) {
             return this.bankMap.get(uuid).withDisplayName(name).asType(type);
         } else {
-            BankItemStorage bankItemStorage = new BankItemStorage(type, bank);
+            BankItemStorage bankItemStorage = new BankItemStorage(type, uuid);
             this.bankMap.put(uuid, bankItemStorage);
             return bankItemStorage.withDisplayName(name);
         }
+    }
+
+    public BankItemStorage get(UUID uuid) {
+        return this.bankMap.get(uuid);
     }
 }

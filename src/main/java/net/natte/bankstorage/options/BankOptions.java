@@ -1,11 +1,12 @@
 package net.natte.bankstorage.options;
 
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
 
 public class BankOptions {
     public PickupMode pickupMode = PickupMode.NONE;
     public BuildMode buildMode = BuildMode.NONE;
+
+    public int selectedItemSlot = 0;
 
     public BankOptions() {
 
@@ -18,6 +19,7 @@ public class BankOptions {
     public NbtCompound writeNbt(NbtCompound nbt){
         nbt.putByte("pickup", pickupMode.number);
         nbt.putByte("build", buildMode.number);
+        nbt.putInt("slot", selectedItemSlot);
 
         return nbt;
     }
@@ -27,21 +29,8 @@ public class BankOptions {
 
         options.pickupMode = PickupMode.from(nbt.getByte("pickup"));
         options.buildMode = BuildMode.from(nbt.getByte("build"));
+        options.selectedItemSlot = nbt.getInt("slot");
 
         return options;
-    }
-
-    public static BankOptions readPacketByteBuf(PacketByteBuf buf){
-        BankOptions options = new BankOptions();
-
-        options.pickupMode = PickupMode.from(buf.readByte());
-        options.buildMode = BuildMode.from(buf.readByte());
-
-        return options;
-    }
-
-    public void writeToPacketByteBuf(PacketByteBuf buf){
-        buf.writeByte(this.pickupMode.number);
-        buf.writeByte(this.buildMode.number);
     }
 }

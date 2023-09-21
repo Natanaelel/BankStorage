@@ -18,6 +18,7 @@ import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.inventory.LockedSlot;
 import net.natte.bankstorage.item.BankItem;
+import net.natte.bankstorage.util.Util;
 
 public class BankScreenHandler extends ScreenHandler {
 
@@ -32,7 +33,7 @@ public class BankScreenHandler extends ScreenHandler {
         return (syncId, playerInventory) -> {
             // return new BankScreenHandler(syncId, playerInventory, new
             // SimpleInventory(type.size()), type);
-            return new BankScreenHandler(syncId, playerInventory, new BankItemStorage(type, playerInventory.getMainHandStack()), type);
+            return new BankScreenHandler(syncId, playerInventory, new BankItemStorage(type, Util.getUUID(playerInventory.getMainHandStack())), type);
         };
     }
 

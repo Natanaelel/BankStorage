@@ -9,6 +9,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.natte.bankstorage.inventory.ItemPickupHandler;
 
+
 @Mixin(PlayerInventory.class)
 public abstract class PlayerInventoryMixin {
     

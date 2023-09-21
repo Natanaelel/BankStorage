@@ -42,6 +42,7 @@ import net.natte.bankstorage.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.BiFunction;
 
 import org.slf4j.Logger;
@@ -210,39 +211,65 @@ public class BankStorage implements ModInitializer {
 				(server, player, handler, buf, responseSender) -> {
 					server.execute(() -> {
 
-						ItemStack stackInHand = player.getStackInHand(player.getActiveHand());
-						if (Util.isBank(stackInHand)) {
-							BankItemStorage bankItemStorage = BankItem.getBankItemStorage(stackInHand,
-									player.getWorld());
-							bankItemStorage.options.buildMode = BuildMode
-									.from((bankItemStorage.options.buildMode.number + 1) % 3);
-							// player.sendMessage(Text.translatable("popup.bankstorage.buildmode."
-									+ bankItemStorage.options.buildMode.toString().toLowerCase()), true);
+						onChangeBuildMode(player);
 
-							PacketByteBuf packet = PacketByteBufs.create();
-							packet.writeUuid(Util.getUUID(stackInHand));
-							bankItemStorage.options.writeToPacketByteBuf(packet);
-
-							responseSender.sendPacket(OptionPackets.S2C_PACKET_ID, packet);
-						}
 					});
 				});
 
 		ServerPlayNetworking.registerGlobalReceiver(RequestBankStorage.C2S_PACKET_ID,
 				(server, player, handler, buf, responseSender) -> {
-					ItemStack itemStack = buf.readItemStack();
+					UUID uuid = buf.readUuid();
 					server.execute(() -> {
 
-						BankItemStorage bankItemStorage = BankItem.getBankItemStorage(itemStack, player.getWorld());
+						BankItemStorage bankItemStorage = BankItem.getBankItemStorage(uuid, player.getWorld());
+						long randomSeed = (long) (Math.random() * 0xBEEEF);
+						bankItemStorage.random.setSeed(randomSeed);
 						List<ItemStack> items = bankItemStorage.getNonEmptyStacks();
 						PacketByteBuf packet = RequestBankStorage.createPacketS2C(items,
-								bankItemStorage.selectedItemSlot,
-								Util.getUUID(itemStack), bankItemStorage.options, itemStack);
+								uuid, bankItemStorage.options, randomSeed);
 
 						responseSender.sendPacket(RequestBankStorage.S2C_PACKET_ID, packet);
 					});
 
 				});
+
+		ServerPlayNetworking.registerGlobalReceiver(OptionPackets.SCROLL_C2S_PACKET_ID,
+				(server, player, handler, buf, responseSender) -> {
+					UUID uuid = buf.readUuid();
+					double scroll = buf.readDouble();
+					server.execute(() -> {
+
+						BankItemStorage bankItemStorage = BankItem.getBankItemStorage(uuid, player.getWorld());
+						int selectedItemSlot = bankItemStorage.options.selectedItemSlot;
+						selectedItemSlot -= (int) Math.signum(scroll);
+						int size = bankItemStorage.getNonEmptyStacks().size();
+						// bankItemStorage.options.selectedItemSlot = size == 0 ? 0 : (selectedItemSlot
+						// % size + size) % size;
+						bankItemStorage.options.selectedItemSlot = size == 0 ? 0
+								: Math.min(Math.max(selectedItemSlot, 0), size - 1);
+
+						OptionPackets.sendOptions(player, bankItemStorage.options, uuid);
+					});
+
+				});
+	}
+
+	public static void onChangeBuildMode(ServerPlayerEntity player) {
+		ItemStack stackInHand = player.getStackInHand(player.getActiveHand());
+		if (Util.isBank(stackInHand)) {
+			BankItemStorage bankItemStorage = BankItem.getBankItemStorage(stackInHand,
+					player.getWorld());
+			bankItemStorage.options.buildMode = BuildMode
+					.from((bankItemStorage.options.buildMode.number + 1) % 3);
+			player.sendMessage(Text.translatable("popup.bankstorage.buildmode."
+					+ bankItemStorage.options.buildMode.toString().toLowerCase()), true);
+
+			PacketByteBuf packet = PacketByteBufs.create();
+			packet.writeUuid(Util.getUUID(stackInHand));
+			packet.writeNbt(bankItemStorage.options.asNbt());
+
+			ServerPlayNetworking.send(player, OptionPackets.S2C_PACKET_ID, packet);
+		}
 	}
 
 }

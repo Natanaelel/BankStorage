@@ -6,5 +6,9 @@
     "item.bankstorage.bank_4": "Bank 4",
     "item.bankstorage.bank_5": "Bank 5",
     "item.bankstorage.bank_6": "Bank 6",
-    "item.bankstorage.bank_7": "Bank 7"
+    "item.bankstorage.bank_7": "Bank 7",
+
+    "popup.bankstorage.buildmode.none": "Bag mode",
+    "popup.bankstorage.buildmode.normal": "Build mode",
+    "popup.bankstorage.buildmode.random": "Randomized build mode"
 }
