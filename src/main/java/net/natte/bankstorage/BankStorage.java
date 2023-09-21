@@ -33,6 +33,7 @@ import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.network.BuildOptionPacket;
 import net.natte.bankstorage.network.OptionPackets;
+import net.natte.bankstorage.network.RequestBankStorage;
 // import net.natte.bankstorage.network.RequestBankStorage;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.options.PickupMode;
@@ -215,7 +216,7 @@ public class BankStorage implements ModInitializer {
 									player.getWorld());
 							bankItemStorage.options.buildMode = BuildMode
 									.from((bankItemStorage.options.buildMode.number + 1) % 3);
-							player.sendMessage(Text.translatable("popup.bankstorage.buildmode."
+							// player.sendMessage(Text.translatable("popup.bankstorage.buildmode."
 									+ bankItemStorage.options.buildMode.toString().toLowerCase()), true);
 
 							PacketByteBuf packet = PacketByteBufs.create();
@@ -227,21 +228,21 @@ public class BankStorage implements ModInitializer {
 					});
 				});
 
-		// ServerPlayNetworking.registerGlobalReceiver(RequestBankStorage.C2S_PACKET_ID,
-		// 		(server, player, handler, buf, responseSender) -> {
-		// 			ItemStack itemStack = buf.readItemStack();
-		// 			server.execute(() -> {
+		ServerPlayNetworking.registerGlobalReceiver(RequestBankStorage.C2S_PACKET_ID,
+				(server, player, handler, buf, responseSender) -> {
+					ItemStack itemStack = buf.readItemStack();
+					server.execute(() -> {
 
-		// 				BankItemStorage bankItemStorage = BankItem.getBankItemStorage(itemStack, player.getWorld());
-		// 				List<ItemStack> items = bankItemStorage.getUniqueItems();
-		// 				PacketByteBuf packet = RequestBankStorage.createPacketS2C(items,
-		// 						bankItemStorage.selectedItemSlot,
-		// 						Util.getUUID(itemStack), bankItemStorage.options);
+						BankItemStorage bankItemStorage = BankItem.getBankItemStorage(itemStack, player.getWorld());
+						List<ItemStack> items = bankItemStorage.getNonEmptyStacks();
+						PacketByteBuf packet = RequestBankStorage.createPacketS2C(items,
+								bankItemStorage.selectedItemSlot,
+								Util.getUUID(itemStack), bankItemStorage.options, itemStack);
 
-		// 				responseSender.sendPacket(RequestBankStorage.S2C_PACKET_ID, packet);
-		// 			});
+						responseSender.sendPacket(RequestBankStorage.S2C_PACKET_ID, packet);
+					});
 
-		// 		});
+				});
 	}
 
 }

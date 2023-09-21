@@ -21,13 +21,13 @@ public class RequestBankStorage {
     public static Identifier C2S_PACKET_ID = new Identifier(BankStorage.MOD_ID, "requeststorage_c2s");
     public static Identifier S2C_PACKET_ID = new Identifier(BankStorage.MOD_ID, "requeststorage_s2c");
 
-    // public static void requestC2S(ItemStack itemStack){
-    //     PacketByteBuf buf = PacketByteBufs.create();
-    //     buf.writeItemStack(itemStack);
-    //     ClientPlayNetworking.send(C2S_PACKET_ID, buf);
-    // }
+    public static void requestC2S(ItemStack itemStack){
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeItemStack(itemStack);
+        ClientPlayNetworking.send(C2S_PACKET_ID, buf);
+    }
 
-    public static PacketByteBuf createPacketS2C(List<ItemStack> items, int selectedItemSlot, UUID uuid, BankOptions options){
+    public static PacketByteBuf createPacketS2C(List<ItemStack> items, int selectedItemSlot, UUID uuid, BankOptions options, ItemStack bank){
         PacketByteBuf buf =  PacketByteBufs.create();
         buf.writeInt(items.size());
         for(ItemStack itemStack : items){
@@ -35,6 +35,7 @@ public class RequestBankStorage {
         }
         buf.writeInt(selectedItemSlot);
         buf.writeUuid(uuid);
+        buf.writeItemStack(bank);
         options.writeToPacketByteBuf(buf);
         return buf;
     }
@@ -47,8 +48,9 @@ public class RequestBankStorage {
         }
         int selectedItemSlot = buf.readInt();
         UUID uuid = buf.readUuid();
+        ItemStack bank = buf.readItemStack();
         BankOptions options = BankOptions.readPacketByteBuf(buf);
 
-        return new CachedBankStorage(items, selectedItemSlot, uuid, options);
+        return new CachedBankStorage(items, selectedItemSlot, uuid, options, bank);
     }
 }

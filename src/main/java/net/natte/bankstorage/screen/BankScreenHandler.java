@@ -25,11 +25,14 @@ public class BankScreenHandler extends ScreenHandler {
 
     private BankType type;
 
+
+    // private ItemStack bankItemStack;
+
     public static net.minecraft.screen.ScreenHandlerType.Factory<BankScreenHandler> fromType(BankType type) {
         return (syncId, playerInventory) -> {
             // return new BankScreenHandler(syncId, playerInventory, new
             // SimpleInventory(type.size()), type);
-            return new BankScreenHandler(syncId, playerInventory, new BankItemStorage(type), type);
+            return new BankScreenHandler(syncId, playerInventory, new BankItemStorage(type, playerInventory.getMainHandStack()), type);
         };
     }
 
@@ -42,7 +45,7 @@ public class BankScreenHandler extends ScreenHandler {
         super(type.getScreenHandlerType(), syncId);
 
         this.type = type;
-
+        // this.playerInventory = playerInventory;
         checkSize(inventory, type.size());
         this.inventory = inventory;
         inventory.onOpen(playerInventory.player);
@@ -75,7 +78,6 @@ public class BankScreenHandler extends ScreenHandler {
                 this.addSlot(new Slot(playerInventory, x, 8 + x * 18, inventoryY + 58));
             }
         }
-
     }
 
     @Override
@@ -235,11 +237,18 @@ public class BankScreenHandler extends ScreenHandler {
     @Override
     public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player) {
 
-        // cannot move opened BankItem with numbers
-        if (actionType == SlotActionType.SWAP && button == player.getInventory().selectedSlot)
-            return;
+        if (actionType == SlotActionType.SWAP) {
+            // cannot move opened BankItem with numbers
+            if (this.slots.get(slotIndex) instanceof LockedSlot && button == player.getInventory().selectedSlot)
+                return;
+            ItemStack stackInSlot = this.slots.get(slotIndex).getStack();
 
+            // can't move large stack with numbers
+            if (stackInSlot.getCount() > stackInSlot.getMaxCount())
+                return;
+        }
         super.onSlotClick(slotIndex, button, actionType, player);
+
     }
 
     @Override

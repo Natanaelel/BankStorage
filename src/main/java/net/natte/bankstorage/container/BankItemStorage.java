@@ -2,14 +2,11 @@ package net.natte.bankstorage.container;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemStackSet;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -19,8 +16,11 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.item.BankItem;
+import net.natte.bankstorage.item.CachedBankStorage;
+import net.natte.bankstorage.network.RequestBankStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.screen.BankScreenHandler;
+import net.natte.bankstorage.util.Util;
 
 public class BankItemStorage extends SimpleInventory implements NamedScreenHandlerFactory {
 
@@ -37,15 +37,17 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     public int selectedItemSlot = 0;
 
-    public BankItemStorage(BankType type) {
+    public ItemStack bank;
+
+    public BankItemStorage(BankType type, ItemStack bank) {
         super(type.rows * type.cols);
         this.type = type;
         this.options = new BankOptions();
         this.rows = this.type.rows;
         this.cols = this.type.cols;
+        this.bank = bank;
         // this.inventory = DefaultedList.ofSize(this.rows * this.cols,
         // ItemStack.EMPTY);
-
     }
 
     public BankItemStorage withDisplayName(Text displayName) {
@@ -80,6 +82,7 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         // return GenericContainerScreenHandler.createGeneric9x1(syncId,
         // playerInventory, (Inventory) this);
         return new BankScreenHandler(syncId, playerInventory, this, this.type);
+
     }
 
     @Override
@@ -88,10 +91,15 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     }
 
     @Override
+    public void markDirty() {
+        super.markDirty();
+        if (Util.isBank(this.bank))
+            CachedBankStorage.bankRequestQueue.add(this.bank);
+    }
+
+    @Override
     public void clear() {
         this.stacks.clear();
-        // this.inventory = DefaultedList.ofSize(this.rows * this.cols,
-        // ItemStack.EMPTY);
     }
 
     @Override
@@ -161,6 +169,8 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     public NbtCompound saveToNbt() {
         NbtCompound nbtCompound = new NbtCompound();
 
+        // ("selectedItemSlot", this.selectedItemSlot);
+        nbtCompound.put("stack", Util.largeStackAsNbt(this.bank));
         nbtCompound.putInt("selectedItemSlot", this.selectedItemSlot);
         nbtCompound.put("options", this.options.asNbt());
 
@@ -192,7 +202,8 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     public static BankItemStorage createFromNbt(NbtCompound nbtCompound) {
 
         BankItemStorage bankItemStorage = new BankItemStorage(
-                BankStorage.getBankTypeFromName(nbtCompound.getString("type")));
+                BankStorage.getBankTypeFromName(nbtCompound.getString("type")),
+                Util.largeStackFromNbt(nbtCompound.getCompound("bank")));
 
         bankItemStorage.selectedItemSlot = nbtCompound.getInt("selectedItemSlot");
 
@@ -228,13 +239,32 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     }
 
     public List<ItemStack> getUniqueItems() {
+
         List<ItemStack> items = new ArrayList<>();
-        
-        Set<ItemStack> itemsSet = ItemStackSet.create();
-        
+
         for (ItemStack itemStack : this.stacks) {
-            if (itemsSet.add(itemStack))
+            if (itemStack.isEmpty())
+                continue;
+            boolean contains = false;
+            for (ItemStack stack : items) {
+                if (ItemStack.canCombine(itemStack, stack)) {
+                    stack.increment(itemStack.getCount());
+                    contains = true;
+                    break;
+                }
+            }
+            if (!contains) {
                 items.add(itemStack);
+            }
+        }
+        return items;
+    }
+
+    public List<ItemStack> getNonEmptyStacks() {
+        List<ItemStack> items = new ArrayList<>();
+        for (ItemStack stack : this.stacks) {
+            if (!stack.isEmpty())
+                items.add(stack);
         }
         return items;
     }
