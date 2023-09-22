@@ -9,6 +9,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -24,7 +25,6 @@ import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.screen.BankScreenHandler;
 
 public class BankItemStorage extends SimpleInventory implements NamedScreenHandlerFactory {
-
 
     public BankOptions options;
 
@@ -258,12 +258,38 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         return items;
     }
 
-    public List<ItemStack> getNonEmptyStacks() {
+    public List<ItemStack> getBlockItems() {
         List<ItemStack> items = new ArrayList<>();
         for (ItemStack stack : this.stacks) {
-            if (!stack.isEmpty())
+            // if(stack.getItem)
+            if (!stack.isEmpty() && stack.getItem() instanceof BlockItem)
                 items.add(stack);
         }
         return items;
+    }
+
+    public ItemStack getSelectedItem() {
+
+        List<ItemStack> items = getBlockItems();
+        return items.isEmpty() ? ItemStack.EMPTY : items.get(this.options.selectedItemSlot);
+
+    }
+
+    public ItemStack getRandomItem() {
+
+        List<ItemStack> items = getBlockItems();
+        return items.isEmpty() ? ItemStack.EMPTY : items.get(this.random.nextInt(items.size()));
+
+    }
+
+    public ItemStack chooseItemToPlace() {
+        List<ItemStack> items = getBlockItems();
+        if (items.isEmpty())
+            return ItemStack.EMPTY;
+        return switch (this.options.buildMode) {
+            case NONE -> ItemStack.EMPTY;
+            case NORMAL -> items.get(this.options.selectedItemSlot);
+            case RANDOM -> items.get(this.random.nextInt(items.size()));
+        };
     }
 }

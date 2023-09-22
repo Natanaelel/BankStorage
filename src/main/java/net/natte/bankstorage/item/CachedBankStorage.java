@@ -49,6 +49,14 @@ public class CachedBankStorage {
         return this.items.get(this.random.nextInt(this.items.size()));
     }
 
+    public ItemStack chooseItemToPlace() {
+        return switch (this.options.buildMode) {
+            case NONE -> ItemStack.EMPTY;
+            case NORMAL -> getSelectedItem();
+            case RANDOM -> getRandomItem();
+        };
+    }
+
     @Nullable
     public static CachedBankStorage getBankStorage(ItemStack itemStack) {
         if (!itemStack.hasNbt())

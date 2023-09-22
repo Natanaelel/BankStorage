@@ -107,7 +107,6 @@ public class BankStorageClient implements ClientModInitializer {
 					UUID uuid = buf.readUuid();
 					CachedBankStorage cachedBankStorage = CachedBankStorage.BANK_CACHE.get(uuid);
 					cachedBankStorage.options = BankOptions.fromNbt(buf.readNbt());
-					// System.out.println("updated options");
 				});
 
 		ClientPlayNetworking.registerGlobalReceiver(ItemStackBobbingAnimationS2C.PACKET_ID,
@@ -143,14 +142,12 @@ public class BankStorageClient implements ClientModInitializer {
 
 					client.execute(() -> {
 						CachedBankStorage cachedBankStorage = CachedBankStorage.BANK_CACHE.get(uuid);
-	
+
 						// ignored
 						if (cachedBankStorage == null)
 							return;
 	
 						cachedBankStorage.options = options;
-						// System.out.println("updated options");
-						// System.out.println(options.selectedItemSlot);
 					});
 
 				});

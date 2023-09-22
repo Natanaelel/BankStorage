@@ -1,9 +1,9 @@
-bug when moving items from bank with number keys
 textures
-build
 sort
 change mode buttons
 
+[x] build
+[x] bug when moving items from bank with number keys
 [x] pickup
 [x] filter
 [x] dock

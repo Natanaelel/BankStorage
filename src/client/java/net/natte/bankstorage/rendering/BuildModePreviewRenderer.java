@@ -154,7 +154,6 @@ public class BuildModePreviewRenderer implements EndTick {
     }
 
     public void updateBank() {
-        // System.out.println("update bank");
         setBankStorage(CachedBankStorage.getBankStorage(this.stackInHand));
     }
 

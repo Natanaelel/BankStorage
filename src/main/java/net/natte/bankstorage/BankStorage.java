@@ -34,7 +34,6 @@ import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.network.BuildOptionPacket;
 import net.natte.bankstorage.network.OptionPackets;
 import net.natte.bankstorage.network.RequestBankStorage;
-// import net.natte.bankstorage.network.RequestBankStorage;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.recipe.BankRecipeSerializer;
@@ -224,7 +223,8 @@ public class BankStorage implements ModInitializer {
 						BankItemStorage bankItemStorage = BankItem.getBankItemStorage(uuid, player.getWorld());
 						long randomSeed = (long) (Math.random() * 0xBEEEF);
 						bankItemStorage.random.setSeed(randomSeed);
-						List<ItemStack> items = bankItemStorage.getNonEmptyStacks();
+						List<ItemStack> items = bankItemStorage.getBlockItems();
+						bankItemStorage.options.selectedItemSlot = Math.max(Math.min(bankItemStorage.options.selectedItemSlot, items.size() - 1), 0);
 						PacketByteBuf packet = RequestBankStorage.createPacketS2C(items,
 								uuid, bankItemStorage.options, randomSeed);
 
@@ -242,7 +242,7 @@ public class BankStorage implements ModInitializer {
 						BankItemStorage bankItemStorage = BankItem.getBankItemStorage(uuid, player.getWorld());
 						int selectedItemSlot = bankItemStorage.options.selectedItemSlot;
 						selectedItemSlot -= (int) Math.signum(scroll);
-						int size = bankItemStorage.getNonEmptyStacks().size();
+						int size = bankItemStorage.getBlockItems().size();
 						// bankItemStorage.options.selectedItemSlot = size == 0 ? 0 : (selectedItemSlot
 						// % size + size) % size;
 						bankItemStorage.options.selectedItemSlot = size == 0 ? 0

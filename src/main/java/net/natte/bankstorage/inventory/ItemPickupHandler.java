@@ -18,7 +18,6 @@ public class ItemPickupHandler {
     }
 
     public static boolean pickUpStack(ItemStack pickedUpStack, PlayerInventory playerInventory) {
-        // System.out.println("hope I am on server");
         World world = playerInventory.player.getWorld();
         if (world.isClient)
             return false;

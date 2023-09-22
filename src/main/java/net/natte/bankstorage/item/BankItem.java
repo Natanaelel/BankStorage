@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.UUID;
 
 import net.minecraft.client.item.TooltipContext;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -36,123 +35,74 @@ public class BankItem extends Item {
         this.type = type;
     }
 
-    
+    @Override
+    public boolean canBeNested() {
+        return false;
+    }
+
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
 
         ItemStack bank = player.getStackInHand(hand);
-        if (!world.isClient) {
-            if (bank.getCount() == 1) {
+        if (bank.getCount() != 1)
+            return TypedActionResult.pass(bank);
 
-                if (player.isSneaking()) {
-                    BankStorage.onChangeBuildMode((ServerPlayerEntity) player);
-                    // ClientPlayNetworking.send(BuildOptionPacket.C2S_PACKET_ID, PacketByteBufs.create());
-                    return TypedActionResult.success(bank);
-                }
-                BankItemStorage bankItemStorage = BankItem.getBankItemStorage(bank, world);
-                if (bankItemStorage.options.buildMode == BuildMode.NONE) {
-                    player.openHandledScreen(bankItemStorage);
-                    return TypedActionResult.success(bank);
-                }
-                if (bankItemStorage.options.buildMode == BuildMode.NORMAL) {
-                    List<ItemStack> items = bankItemStorage.getNonEmptyStacks();
-                    if (!items.isEmpty()) {
-                        ItemStack itemStack = items.get(bankItemStorage.selectedItemSlot % items.size());
-                        // System.out.println("use " + itemStack);
-                        player.setStackInHand(hand, itemStack);
-                        TypedActionResult<ItemStack> useResult = itemStack.use(world, player, hand);
-                        player.setStackInHand(hand, bank);
-                        // if(useResult.getResult() == ActionResult.)
-                        // if(useResult.getResult().isAccepted())
-                        return new TypedActionResult<ItemStack>(useResult.getResult(), bank);
-                    }
-                    // return ;
-                }
-            }
+        if (world.isClient)
+            return TypedActionResult.pass(bank);
+
+        if (player.isSneaking()) {
+            BankStorage.onChangeBuildMode((ServerPlayerEntity) player);
+            return TypedActionResult.success(bank);
         }
-        // return TypedActionResult.pass(bank);
-        return super.use(world, player, hand);
+
+        BankItemStorage bankItemStorage = BankItem.getBankItemStorage(bank, world);
+        BuildMode buildMode = bankItemStorage.options.buildMode;
+        if (buildMode == BuildMode.NONE) {
+            player.openHandledScreen(bankItemStorage);
+            return TypedActionResult.success(bank);
+        }
+
+        return TypedActionResult.pass(bank);
     }
 
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
-        // System.out.println("use on block");
-        PlayerEntity user = context.getPlayer();
+        PlayerEntity player = context.getPlayer();
         World world = context.getWorld();
-        ItemStack bank = user.getStackInHand(user.getActiveHand());
-        // if (world.isClient) {
-        // return ActionResult.PASS;
-        // }
-        if (bank.getCount() == 1) {
-            BankOptions options;
+        ItemStack bank = player.getStackInHand(player.getActiveHand());
+
+        if (bank.getCount() != 1)
+            return ActionResult.PASS;
+
+        BankOptions options;
+        if (world.isClient) {
+            CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(bank);
+            options = cachedBankStorage == null ? new BankOptions() : cachedBankStorage.options;
+        } else {
+            BankItemStorage bankItemStorage = BankItem.getBankItemStorage(bank, world);
+            options = bankItemStorage.options;
+        }
+
+        if (options.buildMode == BuildMode.NORMAL || options.buildMode == BuildMode.RANDOM) {
+            ItemStack itemStack;
             if (world.isClient) {
                 CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(bank);
-                options = cachedBankStorage == null ? new BankOptions() : cachedBankStorage.options;
+                itemStack = cachedBankStorage.chooseItemToPlace();
             } else {
                 BankItemStorage bankItemStorage = BankItem.getBankItemStorage(bank, world);
-                options = bankItemStorage.options;
+                itemStack = bankItemStorage.chooseItemToPlace();
             }
-            if (options.buildMode == BuildMode.NORMAL || options.buildMode == BuildMode.RANDOM) {
-                ItemStack itemStack;
-                if (world.isClient) {
-                    CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(bank);
-                    itemStack = ItemStack.EMPTY;
-                    itemStack = cachedBankStorage == null ? ItemStack.EMPTY : options.buildMode == BuildMode.NORMAL
-                                    ? cachedBankStorage.getSelectedItem()
-                                    : cachedBankStorage.getRandomItem();
-                    ;
-                } else {
-                    BankItemStorage bankItemStorage = BankItem.getBankItemStorage(bank, world);
-                    List<ItemStack> items = bankItemStorage.getNonEmptyStacks();
-                    itemStack = items.isEmpty() ? ItemStack.EMPTY
-                            : options.buildMode == BuildMode.NORMAL
-                                    ? items.get(bankItemStorage.options.selectedItemSlot)
-                                    : items.get(bankItemStorage.random.nextInt(items.size()));
+            player.setStackInHand(context.getHand(), itemStack);
+            ActionResult useResult = itemStack
+                    .useOnBlock(new ItemUsageContext(world, player, context.getHand(), itemStack, context.hit));
+            player.setStackInHand(context.getHand(), bank);
+            if (world.isClient)
+                CachedBankStorage.bankRequestQueue.add(Util.getUUID(bank));
 
-                    // itemStack = items.isEmpty() ? ItemStack.EMPTY
-                    //         : items.get(bankItemStorage.options.selectedItemSlot);
-                }
-                user.setStackInHand(context.getHand(), itemStack);
-                ActionResult useResult = itemStack
-                        .useOnBlock(new ItemUsageContext(world, user, context.getHand(), itemStack, context.hit));
-                user.setStackInHand(context.getHand(), bank);
-                if (world.isClient)
-                    CachedBankStorage.bankRequestQueue.add(Util.getUUID(bank));
-
-                return useResult;
-            }
+            return useResult;
+        } else {
+            return ActionResult.FAIL;
         }
-        // }
-        return super.useOnBlock(context);
-    }
-
-    @Override
-    public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
-        // World world = user.getWorld();
-        // ItemStack bank = user.getStackInHand(hand);
-        // if (!world.isClient) {
-        // if(bank.getCount() == 1){
-        // BankItemStorage bankItemStorage = BankItem.getBankItemStorage(bank, world);
-        // if(bankItemStorage.options.buildMode == BuildMode.NONE){
-        // user.openHandledScreen(bankItemStorage);
-        // return ActionResult.SUCCESS;
-        // }
-        // if(bankItemStorage.options.buildMode == BuildMode.NORMAL){
-        // List<ItemStack> items = bankItemStorage.getUniqueItems();
-        // ItemStack itemStack = items.get(bankItemStorage.selectedItemSlot %
-        // items.size());
-        // System.out.println("use on entity" + itemStack);
-        // user.setStackInHand(hand, itemStack);
-        // ActionResult useResult = itemStack.useOnEntity(user, entity, hand);
-        // user.setStackInHand(hand, bank);
-        // // if(useResult.getResult() == ActionResult.)
-        // return useResult;
-        // }
-        // }
-        // }
-
-        // return super.use(world, user, hand);
-        return super.useOnEntity(stack, user, entity, hand);
     }
 
     public BankType getType() {
