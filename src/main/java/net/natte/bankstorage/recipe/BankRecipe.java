@@ -25,6 +25,7 @@ public class BankRecipe extends ShapedRecipe {
         }
         ItemStack result = super.craft(recipeInputInventory, dynamicRegistryManager);
         result.setNbt(maybeBankItemStack.get().getNbt());
+        
 
         return result;
     }

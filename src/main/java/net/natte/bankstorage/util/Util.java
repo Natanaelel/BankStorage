@@ -1,5 +1,8 @@
 package net.natte.bankstorage.util;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 
 import net.minecraft.item.ItemStack;
@@ -7,6 +10,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
+import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.item.BankItem;
 
 public class Util {
@@ -67,6 +71,40 @@ public class Util {
         }
 
         return itemStack;
+    }
+
+    public static void sortBank(BankItemStorage bankItemStorage) {
+        List<ItemStack> collectedItems = new ArrayList<>();
+        for (ItemStack itemStack : bankItemStorage.stacks) {
+            boolean didExist = false;
+            for (ItemStack existing : collectedItems) {
+                if (ItemStack.canCombine(itemStack, existing)) {
+                    existing.increment(itemStack.getCount());
+                    didExist = true;
+                }
+            }
+            if (!didExist && !itemStack.isEmpty())
+                collectedItems.add(itemStack.copy());
+        }
+        collectedItems.sort(Comparator.comparingInt(ItemStack::getCount).reversed());
+        for (int i = 0; i < bankItemStorage.size(); i++) {
+            boolean isEmpty = collectedItems.isEmpty();
+            if (!isEmpty) {
+                ItemStack stack = collectedItems.get(0);
+                int maxCount = stack.getMaxCount() * bankItemStorage.getStorageMultiplier();
+                bankItemStorage.setStack(i, stack.split(maxCount));
+                if (stack.isEmpty()) {
+                    collectedItems.remove(0);
+                }
+            } else {
+                bankItemStorage.setStack(i, ItemStack.EMPTY);
+
+            }
+        }
+        // bankItemStorage.stacks.sort((o1, o2) -> {
+        // return o2.getCount() - o1.getCount();
+        // });
+
     }
 
 }

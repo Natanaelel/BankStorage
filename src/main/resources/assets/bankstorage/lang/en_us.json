@@ -10,5 +10,13 @@
 
     "popup.bankstorage.buildmode.none": "Bag mode",
     "popup.bankstorage.buildmode.normal": "Build mode",
-    "popup.bankstorage.buildmode.random": "Randomized build mode"
+    "popup.bankstorage.buildmode.random": "Randomized build mode",
+
+    "popup.bankstorage.pickupmode.none": "No item pickup",
+    "popup.bankstorage.pickupmode.all": "Pickup all",
+    "popup.bankstorage.pickupmode.filtered": "Filtered pickup",
+    "popup.bankstorage.pickupmode.void": "Void excess",
+
+    "button.bankstorage.pickupmode": "Mode",
+    "button.bankstorage.sort": "Sort"
 }

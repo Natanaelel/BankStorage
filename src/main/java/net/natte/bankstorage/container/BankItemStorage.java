@@ -28,9 +28,6 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     public BankOptions options;
 
-    public int rows;
-    public int cols;
-
     public BankType type;
 
     private Text displayName;
@@ -45,8 +42,6 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         super(type.rows * type.cols);
         this.type = type;
         this.options = new BankOptions();
-        this.rows = this.type.rows;
-        this.cols = this.type.cols;
         this.uuid = uuid;
         this.random = new Random();
         // this.inventory = DefaultedList.ofSize(this.rows * this.cols,
@@ -60,30 +55,27 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     public BankItemStorage asType(BankType type) {
         if (this.type != type) {
-            changeType(type);
+
+            return changeType(type);
         }
         return this;
     }
 
-    public void changeType(BankType type) {
-        int sizeDiff = type.size() - this.size();
-        assert sizeDiff >= 0;
-        this.type = type;
-        this.rows = this.type.rows;
-        this.cols = this.type.cols;
-        // for()
-        // DefaultedList<ItemStack> oldInventory = this.inventory;
-        // this.inventory = DefaultedList.ofSize(this.rows * this.cols,
-        // ItemStack.EMPTY);
-        for (int i = 0; i < sizeDiff; ++i) {
-            this.stacks.set(i, ItemStack.EMPTY);
+    public BankItemStorage changeType(BankType type) {
+        BankStorage.LOGGER.info("Upgrading bank from " + this.type.getName() + " to " + type.getName() + " uuid " + this.uuid);
+        BankItemStorage newBankItemStorage = new BankItemStorage(type, this.uuid).withDisplayName(displayName);
+        for (int i = 0; i < this.stacks.size(); ++i) {
+            newBankItemStorage.stacks.set(i, this.stacks.get(i));
         }
+        return newBankItemStorage;
     }
 
     @Override
     public BankScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity playerEntity) {
         // return GenericContainerScreenHandler.createGeneric9x1(syncId,
         // playerInventory, (Inventory) this);
+        System.out.println("opening type " + this.type.getName());
+        System.out.println("i have slots " + this.stacks.size());
         return new BankScreenHandler(syncId, playerInventory, this, this.type);
 
     }
@@ -96,7 +88,8 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     @Override
     public void markDirty() {
         super.markDirty();
-        CachedBankStorage.bankRequestQueue.add(this.uuid);
+        if (this.uuid != null)
+            CachedBankStorage.bankRequestQueue.add(this.uuid);
     }
 
     @Override
@@ -106,7 +99,7 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     @Override
     public int size() {
-        return this.type.size();
+        return this.stacks.size();
     }
 
     @Override
@@ -198,7 +191,8 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     public static BankItemStorage createFromNbt(NbtCompound nbtCompound) {
 
         UUID uuid = nbtCompound.getUuid("uuid");
-
+        System.out.println("reading " + uuid);
+        System.out.println("has type " + nbtCompound.getString("type"));
         BankItemStorage bankItemStorage = new BankItemStorage(
                 BankStorage.getBankTypeFromName(nbtCompound.getString("type")),
                 uuid);

@@ -18,6 +18,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -33,10 +34,13 @@ import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.network.BuildOptionPacket;
 import net.natte.bankstorage.network.OptionPackets;
+import net.natte.bankstorage.network.PickupModePacket;
 import net.natte.bankstorage.network.RequestBankStorage;
+import net.natte.bankstorage.network.SortPacket;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.recipe.BankRecipeSerializer;
+import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 
 import java.util.ArrayList;
@@ -215,6 +219,15 @@ public class BankStorage implements ModInitializer {
 					});
 				});
 
+		ServerPlayNetworking.registerGlobalReceiver(PickupModePacket.C2S_PACKET_ID,
+				(server, player, handler, buf, responseSender) -> {
+					server.execute(() -> {
+
+						onChangePickupMode(player);
+
+					});
+				});
+
 		ServerPlayNetworking.registerGlobalReceiver(RequestBankStorage.C2S_PACKET_ID,
 				(server, player, handler, buf, responseSender) -> {
 					UUID uuid = buf.readUuid();
@@ -224,7 +237,8 @@ public class BankStorage implements ModInitializer {
 						long randomSeed = (long) (Math.random() * 0xBEEEF);
 						bankItemStorage.random.setSeed(randomSeed);
 						List<ItemStack> items = bankItemStorage.getBlockItems();
-						bankItemStorage.options.selectedItemSlot = Math.max(Math.min(bankItemStorage.options.selectedItemSlot, items.size() - 1), 0);
+						bankItemStorage.options.selectedItemSlot = Math
+								.max(Math.min(bankItemStorage.options.selectedItemSlot, items.size() - 1), 0);
 						PacketByteBuf packet = RequestBankStorage.createPacketS2C(items,
 								uuid, bankItemStorage.options, randomSeed);
 
@@ -252,6 +266,39 @@ public class BankStorage implements ModInitializer {
 					});
 
 				});
+
+		ServerPlayNetworking.registerGlobalReceiver(SortPacket.C2S_PACKET_ID,
+				(server, player, handler, buf, responseSender) -> {
+					server.execute(() -> {
+						ScreenHandler screenHandler = player.currentScreenHandler;
+						if (!(screenHandler instanceof BankScreenHandler bankScreenHandler))
+							return;
+						BankItemStorage bankItemStorage = (BankItemStorage) bankScreenHandler.inventory;
+
+						Util.sortBank(bankItemStorage);
+
+					});
+
+				});
+	}
+
+	private void onChangePickupMode(ServerPlayerEntity player) {
+		ItemStack stackInHand = player.getStackInHand(player.getActiveHand());
+		if (Util.isBank(stackInHand)) {
+			BankItemStorage bankItemStorage = BankItem.getBankItemStorage(stackInHand,
+					player.getWorld());
+			bankItemStorage.options.pickupMode = PickupMode
+					.from((bankItemStorage.options.pickupMode.number + 1) % 4);
+			player.sendMessage(Text.translatable("popup.bankstorage.pickupmode."
+					+ bankItemStorage.options.pickupMode.toString().toLowerCase()), true);
+
+			PacketByteBuf packet = PacketByteBufs.create();
+			packet.writeUuid(Util.getUUID(stackInHand));
+			packet.writeNbt(bankItemStorage.options.asNbt());
+
+			ServerPlayNetworking.send(player, OptionPackets.S2C_PACKET_ID, packet);
+		}
+
 	}
 
 	public static void onChangeBuildMode(ServerPlayerEntity player) {

@@ -21,4 +21,8 @@ public enum PickupMode {
             default -> NONE;
         };
     }
+
+    public static PickupMode from(int n) {
+        return from((byte) n);
+    }
 }

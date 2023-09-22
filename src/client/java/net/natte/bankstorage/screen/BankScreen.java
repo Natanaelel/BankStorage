@@ -7,10 +7,13 @@ import java.util.Set;
 
 import com.mojang.datafixers.util.Pair;
 
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens.Provider;
+import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.texture.Sprite;
@@ -26,6 +29,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
+import net.natte.bankstorage.network.PickupModePacket;
+import net.natte.bankstorage.network.SortPacket;
 import net.natte.bankstorage.rendering.ItemCountUtils;
 
 public class BankScreen extends HandledScreen<BankScreenHandler> {
@@ -34,7 +39,6 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
             null);
 
     private static final NumberFormat FORMAT = NumberFormat.getNumberInstance(Locale.US);
-
 
     private BankType type;
     private Identifier texture;
@@ -51,8 +55,22 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         this.texture = this.type.getGuiTexture();
         this.backgroundWidth = this.type.guiTextureWidth;
         this.backgroundHeight = this.type.guiTextureHeight;
-        // titleY += 34 - (this.type.rows - 1) * 9;
         playerInventoryTitleY += (this.type.rows - 1) * 18 - 34;
+
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+
+        this.addDrawableChild(
+                ButtonWidget.builder(Text.translatable("button.bankstorage.sort"), button -> ClientPlayNetworking.send(SortPacket.C2S_PACKET_ID, PacketByteBufs.create()))
+                        .dimensions(x + titleX + this.type.guiTextureWidth - 60, y + titleY - 2, 40, 12).build());
+
+        this.addDrawableChild(
+                ButtonWidget.builder(Text.translatable("button.bankstorage.pickupmode"), button -> ClientPlayNetworking.send(PickupModePacket.C2S_PACKET_ID, PacketByteBufs.create()))
+                        .dimensions(x + titleX + this.type.guiTextureWidth - 110, y + titleY - 2, 40, 12).build());
+
     }
 
     @Override
@@ -60,6 +78,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         this.renderBackground(context);
         super.render(context, mouseX, mouseY, delta);
         this.drawMouseoverTooltip(context, mouseX, mouseY);
+        this.setFocused(null);
     }
 
     @Override
@@ -77,11 +96,11 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
             ItemStack itemStack2 = slot.getStack();
             int i = itemStack2.isEmpty() ? 0 : itemStack2.getCount();
             int j = slot.getMaxItemCount(itemStack);
-            int k = Math.min(ScreenHandler.calculateStackSize(this.cursorDragSlots, (int)this.heldButtonType, (ItemStack)itemStack) + i, j);
+            int k = Math.min(ScreenHandler.calculateStackSize(this.cursorDragSlots, (int) this.heldButtonType,
+                    (ItemStack) itemStack) + i, j);
             this.draggedStackRemainder -= k - i;
         }
     }
-
 
     @Override
     protected void drawBackground(DrawContext drawContext, float timeDelta, int mouseX, int mouseY) {
@@ -100,6 +119,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         }
 
     }
+
     private void drawBankSlot(DrawContext context, Slot slot) {
         Pair<Identifier, Identifier> pair;
         int i = slot.x;
@@ -109,17 +129,20 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         boolean bl2 = slot == this.touchDragSlotStart && !this.touchDragStack.isEmpty() && !this.touchIsRightClickDrag;
         ItemStack itemStack2 = this.handler.getCursorStack();
         boolean drawInYellow = false;
-        if (slot == this.touchDragSlotStart && !this.touchDragStack.isEmpty() && this.touchIsRightClickDrag && !itemStack.isEmpty()) {
+        if (slot == this.touchDragSlotStart && !this.touchDragStack.isEmpty() && this.touchIsRightClickDrag
+                && !itemStack.isEmpty()) {
             itemStack = itemStack.copyWithCount(itemStack.getCount() / 2);
         } else if (this.cursorDragging && this.cursorDragSlots.contains(slot) && !itemStack2.isEmpty()) {
             if (this.cursorDragSlots.size() == 1) {
                 return;
             }
-            if (this.canInsertItemIntoSlot((Slot)slot, (ItemStack)itemStack2, (boolean)true) && this.handler.canInsertIntoSlot(slot)) {
+            if (this.canInsertItemIntoSlot((Slot) slot, (ItemStack) itemStack2, (boolean) true)
+                    && this.handler.canInsertIntoSlot(slot)) {
                 bl = true;
                 int k = slot.getMaxItemCount(itemStack2);
                 int l = slot.getStack().isEmpty() ? 0 : slot.getStack().getCount();
-                int m = this.calculateStackSize(this.cursorDragSlots, (int)this.heldButtonType, (ItemStack)itemStack2) + l;
+                int m = this.calculateStackSize(this.cursorDragSlots, (int) this.heldButtonType, (ItemStack) itemStack2)
+                        + l;
                 if (m > k) {
                     m = k;
                     drawInYellow = true;
@@ -133,7 +156,8 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         context.getMatrices().push();
         context.getMatrices().translate(0.0f, 0.0f, 100.0f);
         if (itemStack.isEmpty() && slot.isEnabled() && (pair = slot.getBackgroundSprite()) != null) {
-            Sprite sprite = this.client.getSpriteAtlas((Identifier)pair.getFirst()).apply((Identifier)pair.getSecond());
+            Sprite sprite = this.client.getSpriteAtlas((Identifier) pair.getFirst())
+                    .apply((Identifier) pair.getSecond());
             context.drawSprite(i, j, 0, 16, 16, sprite);
             bl2 = true;
         }
@@ -150,7 +174,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
 
     public int calculateStackSize(Set<Slot> slots, int mode, ItemStack stack) {
         return switch (mode) {
-            case 0 -> MathHelper.floor((float)stack.getCount() / (float)slots.size());
+            case 0 -> MathHelper.floor((float) stack.getCount() / (float) slots.size());
             case 1 -> 1;
             case 2 -> stack.getItem().getMaxCount();
             default -> stack.getCount();
@@ -166,8 +190,8 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         return bl;
     }
 
-
-    public void drawItemCountInSlot(DrawContext context, TextRenderer textRenderer, ItemStack stack, int x, int y, boolean drawInYellow) {
+    public void drawItemCountInSlot(DrawContext context, TextRenderer textRenderer, ItemStack stack, int x, int y,
+            boolean drawInYellow) {
         ClientPlayerEntity clientPlayerEntity;
         float f;
         int l;
@@ -178,7 +202,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         MatrixStack matrices = context.getMatrices();
 
         matrices.push();
-        
+
         if (stack.isItemBarVisible()) {
             int i = stack.getItemBarStep();
             int j = stack.getItemBarColor();
@@ -198,20 +222,19 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
             matrices.translate(x * (1 - scale), y * (1 - scale) + (1 - scale) * 16, 0);
             matrices.scale(scale, scale, 1);
 
-            int textWidth = (int)(textRenderer.getWidth(string) * scale);
+            int textWidth = (int) (textRenderer.getWidth(string) * scale);
             context.drawText(textRenderer, formattedString, x + 19 - 2 - textWidth, y + 6 + 3, 0xFFFFFF, true);
         }
-        f = (clientPlayerEntity = this.client.player) == null ? 0.0f : clientPlayerEntity.getItemCooldownManager().getCooldownProgress(stack.getItem(), this.client.getTickDelta());
+        f = (clientPlayerEntity = this.client.player) == null ? 0.0f
+                : clientPlayerEntity.getItemCooldownManager().getCooldownProgress(stack.getItem(),
+                        this.client.getTickDelta());
         if (f > 0.0f) {
-            k = y + MathHelper.floor((float)(16.0f * (1.0f - f)));
-            l = k + MathHelper.ceil((float)(16.0f * f));
+            k = y + MathHelper.floor((float) (16.0f * (1.0f - f)));
+            l = k + MathHelper.ceil((float) (16.0f * f));
             context.fill(RenderLayer.getGuiOverlay(), x, k, x + 16, l, Integer.MAX_VALUE);
         }
         matrices.pop();
     }
-
-    
-   
 
     protected void drawMouseoverTooltip(DrawContext context, int x, int y) {
         if (this.handler.getCursorStack().isEmpty() && this.focusedSlot != null && this.focusedSlot.hasStack()) {
@@ -219,7 +242,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
             List<Text> tooltip = this.getTooltipFromItem(itemStack);
             if (itemStack.getCount() > 9999) {
                 tooltip.add(1, Text.literal(FORMAT.format(itemStack.getCount())).formatted(Formatting.GRAY));
-            }    
+            }
             context.drawTooltip(this.textRenderer, tooltip, itemStack.getTooltipData(), x, y);
         }
     }

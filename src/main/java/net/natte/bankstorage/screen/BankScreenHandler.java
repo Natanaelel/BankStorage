@@ -1,7 +1,6 @@
 package net.natte.bankstorage.screen;
 
 import java.util.Optional;
-
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.player.PlayerEntity;
@@ -18,7 +17,6 @@ import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.inventory.LockedSlot;
 import net.natte.bankstorage.item.BankItem;
-import net.natte.bankstorage.util.Util;
 
 public class BankScreenHandler extends ScreenHandler {
 
@@ -29,11 +27,14 @@ public class BankScreenHandler extends ScreenHandler {
 
     // private ItemStack bankItemStack;
 
+
     public static net.minecraft.screen.ScreenHandlerType.Factory<BankScreenHandler> fromType(BankType type) {
         return (syncId, playerInventory) -> {
             // return new BankScreenHandler(syncId, playerInventory, new
             // SimpleInventory(type.size()), type);
-            return new BankScreenHandler(syncId, playerInventory, new BankItemStorage(type, Util.getUUID(playerInventory.getMainHandStack())), type);
+            // return new BankScreenHandler(syncId, playerInventory, new BankItemStorage(type, Util.getUUID(playerInventory.getMainHandStack())), type);
+            // return new BankScreenHandler(syncId, playerInventory, new BankItemStorage(type, Util.getUUID(playerInventory.getMainHandStack())), type);
+            return new BankScreenHandler(syncId, playerInventory, new BankItemStorage(type, null), type);
         };
     }
 
@@ -44,9 +45,10 @@ public class BankScreenHandler extends ScreenHandler {
     // then be synced to the client.
     public BankScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, BankType type) {
         super(type.getScreenHandlerType(), syncId);
-
+        System.out.println("" + inventory.size() + " " + type.rows);
         this.type = type;
         // this.playerInventory = playerInventory;
+        // inventory = ((BankItemStorage)inventory).asType(type);
         checkSize(inventory, type.size());
         this.inventory = inventory;
         inventory.onOpen(playerInventory.player);

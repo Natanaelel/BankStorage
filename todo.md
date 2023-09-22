@@ -1,7 +1,8 @@
-textures
-sort
+linking
 change mode buttons
+textures
 
+[x] sort
 [x] build
 [x] bug when moving items from bank with number keys
 [x] pickup

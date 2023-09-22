@@ -101,7 +101,7 @@ public class BankItem extends Item {
 
             return useResult;
         } else {
-            return ActionResult.FAIL;
+            return ActionResult.PASS;
         }
     }
 

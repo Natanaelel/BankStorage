@@ -77,9 +77,19 @@ public class BankStateSaverAndLoader extends PersistentState {
     }
 
     public BankItemStorage getOrCreate(UUID uuid, BankType type, Text name) {
+        System.out.println("get or create " + uuid);
+        System.out.println(type.getName());
         if (this.bankMap.containsKey(uuid)) {
-            return this.bankMap.get(uuid).withDisplayName(name).asType(type);
+            System.out.println("has");
+            BankItemStorage old = this.bankMap.get(uuid).withDisplayName(name);
+            BankItemStorage maybeNew = old.asType(type);
+            if(old != maybeNew){
+                this.bankMap.put(uuid, maybeNew);
+            }
+            return maybeNew;
+            
         } else {
+            System.out.println("new");
             BankItemStorage bankItemStorage = new BankItemStorage(type, uuid);
             this.bankMap.put(uuid, bankItemStorage);
             return bankItemStorage.withDisplayName(name);
