@@ -12,6 +12,8 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.minecraft.block.Block;
 import net.minecraft.block.MapColor;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.command.argument.UuidArgumentType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
@@ -19,11 +21,15 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
@@ -31,6 +37,7 @@ import net.natte.bankstorage.block.BankDockBlock;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
+import net.natte.bankstorage.item.BankFunctionality;
 import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.network.BuildOptionPacket;
 import net.natte.bankstorage.network.OptionPackets;
@@ -42,6 +49,7 @@ import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.recipe.BankRecipeSerializer;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
+import net.natte.bankstorage.world.BankStateSaverAndLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -147,7 +155,7 @@ public class BankStorage implements ModInitializer {
 				ItemStack item = player.getStackInHand(player.getActiveHand());
 
 				if (item.getItem() instanceof BankItem bankItem) {
-					BankItemStorage bankItemStorage = BankItem.getBankItemStorage(item, context.getSource().getWorld());
+					BankItemStorage bankItemStorage = Util.getBankItemStorage(item, context.getSource().getWorld());
 					player.sendMessage(Text.literal(bankItemStorage.saveToNbt().asString()));
 				}
 
@@ -157,7 +165,7 @@ public class BankStorage implements ModInitializer {
 			BiFunction<CommandContext<ServerCommandSource>, PickupMode, Integer> setPickupMode = (context,
 					pickupMode) -> {
 				ServerWorld world = context.getSource().getWorld();
-				BankItemStorage bankItemStorage = BankItem.getBankItemStorage(
+				BankItemStorage bankItemStorage = Util.getBankItemStorage(
 						context.getSource().getPlayer().getStackInHand(Hand.MAIN_HAND),
 						world);
 				bankItemStorage.options.pickupMode = pickupMode;
@@ -167,7 +175,7 @@ public class BankStorage implements ModInitializer {
 			BiFunction<CommandContext<ServerCommandSource>, BuildMode, Integer> setBuidMode = (context,
 					buildMode) -> {
 				ServerWorld world = context.getSource().getWorld();
-				BankItemStorage bankItemStorage = BankItem.getBankItemStorage(
+				BankItemStorage bankItemStorage = Util.getBankItemStorage(
 						context.getSource().getPlayer().getStackInHand(Hand.MAIN_HAND),
 						world);
 				bankItemStorage.options.buildMode = buildMode;
@@ -176,7 +184,7 @@ public class BankStorage implements ModInitializer {
 
 			Command<ServerCommandSource> logOptions = context -> {
 				ServerWorld world = context.getSource().getWorld();
-				BankItemStorage bankItemStorage = BankItem.getBankItemStorage(
+				BankItemStorage bankItemStorage = Util.getBankItemStorage(
 						context.getSource().getPlayer().getStackInHand(Hand.MAIN_HAND),
 						world);
 				context.getSource().sendMessage(
@@ -205,6 +213,55 @@ public class BankStorage implements ModInitializer {
 											.executes(context -> setBuidMode.apply(context, BuildMode.RANDOM))))
 
 							.then(CommandManager.literal("get").executes(logOptions)));
+
+			dispatcher.register(
+					CommandManager.literal("bankstorage")
+							.then(CommandManager.literal("list")
+									.requires(context -> context.hasPermissionLevel(2))
+									.executes(context -> {
+
+										MutableText message = Text.empty();
+										MinecraftServer server = context.getSource().getServer();
+										BankStateSaverAndLoader.getServerState(server).bankMap
+												.forEach((uuid, bankItemStorage) -> {
+													String command = "/bankstorage fromuuid " + uuid.toString() + " "
+															+ context.getSource().getPlayer().getEntityName();
+													message.append(Text.literal(bankItemStorage.type.getName() + " "
+															+ bankItemStorage.stacks.stream()
+																	.filter(stack -> !stack.isEmpty()).count()
+															+ " items " + bankItemStorage.uuid.toString() + "\n")
+															.styled(style -> style.withClickEvent(new ClickEvent(
+																	ClickEvent.Action.SUGGEST_COMMAND, command))
+																	.withHoverEvent(new HoverEvent(
+																			HoverEvent.Action.SHOW_TEXT,
+																			Text.literal("Click for give command")))));
+												});
+										context.getSource().sendMessage(message);
+										return Command.SINGLE_SUCCESS;
+									}))
+							.then(CommandManager.literal("fromuuid")
+									.requires(context -> context.hasPermissionLevel(2))
+									.then(CommandManager.argument("uuid", UuidArgumentType.uuid())
+											.then(CommandManager.argument("player", EntityArgumentType.player())
+											.executes(context -> {
+												ServerPlayerEntity player = EntityArgumentType.getPlayer(context,
+														"player");
+												UUID uuid = UuidArgumentType.getUuid(context, "uuid");
+												BankItemStorage bank = Util.getBankItemStorage(uuid,
+														context.getSource().getWorld());
+												if (bank == null) {
+													context.getSource().sendFeedback(
+															() -> Text.literal("No bank with that id"),
+															false);
+													return 0;
+												}
+												ItemStack stack = Registries.ITEM
+														.get(new Identifier(MOD_ID, bank.type.getName()))
+														.getDefaultStack();
+												stack.getOrCreateNbt().putUuid(BankFunctionality.UUID_KEY, uuid);
+												player.getInventory().insertStack(stack);
+												return Command.SINGLE_SUCCESS;
+											})))));
 		});
 	}
 
@@ -227,13 +284,12 @@ public class BankStorage implements ModInitializer {
 
 					});
 				});
-
 		ServerPlayNetworking.registerGlobalReceiver(RequestBankStorage.C2S_PACKET_ID,
 				(server, player, handler, buf, responseSender) -> {
 					UUID uuid = buf.readUuid();
 					server.execute(() -> {
 
-						BankItemStorage bankItemStorage = BankItem.getBankItemStorage(uuid, player.getWorld());
+						BankItemStorage bankItemStorage = Util.getBankItemStorage(uuid, player.getWorld());
 						long randomSeed = (long) (Math.random() * 0xBEEEF);
 						bankItemStorage.random.setSeed(randomSeed);
 						List<ItemStack> items = bankItemStorage.getBlockItems();
@@ -253,12 +309,10 @@ public class BankStorage implements ModInitializer {
 					double scroll = buf.readDouble();
 					server.execute(() -> {
 
-						BankItemStorage bankItemStorage = BankItem.getBankItemStorage(uuid, player.getWorld());
+						BankItemStorage bankItemStorage = Util.getBankItemStorage(uuid, player.getWorld());
 						int selectedItemSlot = bankItemStorage.options.selectedItemSlot;
 						selectedItemSlot -= (int) Math.signum(scroll);
 						int size = bankItemStorage.getBlockItems().size();
-						// bankItemStorage.options.selectedItemSlot = size == 0 ? 0 : (selectedItemSlot
-						// % size + size) % size;
 						bankItemStorage.options.selectedItemSlot = size == 0 ? 0
 								: Math.min(Math.max(selectedItemSlot, 0), size - 1);
 
@@ -285,7 +339,7 @@ public class BankStorage implements ModInitializer {
 	private void onChangePickupMode(ServerPlayerEntity player) {
 		ItemStack stackInHand = player.getStackInHand(player.getActiveHand());
 		if (Util.isBank(stackInHand)) {
-			BankItemStorage bankItemStorage = BankItem.getBankItemStorage(stackInHand,
+			BankItemStorage bankItemStorage = Util.getBankItemStorage(stackInHand,
 					player.getWorld());
 			bankItemStorage.options.pickupMode = PickupMode
 					.from((bankItemStorage.options.pickupMode.number + 1) % 4);
@@ -304,7 +358,7 @@ public class BankStorage implements ModInitializer {
 	public static void onChangeBuildMode(ServerPlayerEntity player) {
 		ItemStack stackInHand = player.getStackInHand(player.getActiveHand());
 		if (Util.isBank(stackInHand)) {
-			BankItemStorage bankItemStorage = BankItem.getBankItemStorage(stackInHand,
+			BankItemStorage bankItemStorage = Util.getBankItemStorage(stackInHand,
 					player.getWorld());
 			bankItemStorage.options.buildMode = BuildMode
 					.from((bankItemStorage.options.buildMode.number + 1) % 3);

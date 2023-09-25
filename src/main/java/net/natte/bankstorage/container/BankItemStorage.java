@@ -55,7 +55,7 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     public BankItemStorage asType(BankType type) {
         if (this.type != type) {
-
+            
             return changeType(type);
         }
         return this;
@@ -72,12 +72,7 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     @Override
     public BankScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity playerEntity) {
-        // return GenericContainerScreenHandler.createGeneric9x1(syncId,
-        // playerInventory, (Inventory) this);
-        System.out.println("opening type " + this.type.getName());
-        System.out.println("i have slots " + this.stacks.size());
         return new BankScreenHandler(syncId, playerInventory, this, this.type);
-
     }
 
     @Override
@@ -93,32 +88,10 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     }
 
     @Override
-    public void clear() {
-        super.clear();
-    }
-
-    @Override
     public int size() {
         return this.stacks.size();
     }
 
-    @Override
-    public boolean isEmpty() {
-        return super.isEmpty();
-    }
-
-    @Override
-    public ItemStack getStack(int slot) {
-        return super.getStack(slot);
-        // return this.inventory.get(slot);
-    }
-
-    @Override
-    public ItemStack removeStack(int slot, int amount) {
-        return super.removeStack(slot, amount);
-        // return this.inventory.get(slot).split(amount);
-
-    }
 
     @Override
     public int getMaxCountPerStack() {
@@ -129,29 +102,6 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         return type.slotStorageMultiplier;
     }
 
-    @Override
-    public boolean isValid(int slot, ItemStack stack) {
-        return super.isValid(slot, stack);
-    }
-
-    @Override
-    public ItemStack removeStack(int slot) {
-        return super.removeStack(slot);
-        // ItemStack itemStack = this.inventory.get(slot);
-        // this.inventory.set(slot, ItemStack.EMPTY);
-        // return itemStack;
-    }
-
-    @Override
-    public void setStack(int slot, ItemStack itemStack) {
-        super.setStack(slot, itemStack);
-        // this.inventory.set(slot, itemStack);
-    }
-
-    @Override
-    public boolean canPlayerUse(PlayerEntity playerEntity) {
-        return true;
-    }
 
     // same format as vanilla except itemstack count and slot saved as int instead
     // of byte
@@ -191,8 +141,6 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     public static BankItemStorage createFromNbt(NbtCompound nbtCompound) {
 
         UUID uuid = nbtCompound.getUuid("uuid");
-        System.out.println("reading " + uuid);
-        System.out.println("has type " + nbtCompound.getString("type"));
         BankItemStorage bankItemStorage = new BankItemStorage(
                 BankStorage.getBankTypeFromName(nbtCompound.getString("type")),
                 uuid);
@@ -223,11 +171,6 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     @Override
     public boolean canInsert(ItemStack stack) {
         return !(stack.getItem() instanceof BankItem) && super.canInsert(stack);
-    }
-
-    @Override
-    public ItemStack addStack(ItemStack stack) {
-        return super.addStack(stack);
     }
 
     public List<ItemStack> getUniqueItems() {

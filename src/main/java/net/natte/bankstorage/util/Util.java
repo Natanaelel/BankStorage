@@ -10,8 +10,11 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 import net.natte.bankstorage.container.BankItemStorage;
+import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.BankItem;
+import net.natte.bankstorage.world.BankStateSaverAndLoader;
 
 public class Util {
 
@@ -101,9 +104,27 @@ public class Util {
 
             }
         }
-        // bankItemStorage.stacks.sort((o1, o2) -> {
-        // return o2.getCount() - o1.getCount();
-        // });
+    }
+
+    public static BankItemStorage getBankItemStorage(UUID uuid, World world) {
+
+        BankStateSaverAndLoader serverState = BankStateSaverAndLoader.getServerState(world.getServer());
+        BankItemStorage bankItemStorage = serverState.get(uuid);
+
+        return bankItemStorage;
+
+    }
+
+    public static BankItemStorage getBankItemStorage(ItemStack bank, World world) {
+
+        UUID uuid = hasUUID(bank) ? getUUID(bank) : UUID.randomUUID();
+        if (!hasUUID(bank))
+            bank.getOrCreateNbt().putUuid(BankItem.UUID_KEY, uuid);
+
+        BankType type = ((BankItem) bank.getItem()).getType();
+        BankStateSaverAndLoader serverState = BankStateSaverAndLoader.getServerState(world.getServer());
+        BankItemStorage bankItemStorage = serverState.getOrCreate(uuid, type, bank.getName());
+        return bankItemStorage;
 
     }
 

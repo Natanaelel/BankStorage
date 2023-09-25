@@ -21,6 +21,7 @@ import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.inventory.BankSingleStackStorage;
 import net.natte.bankstorage.item.BankItem;
+import net.natte.bankstorage.util.Util;
 
 public class BankDockBlockEntity extends BlockEntity {
 
@@ -77,7 +78,7 @@ public class BankDockBlockEntity extends BlockEntity {
 
     private BankItemStorage getInventory() {
         if (this.bankItem.getItem() instanceof BankItem) {
-            return BankItem.getBankItemStorage(this.bankItem, this.world);
+            return Util.getBankItemStorage(this.bankItem, this.world);
         }
         return null;
     }

@@ -17,6 +17,7 @@ import net.minecraft.world.World;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.item.BankItem;
+import net.natte.bankstorage.util.Util;
 
 public class BankDockBlock extends Block implements BlockEntityProvider {
 
@@ -51,7 +52,7 @@ public class BankDockBlock extends Block implements BlockEntityProvider {
 
                 // open bank screen
                 if (!world.isClient) {
-                    BankItemStorage bankItemStorage = BankItem.getBankItemStorage(bankDockBlockEntity.getBank(), world);
+                    BankItemStorage bankItemStorage = Util.getBankItemStorage(bankDockBlockEntity.getBank(), world);
                     player.openHandledScreen(bankItemStorage);
                 }
 

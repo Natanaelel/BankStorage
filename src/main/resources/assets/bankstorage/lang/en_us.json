@@ -8,6 +8,8 @@
     "item.bankstorage.bank_6": "Bank 6",
     "item.bankstorage.bank_7": "Bank 7",
 
+    "block.bankstorage.bank_dock": "Bank Dock",
+
     "popup.bankstorage.buildmode.none": "Bag mode",
     "popup.bankstorage.buildmode.normal": "Build mode",
     "popup.bankstorage.buildmode.random": "Randomized build mode",
@@ -18,5 +20,9 @@
     "popup.bankstorage.pickupmode.void": "Void excess",
 
     "button.bankstorage.pickupmode": "Mode",
-    "button.bankstorage.sort": "Sort"
+    "button.bankstorage.sort": "Sort",
+
+    "category.bankstorage": "Bank Storage",
+    "key.bankstorage.togglebuildmode": "Toggle build mode",
+    "key.bankstorage.": "Toggle build mode"
 }

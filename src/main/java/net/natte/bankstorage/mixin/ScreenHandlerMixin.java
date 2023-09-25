@@ -13,8 +13,8 @@ import net.natte.bankstorage.inventory.BankSlot;
 
 @Mixin(ScreenHandler.class)
 public class ScreenHandlerMixin {
-    
-      @Inject(method = "Lnet/minecraft/screen/ScreenHandler;canInsertItemIntoSlot(Lnet/minecraft/screen/slot/Slot;Lnet/minecraft/item/ItemStack;Z)Z", at = @At("HEAD"), cancellable = true)
+
+    @Inject(method = "Lnet/minecraft/screen/ScreenHandler;canInsertItemIntoSlot(Lnet/minecraft/screen/slot/Slot;Lnet/minecraft/item/ItemStack;Z)Z", at = @At("HEAD"), cancellable = true)
     private static void canInsertItemIntoSlotMixin(@Nullable Slot slot, ItemStack stack, boolean allowOverflow,
             CallbackInfoReturnable<Boolean> cir) {
         boolean bl = slot == null || !slot.hasStack();

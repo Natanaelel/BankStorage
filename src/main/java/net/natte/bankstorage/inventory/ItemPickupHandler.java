@@ -40,7 +40,7 @@ public class ItemPickupHandler {
                 if (!itemStack.getNbt().contains(BankItem.UUID_KEY))
                     continue;
 
-                BankItemStorage bankItemStorage = BankItem.getBankItemStorage(itemStack, world);
+                BankItemStorage bankItemStorage = Util.getBankItemStorage(itemStack, world);
                 PickupMode mode = bankItemStorage.options.pickupMode;
                 
                 if (mode == PickupMode.NONE) {

@@ -49,6 +49,18 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         };
     }
 
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        
+        // middle click sorting
+        if(button == 2 && (this.getSlotAt(mouseX, mouseY) instanceof BankSlot)){
+            ClientPlayNetworking.send(SortPacket.C2S_PACKET_ID, PacketByteBufs.create());
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    
     public BankScreen(BankScreenHandler screenHandler, PlayerInventory playerInventory, Text text, BankType type) {
         super(screenHandler, playerInventory, text);
         this.type = type;

@@ -60,8 +60,9 @@ public class BankStorageClient implements ClientModInitializer {
 		registerNetworkListeners();
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-			if(client.world == null) return;
-			for (UUID uuid: CachedBankStorage.bankRequestQueue) {
+			if (client.world == null)
+				return;
+			for (UUID uuid : CachedBankStorage.bankRequestQueue) {
 				ClientPlayNetworking.send(RequestBankStorage.C2S_PACKET_ID, RequestBankStorage.createRequestC2S(uuid));
 			}
 			CachedBankStorage.bankRequestQueue.clear();
@@ -143,10 +144,9 @@ public class BankStorageClient implements ClientModInitializer {
 					client.execute(() -> {
 						CachedBankStorage cachedBankStorage = CachedBankStorage.BANK_CACHE.get(uuid);
 
-						// ignored
 						if (cachedBankStorage == null)
 							return;
-	
+
 						cachedBankStorage.options = options;
 					});
 

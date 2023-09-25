@@ -45,7 +45,6 @@ public class BankScreenHandler extends ScreenHandler {
     // then be synced to the client.
     public BankScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, BankType type) {
         super(type.getScreenHandlerType(), syncId);
-        System.out.println("" + inventory.size() + " " + type.rows);
         this.type = type;
         // this.playerInventory = playerInventory;
         // inventory = ((BankItemStorage)inventory).asType(type);
