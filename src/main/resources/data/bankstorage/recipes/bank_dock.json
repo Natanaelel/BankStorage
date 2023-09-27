@@ -1,16 +1,16 @@
 {
 	"type": "minecraft:crafting_shaped",
 	"pattern": [
-		"IVI",
-		"I I",
-		"IVI"
+		"SVS",
+		"S S",
+		"SVS"
 	],
 	"key": {
 		"V": {
 			"item": "minecraft:hopper"
 		},
-		"I": {
-			"item": "minecraft:iron_bars"
+		"S": {
+			"item": "minecraft:smooth_stone"
 		}
 	},
 	"result": {

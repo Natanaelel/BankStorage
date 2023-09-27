@@ -20,9 +20,13 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.CachedBankStorage;
-import net.natte.bankstorage.packet.BuildOptionPacketC2S;
+import net.natte.bankstorage.network.ItemStackBobbingAnimationPacketReceiver;
+import net.natte.bankstorage.network.OptionPacketReceiver;
+import net.natte.bankstorage.network.RequestBankStoragePacketReceiver;
+import net.natte.bankstorage.packet.SortPacketC2S;
 import net.natte.bankstorage.packet.ItemStackBobbingAnimationPacketS2C;
 import net.natte.bankstorage.packet.OptionPacketS2C;
+// import net.natte.bankstorage.packet.PreviewItemsPacketS2C;
 import net.natte.bankstorage.packet.RequestBankStoragePacketC2S;
 import net.natte.bankstorage.packet.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.rendering.BankDockBlockEntityRenderer;
@@ -94,7 +98,7 @@ public class BankStorageClient implements ClientModInitializer {
 
 			while (toggleBuildModeKeyBinding.wasPressed()) {
 				if (Util.isBank(client.player.getStackInHand(client.player.getActiveHand()))) {
-					ClientPlayNetworking.send(new BuildOptionPacketC2S());
+					ClientPlayNetworking.send(new SortPacketC2S());
 				}
 			}
 
@@ -102,9 +106,9 @@ public class BankStorageClient implements ClientModInitializer {
 	}
 
 	public void registerNetworkListeners() {
-		ClientPlayNetworking.registerGlobalReceiver(ItemStackBobbingAnimationPacketS2C.TYPE, new ItemStackBobbingAnimationPacketS2C.Receiver());
-		ClientPlayNetworking.registerGlobalReceiver(OptionPacketS2C.TYPE, new OptionPacketS2C.Receiver());
-		ClientPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketS2C.TYPE, new RequestBankStoragePacketS2C.Receiver());
+		ClientPlayNetworking.registerGlobalReceiver(ItemStackBobbingAnimationPacketS2C.TYPE, new ItemStackBobbingAnimationPacketReceiver());
+		ClientPlayNetworking.registerGlobalReceiver(OptionPacketS2C.TYPE, new OptionPacketReceiver());
+		ClientPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketS2C.TYPE, new RequestBankStoragePacketReceiver());
 	}
 
 }

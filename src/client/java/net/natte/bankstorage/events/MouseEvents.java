@@ -1,14 +1,12 @@
 package net.natte.bankstorage.events;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.natte.bankstorage.item.CachedBankStorage;
-import net.natte.bankstorage.network.OptionPackets;
 import net.natte.bankstorage.options.BuildMode;
+import net.natte.bankstorage.packet.ScrollPacketC2S;
 import net.natte.bankstorage.util.Util;
 
 public class MouseEvents {
@@ -23,12 +21,12 @@ public class MouseEvents {
         ItemStack left = playerInventory.player.getOffHandStack();
 
         if (isBankAndBuildMode(right)) {
-            sendScrollPacket(right, scroll);
+            ClientPlayNetworking.send(new ScrollPacketC2S(Util.getUUID(right), scroll));
             return true;
         }
-        
+
         if (isBankAndBuildMode(left)) {
-            sendScrollPacket(left, scroll);
+            ClientPlayNetworking.send(new ScrollPacketC2S(Util.getUUID(left), scroll));
             return true;
         }
 
@@ -47,10 +45,4 @@ public class MouseEvents {
         return buildMode == BuildMode.NORMAL || buildMode == BuildMode.RANDOM;
     }
 
-    private static void sendScrollPacket(ItemStack itemStack, double scroll) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeUuid(Util.getUUID(itemStack));
-        buf.writeDouble(scroll);
-        ClientPlayNetworking.send(OptionPackets.SCROLL_C2S_PACKET_ID, buf);
-    }
 }

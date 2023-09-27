@@ -8,7 +8,6 @@ import java.util.Set;
 import com.mojang.datafixers.util.Pair;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
@@ -29,8 +28,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
-import net.natte.bankstorage.network.PickupModePacket;
-import net.natte.bankstorage.network.SortPacket;
+import net.natte.bankstorage.packet.PickupModePacketC2S;
+import net.natte.bankstorage.packet.SortPacketC2S;
 import net.natte.bankstorage.rendering.ItemCountUtils;
 
 public class BankScreen extends HandledScreen<BankScreenHandler> {
@@ -54,7 +53,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         
         // middle click sorting
         if(button == 2 && (this.getSlotAt(mouseX, mouseY) instanceof BankSlot)){
-            ClientPlayNetworking.send(SortPacket.C2S_PACKET_ID, PacketByteBufs.create());
+            ClientPlayNetworking.send(new SortPacketC2S());
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -76,11 +75,11 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         super.init();
 
         this.addDrawableChild(
-                ButtonWidget.builder(Text.translatable("button.bankstorage.sort"), button -> ClientPlayNetworking.send(SortPacket.C2S_PACKET_ID, PacketByteBufs.create()))
+                ButtonWidget.builder(Text.translatable("button.bankstorage.sort"), button -> ClientPlayNetworking.send(new SortPacketC2S()))
                         .dimensions(x + titleX + this.type.guiTextureWidth - 60, y + titleY - 2, 40, 12).build());
 
         this.addDrawableChild(
-                ButtonWidget.builder(Text.translatable("button.bankstorage.pickupmode"), button -> ClientPlayNetworking.send(PickupModePacket.C2S_PACKET_ID, PacketByteBufs.create()))
+                ButtonWidget.builder(Text.translatable("button.bankstorage.pickupmode"), button -> ClientPlayNetworking.send(new PickupModePacketC2S()))
                         .dimensions(x + titleX + this.type.guiTextureWidth - 110, y + titleY - 2, 40, 12).build());
 
     }

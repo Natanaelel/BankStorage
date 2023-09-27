@@ -2,35 +2,18 @@ package net.natte.bankstorage.packet;
 
 import java.util.UUID;
 
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.PlayPacketHandler;
 import net.fabricmc.fabric.api.networking.v1.FabricPacket;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.PacketType;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.natte.bankstorage.BankStorage;
-import net.natte.bankstorage.item.CachedBankStorage;
-import net.natte.bankstorage.options.BankOptions;
 
 public class OptionPacketS2C
         implements FabricPacket {
 
     public static final PacketType<OptionPacketS2C> TYPE = PacketType
-            .create(new Identifier(BankStorage.MOD_ID, "options"), OptionPacketS2C::new);
-
-    public static class Receiver implements PlayPacketHandler<OptionPacketS2C> {
-
-        public void receive(OptionPacketS2C packet, ClientPlayerEntity player,
-                PacketSender responseSender) {
-            CachedBankStorage cachedBankStorage = CachedBankStorage.BANK_CACHE.get(packet.uuid);
-            if (cachedBankStorage != null) {
-                cachedBankStorage.options = BankOptions.fromNbt(packet.nbt);
-            }
-
-        }
-    }
+            .create(new Identifier(BankStorage.MOD_ID, "options_s2c"), OptionPacketS2C::new);
 
     public UUID uuid;
     public NbtCompound nbt;

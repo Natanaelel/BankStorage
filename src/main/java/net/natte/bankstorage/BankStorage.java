@@ -4,7 +4,6 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -17,10 +16,8 @@ import net.minecraft.command.argument.UuidArgumentType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -39,15 +36,15 @@ import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.BankFunctionality;
 import net.natte.bankstorage.item.BankItem;
-import net.natte.bankstorage.network.OptionPackets;
-import net.natte.bankstorage.network.PickupModePacket;
-import net.natte.bankstorage.network.SortPacket;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.options.PickupMode;
-import net.natte.bankstorage.packet.BuildOptionPacketC2S;
+import net.natte.bankstorage.packet.SortPacketC2S;
+import net.natte.bankstorage.packet.BuildModePacketC2S;
+import net.natte.bankstorage.packet.OptionPacketS2C;
+import net.natte.bankstorage.packet.PickupModePacketC2S;
 import net.natte.bankstorage.packet.RequestBankStoragePacketC2S;
+import net.natte.bankstorage.packet.ScrollPacketC2S;
 import net.natte.bankstorage.recipe.BankRecipeSerializer;
-import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 import net.natte.bankstorage.world.BankStateSaverAndLoader;
 
@@ -267,55 +264,15 @@ public class BankStorage implements ModInitializer {
 
 	public void registerNetworkListeners() {
 
-
 		ServerPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketC2S.TYPE, new RequestBankStoragePacketC2S.Receiver());
-		ServerPlayNetworking.registerGlobalReceiver(BuildOptionPacketC2S.TYPE, new BuildOptionPacketC2S.Receiver());
-
-
-		ServerPlayNetworking.registerGlobalReceiver(PickupModePacket.C2S_PACKET_ID,
-				(server, player, handler, buf, responseSender) -> {
-					server.execute(() -> {
-
-						onChangePickupMode(player);
-
-					});
-				});
-
-
-		ServerPlayNetworking.registerGlobalReceiver(OptionPackets.SCROLL_C2S_PACKET_ID,
-				(server, player, handler, buf, responseSender) -> {
-					UUID uuid = buf.readUuid();
-					double scroll = buf.readDouble();
-					server.execute(() -> {
-
-						BankItemStorage bankItemStorage = Util.getBankItemStorage(uuid, player.getWorld());
-						int selectedItemSlot = bankItemStorage.options.selectedItemSlot;
-						selectedItemSlot -= (int) Math.signum(scroll);
-						int size = bankItemStorage.getBlockItems().size();
-						bankItemStorage.options.selectedItemSlot = size == 0 ? 0
-								: Math.min(Math.max(selectedItemSlot, 0), size - 1);
-
-						OptionPackets.sendOptions(player, bankItemStorage.options, uuid);
-					});
-
-				});
-
-		ServerPlayNetworking.registerGlobalReceiver(SortPacket.C2S_PACKET_ID,
-				(server, player, handler, buf, responseSender) -> {
-					server.execute(() -> {
-						ScreenHandler screenHandler = player.currentScreenHandler;
-						if (!(screenHandler instanceof BankScreenHandler bankScreenHandler))
-							return;
-						BankItemStorage bankItemStorage = (BankItemStorage) bankScreenHandler.inventory;
-
-						Util.sortBank(bankItemStorage);
-
-					});
-
-				});
+		ServerPlayNetworking.registerGlobalReceiver(SortPacketC2S.TYPE, new SortPacketC2S.Receiver());
+		ServerPlayNetworking.registerGlobalReceiver(BuildModePacketC2S.TYPE, new BuildModePacketC2S.Receiver());
+		ServerPlayNetworking.registerGlobalReceiver(PickupModePacketC2S.TYPE, new PickupModePacketC2S.Receiver());
+		ServerPlayNetworking.registerGlobalReceiver(ScrollPacketC2S.TYPE, new ScrollPacketC2S.Receiver());
+	
 	}
 
-	private void onChangePickupMode(ServerPlayerEntity player) {
+	public static void onChangePickupMode(ServerPlayerEntity player) {
 		ItemStack stackInHand = player.getStackInHand(player.getActiveHand());
 		if (Util.isBank(stackInHand)) {
 			BankItemStorage bankItemStorage = Util.getBankItemStorage(stackInHand,
@@ -325,11 +282,8 @@ public class BankStorage implements ModInitializer {
 			player.sendMessage(Text.translatable("popup.bankstorage.pickupmode."
 					+ bankItemStorage.options.pickupMode.toString().toLowerCase()), true);
 
-			PacketByteBuf packet = PacketByteBufs.create();
-			packet.writeUuid(Util.getUUID(stackInHand));
-			packet.writeNbt(bankItemStorage.options.asNbt());
+			ServerPlayNetworking.send(player, new OptionPacketS2C(Util.getUUID(stackInHand), bankItemStorage.options.asNbt()));
 
-			ServerPlayNetworking.send(player, OptionPackets.S2C_PACKET_ID, packet);
 		}
 
 	}
@@ -344,11 +298,8 @@ public class BankStorage implements ModInitializer {
 			player.sendMessage(Text.translatable("popup.bankstorage.buildmode."
 					+ bankItemStorage.options.buildMode.toString().toLowerCase()), true);
 
-			PacketByteBuf packet = PacketByteBufs.create();
-			packet.writeUuid(Util.getUUID(stackInHand));
-			packet.writeNbt(bankItemStorage.options.asNbt());
 
-			ServerPlayNetworking.send(player, OptionPackets.S2C_PACKET_ID, packet);
+			ServerPlayNetworking.send(player, new OptionPacketS2C(Util.getUUID(stackInHand), bankItemStorage.options.asNbt()));
 		}
 	}
 
