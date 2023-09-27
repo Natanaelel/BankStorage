@@ -29,6 +29,7 @@ import net.minecraft.util.math.MathHelper;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.packet.PickupModePacketC2S;
+import net.natte.bankstorage.packet.RequestBankStoragePacketC2S;
 import net.natte.bankstorage.packet.SortPacketC2S;
 import net.natte.bankstorage.rendering.ItemCountUtils;
 
@@ -50,16 +51,15 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        
+
         // middle click sorting
-        if(button == 2 && (this.getSlotAt(mouseX, mouseY) instanceof BankSlot)){
+        if (button == 2 && (this.getSlotAt(mouseX, mouseY) instanceof BankSlot)) {
             ClientPlayNetworking.send(new SortPacketC2S());
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    
     public BankScreen(BankScreenHandler screenHandler, PlayerInventory playerInventory, Text text, BankType type) {
         super(screenHandler, playerInventory, text);
         this.type = type;
@@ -75,11 +75,15 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         super.init();
 
         this.addDrawableChild(
-                ButtonWidget.builder(Text.translatable("button.bankstorage.sort"), button -> ClientPlayNetworking.send(new SortPacketC2S()))
+                ButtonWidget
+                        .builder(Text.translatable("button.bankstorage.sort"),
+                                button -> ClientPlayNetworking.send(new SortPacketC2S()))
                         .dimensions(x + titleX + this.type.guiTextureWidth - 60, y + titleY - 2, 40, 12).build());
 
         this.addDrawableChild(
-                ButtonWidget.builder(Text.translatable("button.bankstorage.pickupmode"), button -> ClientPlayNetworking.send(new PickupModePacketC2S()))
+                ButtonWidget
+                        .builder(Text.translatable("button.bankstorage.pickupmode"),
+                                button -> ClientPlayNetworking.send(new PickupModePacketC2S()))
                         .dimensions(x + titleX + this.type.guiTextureWidth - 110, y + titleY - 2, 40, 12).build());
 
     }
@@ -118,7 +122,8 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
 
         int x = (width - backgroundWidth) / 2;
         int y = (height - backgroundHeight) / 2;
-        drawContext.drawTexture(this.texture, x, y, 0, 0, backgroundWidth, backgroundHeight, (int)Math.ceil(backgroundWidth / 256d) * 256, (int)Math.ceil(backgroundHeight / 256d) * 256);
+        drawContext.drawTexture(this.texture, x, y, 0, 0, backgroundWidth, backgroundHeight,
+                (int) Math.ceil(backgroundWidth / 256d) * 256, (int) Math.ceil(backgroundHeight / 256d) * 256);
     }
 
     @Override
@@ -132,6 +137,8 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
     }
 
     private void drawBankSlot(DrawContext context, Slot slot) {
+        // System.out.println("bankslot");
+        // if(Math.random() != 2) return;
         Pair<Identifier, Identifier> pair;
         int i = slot.x;
         int j = slot.y;
@@ -176,6 +183,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
             if (bl) {
                 context.fill(i, j, i + 16, j + 16, -2130706433);
             }
+            // System.out.println("drawitem " + i + " " + j);
             context.drawItem(itemStack, i, j, slot.x + slot.y * this.backgroundWidth);
             // context.drawItemInSlot(this.textRenderer, itemStack, i, j, string);
             this.drawItemCountInSlot(context, this.textRenderer, itemStack, i, j, drawInYellow);
@@ -203,6 +211,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
 
     public void drawItemCountInSlot(DrawContext context, TextRenderer textRenderer, ItemStack stack, int x, int y,
             boolean drawInYellow) {
+        // System.out.println("count " + stack.getCount());
         ClientPlayerEntity clientPlayerEntity;
         float f;
         int l;

@@ -17,6 +17,9 @@ import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.inventory.LockedSlot;
 import net.natte.bankstorage.item.BankItem;
+import net.natte.bankstorage.item.CachedBankStorage;
+import net.natte.bankstorage.packet.RequestBankStoragePacketC2S;
+import net.natte.bankstorage.util.Util;
 
 public class BankScreenHandler extends ScreenHandler {
 
@@ -24,16 +27,18 @@ public class BankScreenHandler extends ScreenHandler {
 
     private BankType type;
 
-
     // private ItemStack bankItemStack;
-
 
     public static net.minecraft.screen.ScreenHandlerType.Factory<BankScreenHandler> fromType(BankType type) {
         return (syncId, playerInventory) -> {
             // return new BankScreenHandler(syncId, playerInventory, new
             // SimpleInventory(type.size()), type);
-            // return new BankScreenHandler(syncId, playerInventory, new BankItemStorage(type, Util.getUUID(playerInventory.getMainHandStack())), type);
-            // return new BankScreenHandler(syncId, playerInventory, new BankItemStorage(type, Util.getUUID(playerInventory.getMainHandStack())), type);
+            // return new BankScreenHandler(syncId, playerInventory, new
+            // BankItemStorage(type, Util.getUUID(playerInventory.getMainHandStack())),
+            // type);
+            // return new BankScreenHandler(syncId, playerInventory, new
+            // BankItemStorage(type, Util.getUUID(playerInventory.getMainHandStack())),
+            // type);
             return new BankScreenHandler(syncId, playerInventory, new BankItemStorage(type, null), type);
         };
     }
@@ -244,7 +249,6 @@ public class BankScreenHandler extends ScreenHandler {
             if (this.slots.get(slotIndex) instanceof LockedSlot || button == player.getInventory().selectedSlot)
                 return;
 
-            
             ItemStack stackInSlot = this.slots.get(slotIndex).getStack();
 
             // can't move large stack with numbers
@@ -504,6 +508,15 @@ public class BankScreenHandler extends ScreenHandler {
         }
 
         return super.handleSlotClick(player, clickType, slot, stack, cursorStack);
+    }
+
+    @Override
+    public void onClosed(PlayerEntity player) {
+        ItemStack stack = player.getStackInHand(player.getActiveHand());
+        if(Util.hasUUID(stack)){
+            CachedBankStorage.bankRequestQueue.add(Util.getUUID(stack));
+        }
+        super.onClosed(player);
     }
 
     public static boolean canInsertItemIntoSlot(@Nullable Slot slot, ItemStack stack, boolean allowOverflow) {

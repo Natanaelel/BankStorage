@@ -24,6 +24,7 @@ import net.natte.bankstorage.network.ItemStackBobbingAnimationPacketReceiver;
 import net.natte.bankstorage.network.OptionPacketReceiver;
 import net.natte.bankstorage.network.RequestBankStoragePacketReceiver;
 import net.natte.bankstorage.packet.SortPacketC2S;
+import net.natte.bankstorage.packet.BuildModePacketC2S;
 import net.natte.bankstorage.packet.ItemStackBobbingAnimationPacketS2C;
 import net.natte.bankstorage.packet.OptionPacketS2C;
 // import net.natte.bankstorage.packet.PreviewItemsPacketS2C;
@@ -32,6 +33,7 @@ import net.natte.bankstorage.packet.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.rendering.BankDockBlockEntityRenderer;
 import net.natte.bankstorage.rendering.BuildModePreviewRenderer;
 import net.natte.bankstorage.screen.BankScreen;
+import net.natte.bankstorage.screen.ClientBankPacketHandler;
 import net.natte.bankstorage.util.Util;
 
 @Environment(EnvType.CLIENT)
@@ -98,7 +100,7 @@ public class BankStorageClient implements ClientModInitializer {
 
 			while (toggleBuildModeKeyBinding.wasPressed()) {
 				if (Util.isBank(client.player.getStackInHand(client.player.getActiveHand()))) {
-					ClientPlayNetworking.send(new SortPacketC2S());
+					ClientPlayNetworking.send(new BuildModePacketC2S());
 				}
 			}
 
@@ -109,6 +111,8 @@ public class BankStorageClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(ItemStackBobbingAnimationPacketS2C.TYPE, new ItemStackBobbingAnimationPacketReceiver());
 		ClientPlayNetworking.registerGlobalReceiver(OptionPacketS2C.TYPE, new OptionPacketReceiver());
 		ClientPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketS2C.TYPE, new RequestBankStoragePacketReceiver());
+
+		ClientBankPacketHandler.registerClientMessages();
 	}
 
 }
