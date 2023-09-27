@@ -241,8 +241,10 @@ public class BankScreenHandler extends ScreenHandler {
 
         if (actionType == SlotActionType.SWAP) {
             // cannot move opened BankItem with numbers
-            if (this.slots.get(slotIndex) instanceof LockedSlot && button == player.getInventory().selectedSlot)
+            if (this.slots.get(slotIndex) instanceof LockedSlot || button == player.getInventory().selectedSlot)
                 return;
+
+            
             ItemStack stackInSlot = this.slots.get(slotIndex).getStack();
 
             // can't move large stack with numbers

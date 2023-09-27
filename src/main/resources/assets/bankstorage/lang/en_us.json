@@ -24,5 +24,8 @@
 
     "category.bankstorage": "Bank Storage",
     "key.bankstorage.togglebuildmode": "Toggle build mode",
-    "key.bankstorage.": "Toggle build mode"
+    "key.bankstorage.": "Toggle build mode",
+
+    "tooptip.bankstorage.stacklimit": "§7Stack limit: %s",
+    "tooptip.bankstorage.numslots": "§7Numer of slots: %s"
 }

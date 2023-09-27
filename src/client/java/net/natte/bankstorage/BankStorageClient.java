@@ -13,20 +13,18 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.impl.client.rendering.BlockEntityRendererRegistryImpl;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.CachedBankStorage;
-import net.natte.bankstorage.network.BuildOptionPacket;
-import net.natte.bankstorage.network.ItemStackBobbingAnimationS2C;
-import net.natte.bankstorage.network.OptionPackets;
-import net.natte.bankstorage.network.RequestBankStorage;
-import net.natte.bankstorage.options.BankOptions;
+import net.natte.bankstorage.packet.BuildOptionPacketC2S;
+import net.natte.bankstorage.packet.ItemStackBobbingAnimationPacketS2C;
+import net.natte.bankstorage.packet.OptionPacketS2C;
+import net.natte.bankstorage.packet.RequestBankStoragePacketC2S;
+import net.natte.bankstorage.packet.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.rendering.BankDockBlockEntityRenderer;
 import net.natte.bankstorage.rendering.BuildModePreviewRenderer;
 import net.natte.bankstorage.screen.BankScreen;
@@ -63,10 +61,12 @@ public class BankStorageClient implements ClientModInitializer {
 			if (client.world == null)
 				return;
 			for (UUID uuid : CachedBankStorage.bankRequestQueue) {
-				ClientPlayNetworking.send(RequestBankStorage.C2S_PACKET_ID, RequestBankStorage.createRequestC2S(uuid));
+				ClientPlayNetworking.send(new RequestBankStoragePacketC2S(uuid));
 			}
 			CachedBankStorage.bankRequestQueue.clear();
 		});
+
+		Util.isShiftDown = () -> Screen.hasShiftDown();
 
 	}
 
@@ -94,62 +94,17 @@ public class BankStorageClient implements ClientModInitializer {
 
 			while (toggleBuildModeKeyBinding.wasPressed()) {
 				if (Util.isBank(client.player.getStackInHand(client.player.getActiveHand()))) {
-					ClientPlayNetworking.send(BuildOptionPacket.C2S_PACKET_ID, PacketByteBufs.create());
+					ClientPlayNetworking.send(new BuildOptionPacketC2S());
 				}
 			}
 
 		});
 	}
 
-	private void registerNetworkListeners() {
-
-		ClientPlayNetworking.registerGlobalReceiver(OptionPackets.S2C_PACKET_ID,
-				(client, handler, buf, responseSender) -> {
-					UUID uuid = buf.readUuid();
-					CachedBankStorage cachedBankStorage = CachedBankStorage.BANK_CACHE.get(uuid);
-					cachedBankStorage.options = BankOptions.fromNbt(buf.readNbt());
-				});
-
-		ClientPlayNetworking.registerGlobalReceiver(ItemStackBobbingAnimationS2C.PACKET_ID,
-				(client, handler, buf, responseSender) -> {
-					int i = buf.readInt();
-					PlayerInventory inventory = client.player.getInventory();
-					ItemStack stack = ItemStack.EMPTY;
-					if (i < 9 * 4) {
-						stack = inventory.main.get(i);
-					} else if (i < 9 * 4 + 1) {
-						stack = inventory.offHand.get(i - 9 * 4);
-					} else {
-						stack = inventory.armor.get(i - 9 * 4 - 1);
-					}
-					stack.setBobbingAnimationTime(5);
-				});
-
-		ClientPlayNetworking.registerGlobalReceiver(RequestBankStorage.S2C_PACKET_ID,
-				(client, handler, buf, responseSender) -> {
-					CachedBankStorage bankStorage = RequestBankStorage.readPacketS2C(buf);
-					CachedBankStorage.BANK_CACHE.put(bankStorage.uuid, bankStorage);
-
-					if (bankStorage.uuid.equals(buildModePreviewRenderer.uuid)) {
-						buildModePreviewRenderer.setBankStorage(bankStorage);
-					}
-				});
-
-		ClientPlayNetworking.registerGlobalReceiver(OptionPackets.OPTIONS_S2C_PACKET_ID,
-				(client, handler, buf, responseSender) -> {
-
-					UUID uuid = buf.readUuid();
-					BankOptions options = BankOptions.fromNbt(buf.readNbt());
-
-					client.execute(() -> {
-						CachedBankStorage cachedBankStorage = CachedBankStorage.BANK_CACHE.get(uuid);
-
-						if (cachedBankStorage == null)
-							return;
-
-						cachedBankStorage.options = options;
-					});
-
-				});
+	public void registerNetworkListeners() {
+		ClientPlayNetworking.registerGlobalReceiver(ItemStackBobbingAnimationPacketS2C.TYPE, new ItemStackBobbingAnimationPacketS2C.Receiver());
+		ClientPlayNetworking.registerGlobalReceiver(OptionPacketS2C.TYPE, new OptionPacketS2C.Receiver());
+		ClientPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketS2C.TYPE, new RequestBankStoragePacketS2C.Receiver());
 	}
+
 }

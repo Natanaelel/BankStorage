@@ -39,8 +39,11 @@ public class BankType {
     }
 
     public void register(List<BankType> types){
-        
-        this.item = new BankItem(new Settings().maxCount(1), this);
+        register(types, new Settings());
+    }
+
+    public void register(List<BankType> types, Settings settings){
+        this.item = new BankItem(settings.maxCount(1), this);
         Identifier identifier = new Identifier(BankStorage.MOD_ID, this.name);
         Registry.register(Registries.ITEM, identifier, this.item);
         this.screenHandlerType = new ScreenHandlerType<>(BankScreenHandler.fromType(this), FeatureFlags.VANILLA_FEATURES);
@@ -61,7 +64,7 @@ public class BankType {
     }
 
     public Identifier getGuiTexture(){
-        return new Identifier(BankStorage.MOD_ID, "textures/gui/" + this.name + ".png");
+        return new Identifier(BankStorage.MOD_ID, "textures/gui/" + this.cols + "x" + this.rows + ".png");
     }
 
 }

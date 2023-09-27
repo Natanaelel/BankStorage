@@ -39,13 +39,13 @@ import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.BankFunctionality;
 import net.natte.bankstorage.item.BankItem;
-import net.natte.bankstorage.network.BuildOptionPacket;
 import net.natte.bankstorage.network.OptionPackets;
 import net.natte.bankstorage.network.PickupModePacket;
-import net.natte.bankstorage.network.RequestBankStorage;
 import net.natte.bankstorage.network.SortPacket;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.options.PickupMode;
+import net.natte.bankstorage.packet.BuildOptionPacketC2S;
+import net.natte.bankstorage.packet.RequestBankStoragePacketC2S;
 import net.natte.bankstorage.recipe.BankRecipeSerializer;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
@@ -72,9 +72,9 @@ public class BankStorage implements ModInitializer {
 	public static final BankType BANK_2 = new BankType("bank_2", 16, 2, 9, 176, 114 + 18 * 2);
 	public static final BankType BANK_3 = new BankType("bank_3", 64, 3, 9, 176, 114 + 18 * 3);
 	public static final BankType BANK_4 = new BankType("bank_4", 256, 4, 9, 176, 114 + 18 * 4);
-	public static final BankType BANK_5 = new BankType("bank_5", 1024, 5, 9, 176, 114 + 18 * 5);
-	public static final BankType BANK_6 = new BankType("bank_6", 4096, 6, 9, 176, 114 + 18 * 6);
-	public static final BankType BANK_7 = new BankType("bank_7", 15625000, 7, 9, 176, 114 + 18 * 7);
+	public static final BankType BANK_5 = new BankType("bank_5", 1024, 6, 9, 176, 114 + 18 * 6);
+	public static final BankType BANK_6 = new BankType("bank_6", 4096, 9, 9, 176, 114 + 18 * 9);
+	public static final BankType BANK_7 = new BankType("bank_7", 15625000, 12, 9, 176, 114 + 18 * 12);
 
 	public static final List<BankType> bankTypes = new ArrayList<>();
 
@@ -107,7 +107,7 @@ public class BankStorage implements ModInitializer {
 		BANK_4.register(bankTypes);
 		BANK_5.register(bankTypes);
 		BANK_6.register(bankTypes);
-		BANK_7.register(bankTypes);
+		BANK_7.register(bankTypes, new FabricItemSettings().fireproof());
 
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(group -> {
 			bankTypes.forEach(type -> {
@@ -267,14 +267,10 @@ public class BankStorage implements ModInitializer {
 
 	public void registerNetworkListeners() {
 
-		ServerPlayNetworking.registerGlobalReceiver(BuildOptionPacket.C2S_PACKET_ID,
-				(server, player, handler, buf, responseSender) -> {
-					server.execute(() -> {
 
-						onChangeBuildMode(player);
+		ServerPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketC2S.TYPE, new RequestBankStoragePacketC2S.Receiver());
+		ServerPlayNetworking.registerGlobalReceiver(BuildOptionPacketC2S.TYPE, new BuildOptionPacketC2S.Receiver());
 
-					});
-				});
 
 		ServerPlayNetworking.registerGlobalReceiver(PickupModePacket.C2S_PACKET_ID,
 				(server, player, handler, buf, responseSender) -> {
@@ -284,24 +280,7 @@ public class BankStorage implements ModInitializer {
 
 					});
 				});
-		ServerPlayNetworking.registerGlobalReceiver(RequestBankStorage.C2S_PACKET_ID,
-				(server, player, handler, buf, responseSender) -> {
-					UUID uuid = buf.readUuid();
-					server.execute(() -> {
 
-						BankItemStorage bankItemStorage = Util.getBankItemStorage(uuid, player.getWorld());
-						long randomSeed = (long) (Math.random() * 0xBEEEF);
-						bankItemStorage.random.setSeed(randomSeed);
-						List<ItemStack> items = bankItemStorage.getBlockItems();
-						bankItemStorage.options.selectedItemSlot = Math
-								.max(Math.min(bankItemStorage.options.selectedItemSlot, items.size() - 1), 0);
-						PacketByteBuf packet = RequestBankStorage.createPacketS2C(items,
-								uuid, bankItemStorage.options, randomSeed);
-
-						responseSender.sendPacket(RequestBankStorage.S2C_PACKET_ID, packet);
-					});
-
-				});
 
 		ServerPlayNetworking.registerGlobalReceiver(OptionPackets.SCROLL_C2S_PACKET_ID,
 				(server, player, handler, buf, responseSender) -> {

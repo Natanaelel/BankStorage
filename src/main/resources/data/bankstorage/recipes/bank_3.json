@@ -7,7 +7,7 @@
 	],
 	"key": {
 		"A": {
-			"item": "minecraft:gold_block"
+			"item": "minecraft:iron_block"
 		},
 		"B": {
 			"item": "bankstorage:bank_2"

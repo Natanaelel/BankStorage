@@ -2,14 +2,15 @@ package net.natte.bankstorage.inventory;
 
 import com.google.common.collect.Iterables;
 
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.World;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.item.BankItem;
-import net.natte.bankstorage.network.ItemStackBobbingAnimationS2C;
 import net.natte.bankstorage.options.PickupMode;
+import net.natte.bankstorage.packet.ItemStackBobbingAnimationPacketS2C;
 import net.natte.bankstorage.util.Util;
 
 public class ItemPickupHandler {
@@ -72,7 +73,7 @@ public class ItemPickupHandler {
                 }
 
                 if(bankPickedUpAny){
-                    ItemStackBobbingAnimationS2C.send((ServerPlayerEntity)playerInventory.player, index);
+                    ServerPlayNetworking.send(((ServerPlayerEntity)playerInventory.player), new ItemStackBobbingAnimationPacketS2C(index));
                 }
 
                 if(pickedUpStack.isEmpty()){

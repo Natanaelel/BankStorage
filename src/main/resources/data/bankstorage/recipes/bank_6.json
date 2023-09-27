@@ -7,7 +7,7 @@
 	],
 	"key": {
 		"A": {
-			"item": "minecraft:obsidian"
+			"item": "minecraft:diamond_block"
 		},
 		"B": {
 			"item": "bankstorage:bank_5"

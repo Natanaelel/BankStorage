@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -17,6 +18,8 @@ import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.world.BankStateSaverAndLoader;
 
 public class Util {
+
+    public static Supplier<Boolean> isShiftDown = () -> false;
 
     public static boolean isBank(ItemStack itemStack) {
         return itemStack.getItem() instanceof BankItem;

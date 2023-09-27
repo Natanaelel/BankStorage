@@ -119,7 +119,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
 
         int x = (width - backgroundWidth) / 2;
         int y = (height - backgroundHeight) / 2;
-        drawContext.drawTexture(this.texture, x, y, 0, 0, backgroundWidth, backgroundHeight);
+        drawContext.drawTexture(this.texture, x, y, 0, 0, backgroundWidth, backgroundHeight, (int)Math.ceil(backgroundWidth / 256d) * 256, (int)Math.ceil(backgroundHeight / 256d) * 256);
     }
 
     @Override
