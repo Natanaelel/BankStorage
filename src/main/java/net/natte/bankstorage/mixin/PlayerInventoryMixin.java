@@ -9,12 +9,12 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.natte.bankstorage.inventory.ItemPickupHandler;
 
-
 @Mixin(PlayerInventory.class)
 public abstract class PlayerInventoryMixin {
-    
+
     @Inject(method = "insertStack(Lnet/minecraft/item/ItemStack;)Z", at = @At("HEAD"), cancellable = true)
-    public void onInsertStack(ItemStack stack, CallbackInfoReturnable<Boolean> cir){
-        if(ItemPickupHandler.onItemPickup(stack, (PlayerInventory)(Object)this)) cir.setReturnValue(true);;
+    public void onInsertStack(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+        if (ItemPickupHandler.onItemPickup(stack, (PlayerInventory) (Object) this))
+            cir.setReturnValue(true);
     }
 }

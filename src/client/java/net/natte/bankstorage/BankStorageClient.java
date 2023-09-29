@@ -23,17 +23,18 @@ import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.network.ItemStackBobbingAnimationPacketReceiver;
 import net.natte.bankstorage.network.OptionPacketReceiver;
 import net.natte.bankstorage.network.RequestBankStoragePacketReceiver;
-import net.natte.bankstorage.packet.SortPacketC2S;
+import net.natte.bankstorage.network.screensync.SyncLargeSlotInventoryS2C;
+import net.natte.bankstorage.network.screensync.SyncLargeSlotS2C;
 import net.natte.bankstorage.packet.BuildModePacketC2S;
 import net.natte.bankstorage.packet.ItemStackBobbingAnimationPacketS2C;
 import net.natte.bankstorage.packet.OptionPacketS2C;
-// import net.natte.bankstorage.packet.PreviewItemsPacketS2C;
 import net.natte.bankstorage.packet.RequestBankStoragePacketC2S;
 import net.natte.bankstorage.packet.RequestBankStoragePacketS2C;
+import net.natte.bankstorage.packet.screensync.BankSyncPacketHandler;
 import net.natte.bankstorage.rendering.BankDockBlockEntityRenderer;
 import net.natte.bankstorage.rendering.BuildModePreviewRenderer;
 import net.natte.bankstorage.screen.BankScreen;
-import net.natte.bankstorage.screen.ClientBankPacketHandler;
+
 import net.natte.bankstorage.util.Util;
 
 @Environment(EnvType.CLIENT)
@@ -43,25 +44,33 @@ public class BankStorageClient implements ClientModInitializer {
 
 	public static KeyBinding toggleBuildModeKeyBinding;
 
-	public static BuildModePreviewRenderer buildModePreviewRenderer;
+	public static BuildModePreviewRenderer buildModePreviewRenderer = new BuildModePreviewRenderer();
+
+	static {
+		Util.isShiftDown = () -> Screen.hasShiftDown();
+	}
 
 	@Override
 	public void onInitializeClient() {
 
-		registerDockRenderer();
-
 		registerHandledScreens();
-
 		registerKeyBinds();
 		registerKeyBindListeners();
+		registerRenderers();
+		registerNetworkListeners();
+		registerTickEvents();
 
-		buildModePreviewRenderer = BuildModePreviewRenderer.Instance;
+	}
 
-		ClientTickEvents.END_CLIENT_TICK.register(buildModePreviewRenderer);
+	private void registerRenderers() {
 
 		HudRenderCallback.EVENT.register(buildModePreviewRenderer::render);
 
-		registerNetworkListeners();
+		BlockEntityRendererRegistryImpl.register(BankStorage.BANK_DOCK_BLOCK_ENTITY, BankDockBlockEntityRenderer::new);
+	}
+
+	private void registerTickEvents() {
+		ClientTickEvents.END_CLIENT_TICK.register(buildModePreviewRenderer::onEndTick);
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (client.world == null)
@@ -72,12 +81,6 @@ public class BankStorageClient implements ClientModInitializer {
 			CachedBankStorage.bankRequestQueue.clear();
 		});
 
-		Util.isShiftDown = () -> Screen.hasShiftDown();
-
-	}
-
-	private void registerDockRenderer() {
-		BlockEntityRendererRegistryImpl.register(BankStorage.BANK_DOCK_BLOCK_ENTITY, BankDockBlockEntityRenderer::new);
 	}
 
 	private void registerHandledScreens() {
@@ -108,11 +111,14 @@ public class BankStorageClient implements ClientModInitializer {
 	}
 
 	public void registerNetworkListeners() {
-		ClientPlayNetworking.registerGlobalReceiver(ItemStackBobbingAnimationPacketS2C.TYPE, new ItemStackBobbingAnimationPacketReceiver());
+		ClientPlayNetworking.registerGlobalReceiver(ItemStackBobbingAnimationPacketS2C.TYPE,
+				new ItemStackBobbingAnimationPacketReceiver());
 		ClientPlayNetworking.registerGlobalReceiver(OptionPacketS2C.TYPE, new OptionPacketReceiver());
-		ClientPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketS2C.TYPE, new RequestBankStoragePacketReceiver());
+		ClientPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketS2C.TYPE,
+				new RequestBankStoragePacketReceiver());
 
-		ClientBankPacketHandler.registerClientMessages();
+		ClientPlayNetworking.registerGlobalReceiver(BankSyncPacketHandler.sync_slot, new SyncLargeSlotS2C());
+		ClientPlayNetworking.registerGlobalReceiver(BankSyncPacketHandler.sync_container,
+				new SyncLargeSlotInventoryS2C());
 	}
-
 }

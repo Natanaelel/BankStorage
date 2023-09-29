@@ -14,27 +14,30 @@ import net.natte.bankstorage.packet.ItemStackBobbingAnimationPacketS2C;
 import net.natte.bankstorage.util.Util;
 
 public class ItemPickupHandler {
+
     public static boolean onItemPickup(ItemStack pickedUpStack, PlayerInventory playerInventory) {
         return pickUpStack(pickedUpStack, playerInventory);
     }
 
     public static boolean pickUpStack(ItemStack pickedUpStack, PlayerInventory playerInventory) {
         World world = playerInventory.player.getWorld();
+
         if (world.isClient)
             return false;
         if (pickedUpStack.isEmpty())
             return false;
         if (!Util.isAllowedInBank(pickedUpStack))
             return false;
+
         int index = -1;
         Iterable<ItemStack> items = Iterables.concat(
                 playerInventory.main,
-                playerInventory.offHand,
-                playerInventory.armor);
+                playerInventory.armor,
+                playerInventory.offHand);
+
         for (ItemStack itemStack : items) {
             ++index;
             if (itemStack.getItem() instanceof BankItem) {
-                // int countBefore = itemStack.getCount();
                 boolean bankPickedUpAny = false;
                 if (!itemStack.hasNbt())
                     continue;
@@ -43,7 +46,7 @@ public class ItemPickupHandler {
 
                 BankItemStorage bankItemStorage = Util.getBankItemStorage(itemStack, world);
                 PickupMode mode = bankItemStorage.options.pickupMode;
-                
+
                 if (mode == PickupMode.NONE) {
                     continue;
                 }
@@ -64,7 +67,7 @@ public class ItemPickupHandler {
                             bankPickedUpAny = true;
 
                         if (mode == PickupMode.VOID) {
-                            if(!pickedUpStack.isEmpty()){
+                            if (!pickedUpStack.isEmpty()) {
                                 bankPickedUpAny = true;
                             }
                             pickedUpStack.setCount(0);
@@ -72,11 +75,12 @@ public class ItemPickupHandler {
                     }
                 }
 
-                if(bankPickedUpAny){
-                    ServerPlayNetworking.send(((ServerPlayerEntity)playerInventory.player), new ItemStackBobbingAnimationPacketS2C(index));
+                if (bankPickedUpAny) {
+                    ServerPlayNetworking.send(((ServerPlayerEntity) playerInventory.player),
+                            new ItemStackBobbingAnimationPacketS2C(index));
                 }
 
-                if(pickedUpStack.isEmpty()){
+                if (pickedUpStack.isEmpty()) {
                     return bankPickedUpAny;
                 }
 
@@ -107,6 +111,7 @@ public class ItemPickupHandler {
                     stackInSlot.increment(toMove);
                     pickedUpStack.decrement(toMove);
                     bankItemStorage.markDirty();
+
                     if (pickedUpStack.isEmpty())
                         return pickedUpAny;
                 }
@@ -162,11 +167,4 @@ public class ItemPickupHandler {
         }
         return false;
     }
-
-    public void animateIfInserted(boolean didInsert) {
-        if (didInsert) {
-
-        }
-    }
-
 }

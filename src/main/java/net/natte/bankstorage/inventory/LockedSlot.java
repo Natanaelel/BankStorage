@@ -15,22 +15,22 @@ public class LockedSlot extends Slot {
     public boolean canTakeItems(PlayerEntity playerEntity) {
         return false;
     }
+
     @Override
     public boolean canInsert(ItemStack stack) {
         return false;
     }
+
     @Override
     public boolean canTakePartial(PlayerEntity player) {
         return false;
     }
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
+
     @Override
     public ItemStack takeStack(int amount) {
         return ItemStack.EMPTY;
     }
+
     @Override
     public void setStack(ItemStack stack) {
     }

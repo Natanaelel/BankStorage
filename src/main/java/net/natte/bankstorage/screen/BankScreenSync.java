@@ -7,7 +7,7 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerSyncHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.collection.DefaultedList;
-import net.natte.bankstorage.packet.screensync.BankPacketHandler;
+import net.natte.bankstorage.packet.screensync.BankSyncPacketHandler;
 
 /*
  * Credit Tfarcenim
@@ -24,7 +24,7 @@ public class BankScreenSync implements ScreenHandlerSyncHandler {
     @Override
     public void updateState(ScreenHandler screenHandler, DefaultedList<ItemStack> inventory, ItemStack stack,
             int[] indices) {
-        BankPacketHandler.sendSyncContainer(player, screenHandler.nextRevision(),
+        BankSyncPacketHandler.sendSyncContainer(player, screenHandler.nextRevision(),
                 screenHandler.syncId, inventory, stack);
         for (int i = 0; i < indices.length; ++i) {
             this.broadcastDataValue(screenHandler, i, indices[i]);
@@ -33,24 +33,22 @@ public class BankScreenSync implements ScreenHandlerSyncHandler {
 
     @Override
     public void updateSlot(ScreenHandler screenHandler, int slot, ItemStack stack) {
-        BankPacketHandler.sendSyncSlot(player, screenHandler.syncId, slot, stack);
+        BankSyncPacketHandler.sendSyncSlot(player, screenHandler.syncId, slot, stack);
     }
 
     @Override
     public void updateCursorStack(ScreenHandler screenHandler, ItemStack stack) {
         player.networkHandler
-                .sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-1, player.currentScreenHandler.nextRevision(), -1, stack));
-
+                .sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-1, player.currentScreenHandler.nextRevision(), -1,
+                        stack));
     }
 
     @Override
     public void updateProperty(ScreenHandler screenHandler, int i, int j) {
         this.broadcastDataValue(screenHandler, i, j);
-
     }
 
     private void broadcastDataValue(ScreenHandler screenHandler, int i, int j) {
         player.networkHandler.sendPacket(new ScreenHandlerPropertyUpdateS2CPacket(screenHandler.syncId, i, j));
     }
-
 }

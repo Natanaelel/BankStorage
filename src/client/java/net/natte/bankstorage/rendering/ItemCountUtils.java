@@ -2,12 +2,7 @@ package net.natte.bankstorage.rendering;
 
 public class ItemCountUtils {
 
-	private static final char[] POWER = {
-			'K',
-			'M',
-			'B',
-			'T'
-	};
+	private static final String[] POWER = { "K", "M", "B", "T" };
 
 	public static String toConsiseString(int count) {
 		int index = 0;
@@ -19,7 +14,7 @@ public class ItemCountUtils {
 		}
 
 		if (index > 0) {
-			return count + String.valueOf(POWER[index - 1]);
+			return count + POWER[index - 1];
 		} else {
 			return String.valueOf(count);
 		}
@@ -27,15 +22,15 @@ public class ItemCountUtils {
 
 	/**
 	 * How big or small to render the item count text
+	 * 
 	 * @return 1 == vanilla
 	 */
 	public static float scale(String string) {
 		if (string.length() > 3) {
-			return 5f/8f;//0.5f;
+			return 5f / 8f;
 		} else if (string.length() == 3) {
-			return 6f/8f;
+			return 6f / 8f;
 		}
 		return 1f;
 	}
-
 }

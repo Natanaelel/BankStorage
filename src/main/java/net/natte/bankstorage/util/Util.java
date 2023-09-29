@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
@@ -61,9 +62,9 @@ public class Util {
         nbt.putString("id", identifier == null ? "minecraft:air" : identifier.toString());
         nbt.putInt("Count", itemStack.getCount());
 
-        if (itemStack.getNbt() != null) {
+        if (itemStack.getNbt() != null)
             nbt.put("tag", itemStack.getNbt().copy());
-        }
+
         return nbt;
     }
 
@@ -72,14 +73,24 @@ public class Util {
         ItemStack itemStack = Registries.ITEM.get(new Identifier(nbt.getString("id"))).getDefaultStack();
         itemStack.setCount(nbt.getInt("Count"));
 
-        if (nbt.contains("tag", NbtElement.COMPOUND_TYPE)) {
+        if (nbt.contains("tag", NbtElement.COMPOUND_TYPE))
             itemStack.setNbt(nbt.getCompound("tag"));
-        }
 
         return itemStack;
     }
 
+    public static ItemStack readLargeStack(PacketByteBuf buf) {
+        return Util.largeStackFromNbt(buf.readNbt());
+    }
+
+    public static void writeLargeStack(PacketByteBuf buf, ItemStack stack) {
+        buf.writeNbt(Util.largeStackAsNbt(stack));
+    }
+
+    // todo? fix unlikely bug where bank contains one item count > Integer.MAX_VALUE
     public static void sortBank(BankItemStorage bankItemStorage) {
+
+        // collect unique elements with *unlimited* stack size
         List<ItemStack> collectedItems = new ArrayList<>();
         for (ItemStack itemStack : bankItemStorage.stacks) {
             boolean didExist = false;
@@ -92,7 +103,11 @@ public class Util {
             if (!didExist && !itemStack.isEmpty())
                 collectedItems.add(itemStack.copy());
         }
+
+        // sort
         collectedItems.sort(Comparator.comparingInt(ItemStack::getCount).reversed());
+
+        // fill bank one slot at a time
         for (int i = 0; i < bankItemStorage.size(); i++) {
             boolean isEmpty = collectedItems.isEmpty();
             if (!isEmpty) {
@@ -104,7 +119,6 @@ public class Util {
                 }
             } else {
                 bankItemStorage.setStack(i, ItemStack.EMPTY);
-
             }
         }
     }
@@ -115,7 +129,6 @@ public class Util {
         BankItemStorage bankItemStorage = serverState.get(uuid);
 
         return bankItemStorage;
-
     }
 
     public static BankItemStorage getBankItemStorage(ItemStack bank, World world) {
@@ -128,7 +141,5 @@ public class Util {
         BankStateSaverAndLoader serverState = BankStateSaverAndLoader.getServerState(world.getServer());
         BankItemStorage bankItemStorage = serverState.getOrCreate(uuid, type, bank.getName());
         return bankItemStorage;
-
     }
-
 }

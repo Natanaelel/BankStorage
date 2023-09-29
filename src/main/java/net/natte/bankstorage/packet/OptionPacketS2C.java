@@ -9,8 +9,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.natte.bankstorage.BankStorage;
 
-public class OptionPacketS2C
-        implements FabricPacket {
+public class OptionPacketS2C implements FabricPacket {
 
     public static final PacketType<OptionPacketS2C> TYPE = PacketType
             .create(new Identifier(BankStorage.MOD_ID, "options_s2c"), OptionPacketS2C::new);
@@ -37,5 +36,4 @@ public class OptionPacketS2C
     public PacketType<?> getType() {
         return TYPE;
     }
-
 }

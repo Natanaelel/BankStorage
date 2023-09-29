@@ -14,8 +14,7 @@ import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.util.Util;
 
-public class RequestBankStoragePacketS2C
-        implements FabricPacket {
+public class RequestBankStoragePacketS2C implements FabricPacket {
 
     public static final PacketType<RequestBankStoragePacketS2C> TYPE = PacketType
             .create(new Identifier(BankStorage.MOD_ID, "requestbank_s2c"), RequestBankStoragePacketS2C::new);
@@ -32,7 +31,7 @@ public class RequestBankStoragePacketS2C
         int size = buf.readInt();
         List<ItemStack> items = new ArrayList<>(size);
         for (int i = 0; i < size; ++i) {
-            items.add(Util.largeStackFromNbt(buf.readNbt()));
+            items.add(Util.readLargeStack(buf));
         }
         UUID uuid = buf.readUuid();
         Long randomSeed = buf.readLong();
@@ -48,7 +47,7 @@ public class RequestBankStoragePacketS2C
 
         buf.writeInt(this.cachedBankStorage.items.size());
         for (ItemStack itemStack : this.cachedBankStorage.items) {
-            buf.writeNbt(Util.largeStackAsNbt(itemStack));
+            Util.writeLargeStack(buf, itemStack);
         }
         buf.writeUuid(this.cachedBankStorage.uuid);
         buf.writeLong(this.randomSeed);
@@ -60,5 +59,4 @@ public class RequestBankStoragePacketS2C
     public PacketType<?> getType() {
         return TYPE;
     }
-
 }

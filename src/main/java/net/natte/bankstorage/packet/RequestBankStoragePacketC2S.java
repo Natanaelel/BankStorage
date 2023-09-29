@@ -15,8 +15,7 @@ import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.util.Util;
 
-public class RequestBankStoragePacketC2S
-        implements FabricPacket {
+public class RequestBankStoragePacketC2S implements FabricPacket {
 
     public static final PacketType<RequestBankStoragePacketC2S> TYPE = PacketType
             .create(new Identifier(BankStorage.MOD_ID, "requestbank_c2s"), RequestBankStoragePacketC2S::new);
@@ -58,5 +57,4 @@ public class RequestBankStoragePacketC2S
     public PacketType<?> getType() {
         return TYPE;
     }
-
 }

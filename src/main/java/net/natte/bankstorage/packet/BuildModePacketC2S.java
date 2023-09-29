@@ -37,5 +37,4 @@ public class BuildModePacketC2S implements FabricPacket {
     public PacketType<?> getType() {
         return TYPE;
     }
-
 }

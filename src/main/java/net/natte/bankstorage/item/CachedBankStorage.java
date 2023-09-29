@@ -12,19 +12,17 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.item.ItemStack;
 import net.natte.bankstorage.options.BankOptions;
+import net.natte.bankstorage.util.Util;
 
 public class CachedBankStorage {
 
     public static Map<UUID, CachedBankStorage> BANK_CACHE = new HashMap<>();
 
-    // public static List<ItemStack> bankRequestQueue = new ArrayList<>();
     public static Set<UUID> bankRequestQueue = new HashSet<>();
 
     public List<ItemStack> items;
 
-    // public int selectedItemSlot;
     public UUID uuid;
-    public ItemStack bankItemStack;
 
     public BankOptions options;
 
@@ -59,13 +57,11 @@ public class CachedBankStorage {
 
     @Nullable
     public static CachedBankStorage getBankStorage(ItemStack itemStack) {
-        if (!itemStack.hasNbt())
-            return null;
-        if (!itemStack.getNbt().contains(BankItem.UUID_KEY))
+        if (!Util.hasUUID(itemStack))
             return null;
 
-        UUID uuid = itemStack.getNbt().getUuid(BankItem.UUID_KEY);
-
+        UUID uuid = Util.getUUID(itemStack);
+        
         CachedBankStorage bankStorage = BANK_CACHE.get(uuid);
 
         if (bankStorage == null) {

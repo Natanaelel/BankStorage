@@ -4,11 +4,17 @@ package net.natte.bankstorage.packet;
 import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.PacketType;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPacketHandler;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.natte.bankstorage.BankStorage;
+import net.natte.bankstorage.container.BankItemStorage;
+import net.natte.bankstorage.options.PickupMode;
+import net.natte.bankstorage.util.Util;
 
 public class PickupModePacketC2S implements FabricPacket {
 
@@ -19,7 +25,21 @@ public class PickupModePacketC2S implements FabricPacket {
 
         @Override
         public void receive(PickupModePacketC2S packet, ServerPlayerEntity player, PacketSender responseSender) {
-            BankStorage.onChangePickupMode(player);
+
+            ItemStack stackInHand = player.getStackInHand(player.getActiveHand());
+
+            if (Util.isBank(stackInHand)) {
+                BankItemStorage bankItemStorage = Util.getBankItemStorage(stackInHand, player.getWorld());
+                bankItemStorage.options.pickupMode = PickupMode
+                        .from((bankItemStorage.options.pickupMode.number + 1) % 4);
+                player.sendMessage(Text.translatable(
+                        "popup.bankstorage.pickupmode." + bankItemStorage.options.pickupMode.toString().toLowerCase()),
+                        true);
+
+                ServerPlayNetworking.send(player,
+                        new OptionPacketS2C(Util.getUUID(stackInHand), bankItemStorage.options.asNbt()));
+            }
+
         }
     }
 
@@ -37,5 +57,4 @@ public class PickupModePacketC2S implements FabricPacket {
     public PacketType<?> getType() {
         return TYPE;
     }
-
 }

@@ -6,8 +6,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.natte.bankstorage.BankStorage;
 
-public class ItemStackBobbingAnimationPacketS2C
-        implements FabricPacket {
+public class ItemStackBobbingAnimationPacketS2C implements FabricPacket {
 
     public static final PacketType<ItemStackBobbingAnimationPacketS2C> TYPE = PacketType
             .create(new Identifier(BankStorage.MOD_ID, "bobbing_s2c"), ItemStackBobbingAnimationPacketS2C::new);
@@ -31,5 +30,4 @@ public class ItemStackBobbingAnimationPacketS2C
     public PacketType<?> getType() {
         return TYPE;
     }
-
 }

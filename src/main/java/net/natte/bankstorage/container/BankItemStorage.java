@@ -14,28 +14,21 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.Registries;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.screen.BankScreenHandler;
+import net.natte.bankstorage.util.Util;
 
 public class BankItemStorage extends SimpleInventory implements NamedScreenHandlerFactory {
 
     public BankOptions options;
-
     public BankType type;
-
     private Text displayName;
-
-    public int selectedItemSlot = 0;
-
     public UUID uuid;
-
     public Random random;
 
     public BankItemStorage(BankType type, UUID uuid) {
@@ -44,8 +37,6 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         this.options = new BankOptions();
         this.uuid = uuid;
         this.random = new Random();
-        // this.inventory = DefaultedList.ofSize(this.rows * this.cols,
-        // ItemStack.EMPTY);
     }
 
     public BankItemStorage withDisplayName(Text displayName) {
@@ -55,14 +46,15 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     public BankItemStorage asType(BankType type) {
         if (this.type != type) {
-            
+
             return changeType(type);
         }
         return this;
     }
 
     public BankItemStorage changeType(BankType type) {
-        BankStorage.LOGGER.info("Upgrading bank from " + this.type.getName() + " to " + type.getName() + " uuid " + this.uuid);
+        BankStorage.LOGGER
+                .info("Upgrading bank from " + this.type.getName() + " to " + type.getName() + " uuid " + this.uuid);
         BankItemStorage newBankItemStorage = new BankItemStorage(type, this.uuid).withDisplayName(displayName);
         for (int i = 0; i < this.stacks.size(); ++i) {
             newBankItemStorage.stacks.set(i, this.stacks.get(i));
@@ -92,27 +84,22 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         return this.stacks.size();
     }
 
-
     @Override
     public int getMaxCountPerStack() {
-        return 64 * type.slotStorageMultiplier;
+        return 64 * this.type.slotStorageMultiplier;
     }
 
     public int getStorageMultiplier() {
-        return type.slotStorageMultiplier;
+        return this.type.slotStorageMultiplier;
     }
-
 
     // same format as vanilla except itemstack count and slot saved as int instead
     // of byte
     public NbtCompound saveToNbt() {
         NbtCompound nbtCompound = new NbtCompound();
 
-        // ("selectedItemSlot", this.selectedItemSlot);
         nbtCompound.putUuid("uuid", this.uuid);
-        nbtCompound.putInt("selectedItemSlot", this.selectedItemSlot);
         nbtCompound.put("options", this.options.asNbt());
-
         nbtCompound.putString("type", this.type.getName());
 
         NbtList nbtList = new NbtList();
@@ -120,15 +107,9 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
             ItemStack itemStack = this.stacks.get(i);
             if (itemStack.isEmpty())
                 continue;
-            NbtCompound itemNbtCompound = new NbtCompound();
-            itemNbtCompound.putInt("Slot", i);
 
-            Identifier identifier = Registries.ITEM.getId(itemStack.getItem());
-            itemNbtCompound.putString("id", identifier == null ? "minecraft:air" : identifier.toString());
-            itemNbtCompound.putInt("Count", itemStack.getCount());
-            if (itemStack.getNbt() != null) {
-                itemNbtCompound.put("tag", itemStack.getNbt().copy());
-            }
+            NbtCompound itemNbtCompound = Util.largeStackAsNbt(itemStack);
+            itemNbtCompound.putInt("Slot", i);
 
             nbtList.add(itemNbtCompound);
         }
@@ -141,11 +122,9 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     public static BankItemStorage createFromNbt(NbtCompound nbtCompound) {
 
         UUID uuid = nbtCompound.getUuid("uuid");
-        BankItemStorage bankItemStorage = new BankItemStorage(
-                BankStorage.getBankTypeFromName(nbtCompound.getString("type")),
-                uuid);
+        BankType type = getBankTypeFromName(nbtCompound.getString("type"));
 
-        bankItemStorage.selectedItemSlot = nbtCompound.getInt("selectedItemSlot");
+        BankItemStorage bankItemStorage = new BankItemStorage(type, uuid);
 
         bankItemStorage.options = BankOptions.fromNbt(nbtCompound.getCompound("options"));
 
@@ -154,18 +133,27 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         for (int i = 0; i < nbtList.size(); ++i) {
             NbtCompound nbt = nbtList.getCompound(i);
             int j = nbt.getInt("Slot");
-            if (j < 0 || j >= bankItemStorage.stacks.size())
+            if (j < 0 || j >= bankItemStorage.stacks.size()) {
+                BankStorage.LOGGER.info("tried to insert item into slot " + j + " but storage size is only "
+                        + bankItemStorage.stacks.size());
                 continue;
-
-            ItemStack itemStack = Registries.ITEM.get(new Identifier(nbt.getString("id"))).getDefaultStack();
-            itemStack.setCount(nbt.getInt("Count"));
-            if (nbt.contains("tag", NbtElement.COMPOUND_TYPE)) {
-                itemStack.setNbt(nbt.getCompound("tag"));
             }
+
+            ItemStack itemStack = Util.largeStackFromNbt(nbt);
             bankItemStorage.stacks.set(j, itemStack);
         }
 
         return bankItemStorage;
+    }
+
+    private static BankType getBankTypeFromName(String name) {
+        for (BankType bankType : BankStorage.bankTypes) {
+            if (bankType.getName().equals(name)) {
+                return bankType;
+            }
+        }
+
+        throw new Error("Cannot get BankType of name '" + name + "'");
     }
 
     @Override
@@ -173,32 +161,9 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         return !(stack.getItem() instanceof BankItem) && super.canInsert(stack);
     }
 
-    public List<ItemStack> getUniqueItems() {
-
-        List<ItemStack> items = new ArrayList<>();
-
-        for (ItemStack itemStack : this.stacks) {
-            if (itemStack.isEmpty())
-                continue;
-            boolean contains = false;
-            for (ItemStack stack : items) {
-                if (ItemStack.canCombine(itemStack, stack)) {
-                    stack.increment(itemStack.getCount());
-                    contains = true;
-                    break;
-                }
-            }
-            if (!contains) {
-                items.add(itemStack);
-            }
-        }
-        return items;
-    }
-
     public List<ItemStack> getBlockItems() {
         List<ItemStack> items = new ArrayList<>();
         for (ItemStack stack : this.stacks) {
-            // if(stack.getItem)
             if (!stack.isEmpty() && stack.getItem() instanceof BlockItem)
                 items.add(stack);
         }
@@ -206,27 +171,21 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     }
 
     public ItemStack getSelectedItem() {
-
         List<ItemStack> items = getBlockItems();
         return items.isEmpty() ? ItemStack.EMPTY : items.get(this.options.selectedItemSlot);
-
     }
 
     public ItemStack getRandomItem() {
-
         List<ItemStack> items = getBlockItems();
         return items.isEmpty() ? ItemStack.EMPTY : items.get(this.random.nextInt(items.size()));
-
     }
 
     public ItemStack chooseItemToPlace() {
-        List<ItemStack> items = getBlockItems();
-        if (items.isEmpty())
-            return ItemStack.EMPTY;
+
         return switch (this.options.buildMode) {
             case NONE -> ItemStack.EMPTY;
-            case NORMAL -> items.get(this.options.selectedItemSlot);
-            case RANDOM -> items.get(this.random.nextInt(items.size()));
+            case NORMAL -> getSelectedItem();
+            case RANDOM -> getRandomItem();
         };
     }
 }

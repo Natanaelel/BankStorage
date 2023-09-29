@@ -8,15 +8,11 @@ public class BankOptions {
 
     public int selectedItemSlot = 0;
 
-    public BankOptions() {
-
-    }
-
-
     public NbtCompound asNbt() {
         return writeNbt(new NbtCompound());
     }
-    public NbtCompound writeNbt(NbtCompound nbt){
+
+    public NbtCompound writeNbt(NbtCompound nbt) {
         nbt.putByte("pickup", pickupMode.number);
         nbt.putByte("build", buildMode.number);
         nbt.putInt("slot", selectedItemSlot);

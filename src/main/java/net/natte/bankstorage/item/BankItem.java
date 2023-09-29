@@ -21,6 +21,8 @@ public class BankItem extends BankFunctionality {
 
     public static final String UUID_KEY = "bank:uuid";
 
+    private static final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance(Locale.US);
+
     private BankType type;
 
     public BankItem(Settings settings, BankType type) {
@@ -48,9 +50,9 @@ public class BankItem extends BankFunctionality {
             if (Util.hasUUID(stack))
                 tooltip.add(Text.literal(Util.getUUID(stack).toString()).formatted(Formatting.DARK_AQUA));
         }
-        tooltip.add(Text.translatable("tooptip.bankstorage.stacklimit", Text.literal(NumberFormat.getNumberInstance(Locale.US).format(64 * this.type.slotStorageMultiplier))));
-        tooltip.add(Text.translatable("tooptip.bankstorage.numslots", Text.literal("" + this.type.size())));
+        Text formattedStackLimit = Text.literal(NUMBER_FORMAT.format(64 * this.type.slotStorageMultiplier));
+        tooltip.add(Text.translatable("tooptip.bankstorage.stacklimit", formattedStackLimit));
+        tooltip.add(Text.translatable("tooptip.bankstorage.numslots", Text.literal(String.valueOf(this.type.size()))));
         super.appendTooltip(stack, world, tooltip, context);
     }
-
 }

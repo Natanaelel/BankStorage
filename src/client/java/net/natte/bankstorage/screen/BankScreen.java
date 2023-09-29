@@ -20,7 +20,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -29,14 +28,11 @@ import net.minecraft.util.math.MathHelper;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.packet.PickupModePacketC2S;
-import net.natte.bankstorage.packet.RequestBankStoragePacketC2S;
 import net.natte.bankstorage.packet.SortPacketC2S;
 import net.natte.bankstorage.rendering.ItemCountUtils;
 
 public class BankScreen extends HandledScreen<BankScreenHandler> {
 
-    public static final ScreenHandlerType<BankScreenHandler> BANK_SCREEN_HANDLER_TYPE = new ScreenHandlerType<>(null,
-            null);
 
     private static final NumberFormat FORMAT = NumberFormat.getNumberInstance(Locale.US);
 
@@ -62,11 +58,13 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
 
     public BankScreen(BankScreenHandler screenHandler, PlayerInventory playerInventory, Text text, BankType type) {
         super(screenHandler, playerInventory, text);
+
         this.type = type;
         this.texture = this.type.getGuiTexture();
         this.backgroundWidth = this.type.guiTextureWidth;
         this.backgroundHeight = this.type.guiTextureHeight;
-        playerInventoryTitleY += (this.type.rows - 1) * 18 - 34;
+
+        this.playerInventoryTitleY += this.type.rows * 18 - 52;
 
     }
 
@@ -137,8 +135,6 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
     }
 
     private void drawBankSlot(DrawContext context, Slot slot) {
-        // System.out.println("bankslot");
-        // if(Math.random() != 2) return;
         Pair<Identifier, Identifier> pair;
         int i = slot.x;
         int j = slot.y;
@@ -183,9 +179,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
             if (bl) {
                 context.fill(i, j, i + 16, j + 16, -2130706433);
             }
-            // System.out.println("drawitem " + i + " " + j);
             context.drawItem(itemStack, i, j, slot.x + slot.y * this.backgroundWidth);
-            // context.drawItemInSlot(this.textRenderer, itemStack, i, j, string);
             this.drawItemCountInSlot(context, this.textRenderer, itemStack, i, j, drawInYellow);
         }
         context.getMatrices().pop();
@@ -201,7 +195,6 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
     }
 
     public boolean canInsertItemIntoSlot(/* @Nullable */ Slot slot, ItemStack stack, boolean allowOverflow) {
-        // boolean bl = slot == null || !slot.hasStack();
         boolean bl = !slot.hasStack();
         if (!bl && ItemStack.canCombine(stack, slot.getStack())) {
             return slot.getStack().getCount() + (allowOverflow ? 0 : stack.getCount()) <= slot.getMaxItemCount(stack);
@@ -211,7 +204,6 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
 
     public void drawItemCountInSlot(DrawContext context, TextRenderer textRenderer, ItemStack stack, int x, int y,
             boolean drawInYellow) {
-        // System.out.println("count " + stack.getCount());
         ClientPlayerEntity clientPlayerEntity;
         float f;
         int l;
@@ -236,7 +228,6 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
             String string = count;
             String formattedString = drawInYellow ? Formatting.YELLOW.toString() + count : count;
             matrices.translate(0.0f, 0.0f, 200.0f);
-            // matrices.translate(x, y, k);
             float scale = ItemCountUtils.scale(string);
 
             matrices.translate(x * (1 - scale), y * (1 - scale) + (1 - scale) * 16, 0);

@@ -17,10 +17,10 @@ public class ScreenHandlerMixin {
     @Inject(method = "Lnet/minecraft/screen/ScreenHandler;canInsertItemIntoSlot(Lnet/minecraft/screen/slot/Slot;Lnet/minecraft/item/ItemStack;Z)Z", at = @At("HEAD"), cancellable = true)
     private static void canInsertItemIntoSlotMixin(@Nullable Slot slot, ItemStack stack, boolean allowOverflow,
             CallbackInfoReturnable<Boolean> cir) {
-        boolean bl = slot == null || !slot.hasStack();
-        if (!bl && ItemStack.canCombine(stack, slot.getStack())) {
-            if (slot instanceof BankSlot bankSlot) {
-                cir.setReturnValue(slot.getStack().getCount() + (allowOverflow ? 0 : stack.getCount()) <= bankSlot
+        if (slot instanceof BankSlot bankSlot) {
+            ItemStack slotStack = slot.getStack();
+            if (!slotStack.isEmpty() && ItemStack.canCombine(stack, slotStack)) {
+                cir.setReturnValue(slotStack.getCount() + (allowOverflow ? 0 : stack.getCount()) <= bankSlot
                         .getMaxItemCount(stack));
 
             }

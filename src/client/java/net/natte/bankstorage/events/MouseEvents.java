@@ -10,6 +10,7 @@ import net.natte.bankstorage.packet.ScrollPacketC2S;
 import net.natte.bankstorage.util.Util;
 
 public class MouseEvents {
+
     public static boolean onScroll(PlayerInventory playerInventory, double scroll) {
 
         PlayerEntity player = playerInventory.player;
@@ -44,5 +45,4 @@ public class MouseEvents {
 
         return buildMode == BuildMode.NORMAL || buildMode == BuildMode.RANDOM;
     }
-
 }

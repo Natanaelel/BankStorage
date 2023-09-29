@@ -12,12 +12,9 @@ public class BankSlot extends Slot {
 
     public int slotStorageMultiplier;
 
-    public int count;
-
     public BankSlot(Inventory inventory, int index, int x, int y, int slotStorageMultiplier) {
         super(inventory, index, x, y);
         this.slotStorageMultiplier = slotStorageMultiplier;
-        this.count = 0;
     }
 
     @Override
@@ -27,39 +24,13 @@ public class BankSlot extends Slot {
 
     @Override
     public int getMaxItemCount() {
-        // return 64 * this.slotStorageMultiplier;
-        return 1;
+        // I think unused
+        return 64 * this.slotStorageMultiplier;
     }
 
     @Override
     public int getMaxItemCount(ItemStack stack) {
-        // return Math.min(this.getMaxItemCount(), stack.getMaxCount() * this.slotStorageMultiplier);
         return stack.getMaxCount() * this.slotStorageMultiplier;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    @Override
-    public ItemStack getStack() {
-        return super.getStack();
-    }
-
-    @Override
-    public ItemStack insertStack(ItemStack stack, int count) {
-        return super.insertStack(stack, count);
-    }
-
-    @Override
-    public ItemStack takeStack(int amount) {
-        return super.takeStack(amount);
-    }
-
-    @Override
-    protected void onTake(int amount) {
-        super.onTake(amount);
     }
 
     @Override
@@ -78,9 +49,7 @@ public class BankSlot extends Slot {
             return Optional.empty();
         }
 
-        // boolean isTryingToTakeHalf = min == (this.getStack().getCount() + 1) / 2;
         int stackMaxCount = this.getStack().getMaxCount();
-        // int takeCount = isTryingToTakeHalf ? (stackMaxCount + 1) / 2 : stackMaxCount;
         ItemStack itemStack = this.takeStack(Math.min(Math.min(min, max), stackMaxCount));
 
         if (itemStack.isEmpty()) {

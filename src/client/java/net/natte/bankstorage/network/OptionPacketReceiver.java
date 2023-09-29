@@ -11,11 +11,13 @@ public class OptionPacketReceiver implements PlayPacketHandler<OptionPacketS2C> 
 
     public void receive(OptionPacketS2C packet, ClientPlayerEntity player,
             PacketSender responseSender) {
+
         CachedBankStorage cachedBankStorage = CachedBankStorage.BANK_CACHE.get(packet.uuid);
-        if (cachedBankStorage != null) {
-            cachedBankStorage.options = BankOptions.fromNbt(packet.nbt);
+
+        if (cachedBankStorage == null)
             return;
-        }
+
+        cachedBankStorage.options = BankOptions.fromNbt(packet.nbt);
 
     }
 }

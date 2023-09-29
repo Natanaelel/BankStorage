@@ -9,10 +9,9 @@ import net.natte.bankstorage.item.BankItem;
 
 public class BankRecipe extends ShapedRecipe {
 
-
     public BankRecipe(ShapedRecipe recipe) {
-        super(recipe.getId(), "bank_upgrade", recipe.getCategory(), recipe.getWidth(), recipe.getHeight(), recipe.getIngredients(), recipe.getOutput(null));
-
+        super(recipe.getId(), "bank_upgrade", recipe.getCategory(), recipe.getWidth(), recipe.getHeight(),
+                recipe.getIngredients(), recipe.getOutput(null));
     }
 
     @Override
@@ -25,9 +24,7 @@ public class BankRecipe extends ShapedRecipe {
         }
         ItemStack result = super.craft(recipeInputInventory, dynamicRegistryManager);
         result.setNbt(maybeBankItemStack.get().getNbt());
-        
 
         return result;
     }
-
 }

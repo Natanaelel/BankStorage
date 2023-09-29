@@ -12,7 +12,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 
-public class S2CSyncExtendedSlotContents implements PlayChannelHandler {
+public class SyncLargeSlotS2C implements PlayChannelHandler {
 
     public void handle(@Nullable ClientPlayerEntity player, int windowId, int slot, ItemStack stack) {
         if (player != null && player.currentScreenHandler instanceof BankScreenHandler && windowId == player.currentScreenHandler.syncId) {
@@ -24,7 +24,7 @@ public class S2CSyncExtendedSlotContents implements PlayChannelHandler {
     public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
         int windowId = buf.readInt();
         int slot = buf.readInt();
-        ItemStack stack = Util.largeStackFromNbt(buf.readNbt());
+        ItemStack stack = Util.readLargeStack(buf);
         client.execute(() -> handle(client.player, windowId, slot, stack));
     }
 }

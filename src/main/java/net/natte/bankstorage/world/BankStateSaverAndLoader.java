@@ -18,7 +18,8 @@ import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.BankItem;
 
 public class BankStateSaverAndLoader extends PersistentState {
-    public Map<UUID, BankItemStorage> bankMap = new HashMap<>();
+
+    private final Map<UUID, BankItemStorage> BANK_MAP = new HashMap<>();
 
     @Override
     public NbtCompound writeNbt(NbtCompound nbtCompound) {
@@ -27,7 +28,7 @@ public class BankStateSaverAndLoader extends PersistentState {
 
         NbtList nbtList = new NbtList();
 
-        bankMap.forEach((uuid, bankItemStorage) -> {
+        BANK_MAP.forEach((uuid, bankItemStorage) -> {
             NbtCompound nbt = new NbtCompound();
             nbt.putUuid(BankItem.UUID_KEY, uuid);
             nbt.put("bank", bankItemStorage.saveToNbt());
@@ -47,7 +48,7 @@ public class BankStateSaverAndLoader extends PersistentState {
 
         BankStateSaverAndLoader state = new BankStateSaverAndLoader();
 
-        state.bankMap.clear();
+        state.BANK_MAP.clear();
 
         NbtList nbtList = tag.getList("BankStates", NbtElement.COMPOUND_TYPE);
 
@@ -55,7 +56,7 @@ public class BankStateSaverAndLoader extends PersistentState {
             NbtCompound nbt = (NbtCompound) nbtElement;
             UUID uuid = nbt.getUuid(BankItem.UUID_KEY);
             BankItemStorage bankItemStorage = BankItemStorage.createFromNbt(nbt.getCompound("bank"));
-            state.bankMap.put(uuid, bankItemStorage);
+            state.BANK_MAP.put(uuid, bankItemStorage);
         }
 
         BankStorage.LOGGER.info("Loading done");
@@ -77,25 +78,29 @@ public class BankStateSaverAndLoader extends PersistentState {
     }
 
     public BankItemStorage getOrCreate(UUID uuid, BankType type, Text name) {
-        if (this.bankMap.containsKey(uuid)) {
-            BankItemStorage old = this.bankMap.get(uuid).withDisplayName(name);
-            if(old.type != type){
+        if (this.BANK_MAP.containsKey(uuid)) {
+            BankItemStorage old = this.BANK_MAP.get(uuid).withDisplayName(name);
+            if (old.type != type) {
                 BankItemStorage ugpraded = old.asType(type);
-                
-                this.bankMap.put(uuid, ugpraded);
+
+                this.BANK_MAP.put(uuid, ugpraded);
                 return ugpraded;
             }
             return old;
-            
+
         } else {
             BankStorage.LOGGER.info("creating new bank with uuid " + uuid);
             BankItemStorage bankItemStorage = new BankItemStorage(type, uuid);
-            this.bankMap.put(uuid, bankItemStorage);
+            this.BANK_MAP.put(uuid, bankItemStorage);
             return bankItemStorage.withDisplayName(name);
         }
     }
 
     public BankItemStorage get(UUID uuid) {
-        return this.bankMap.get(uuid);
+        return this.BANK_MAP.get(uuid);
+    }
+
+    public Map<UUID, BankItemStorage> getBankMap(){
+        return this.BANK_MAP;
     }
 }
