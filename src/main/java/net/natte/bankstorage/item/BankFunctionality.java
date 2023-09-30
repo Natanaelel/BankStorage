@@ -1,5 +1,6 @@
 package net.natte.bankstorage.item;
 
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -39,25 +40,20 @@ public abstract class BankFunctionality extends Item {
             return TypedActionResult.pass(bank);
 
         if (player.isSneaking()) {
-            BankStorage.onChangeBuildMode((ServerPlayerEntity) player);
+            BankStorage.onChangeBuildMode((ServerPlayerEntity) player, bank);
             return TypedActionResult.success(bank);
         }
 
         BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, world);
-        BuildMode buildMode = bankItemStorage.options.buildMode;
-        if (buildMode == BuildMode.NONE) {
-            player.openHandledScreen(bankItemStorage);
-            return TypedActionResult.success(bank);
-        }
-
-        return TypedActionResult.pass(bank);
+        player.openHandledScreen(bankItemStorage);
+        return TypedActionResult.success(bank);
     }
 
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
         PlayerEntity player = context.getPlayer();
         World world = context.getWorld();
-        ItemStack bank = player.getStackInHand(player.getActiveHand());
+        ItemStack bank = player.getStackInHand(context.getHand());
 
         if (bank.getCount() != 1)
             return ActionResult.PASS;
@@ -91,5 +87,11 @@ public abstract class BankFunctionality extends Item {
         } else {
             return ActionResult.PASS;
         }
+    }
+
+    @Override
+    public boolean damage(DamageSource source) {
+        // can't take any damage
+        return false;
     }
 }

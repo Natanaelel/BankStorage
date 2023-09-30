@@ -1,4 +1,4 @@
-package net.natte.bankstorage.packet;
+package net.natte.bankstorage.packet.server;
 
 import java.util.UUID;
 
@@ -8,15 +8,14 @@ import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPacketHandler;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
-import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
+import net.natte.bankstorage.packet.client.OptionPacketS2C;
 import net.natte.bankstorage.util.Util;
 
 public class ScrollPacketC2S implements FabricPacket {
 
     public static final PacketType<ScrollPacketC2S> TYPE = PacketType
-            .create(new Identifier(BankStorage.MOD_ID, "scroll_c2s"), ScrollPacketC2S::new);
+            .create(Util.ID("scroll_c2s"), ScrollPacketC2S::new);
 
     public static class Receiver implements PlayPacketHandler<ScrollPacketC2S> {
 

@@ -5,14 +5,9 @@ import java.util.List;
 import java.util.Locale;
 
 import net.minecraft.client.item.TooltipContext;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.util.Util;
@@ -30,15 +25,7 @@ public class BankItem extends BankFunctionality {
         this.type = type;
     }
 
-    @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
-        return super.use(world, player, hand);
-    }
 
-    @Override
-    public ActionResult useOnBlock(ItemUsageContext context) {
-        return super.useOnBlock(context);
-    }
 
     public BankType getType() {
         return this.type;

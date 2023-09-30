@@ -1,4 +1,4 @@
-package net.natte.bankstorage.packet;
+package net.natte.bankstorage.packet.client;
 
 import java.util.UUID;
 
@@ -6,13 +6,12 @@ import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
-import net.natte.bankstorage.BankStorage;
+import net.natte.bankstorage.util.Util;
 
 public class OptionPacketS2C implements FabricPacket {
 
     public static final PacketType<OptionPacketS2C> TYPE = PacketType
-            .create(new Identifier(BankStorage.MOD_ID, "options_s2c"), OptionPacketS2C::new);
+            .create(Util.ID("options_s2c"), OptionPacketS2C::new);
 
     public UUID uuid;
     public NbtCompound nbt;

@@ -3,7 +3,7 @@ package net.natte.bankstorage.network;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.PlayPacketHandler;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.natte.bankstorage.packet.ItemStackBobbingAnimationPacketS2C;
+import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
 
 public class ItemStackBobbingAnimationPacketReceiver implements PlayPacketHandler<ItemStackBobbingAnimationPacketS2C> {
 

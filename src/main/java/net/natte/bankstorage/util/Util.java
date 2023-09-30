@@ -13,6 +13,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.BankItem;
@@ -141,5 +142,9 @@ public class Util {
         BankStateSaverAndLoader serverState = BankStateSaverAndLoader.getServerState(world.getServer());
         BankItemStorage bankItemStorage = serverState.getOrCreate(uuid, type, bank.getName());
         return bankItemStorage;
+    }
+
+    public static Identifier ID(String path){
+        return new Identifier(BankStorage.MOD_ID, path);
     }
 }

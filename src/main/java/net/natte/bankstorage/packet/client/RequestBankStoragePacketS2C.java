@@ -1,4 +1,4 @@
-package net.natte.bankstorage.packet;
+package net.natte.bankstorage.packet.client;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,8 +8,6 @@ import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
-import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.util.Util;
@@ -17,7 +15,7 @@ import net.natte.bankstorage.util.Util;
 public class RequestBankStoragePacketS2C implements FabricPacket {
 
     public static final PacketType<RequestBankStoragePacketS2C> TYPE = PacketType
-            .create(new Identifier(BankStorage.MOD_ID, "requestbank_s2c"), RequestBankStoragePacketS2C::new);
+            .create(Util.ID("requestbank_s2c"), RequestBankStoragePacketS2C::new);
 
     public CachedBankStorage cachedBankStorage;
     public long randomSeed;
@@ -39,7 +37,7 @@ public class RequestBankStoragePacketS2C implements FabricPacket {
 
         this.cachedBankStorage = new CachedBankStorage(items, uuid, options, randomSeed);
 
-        // never used, just a reminder. this.randomSeed = randomSeed;
+        // never used here, just a reminder. this.randomSeed = randomSeed;
     }
 
     @Override

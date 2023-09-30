@@ -10,7 +10,7 @@ import net.minecraft.world.World;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.options.PickupMode;
-import net.natte.bankstorage.packet.ItemStackBobbingAnimationPacketS2C;
+import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
 import net.natte.bankstorage.util.Util;
 
 public class ItemPickupHandler {

@@ -6,7 +6,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.options.BuildMode;
-import net.natte.bankstorage.packet.ScrollPacketC2S;
+import net.natte.bankstorage.packet.server.ScrollPacketC2S;
 import net.natte.bankstorage.util.Util;
 
 public class MouseEvents {

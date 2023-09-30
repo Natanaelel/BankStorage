@@ -18,6 +18,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.item.ItemStack;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.network.ItemStackBobbingAnimationPacketReceiver;
@@ -25,12 +26,12 @@ import net.natte.bankstorage.network.OptionPacketReceiver;
 import net.natte.bankstorage.network.RequestBankStoragePacketReceiver;
 import net.natte.bankstorage.network.screensync.SyncLargeSlotInventoryS2C;
 import net.natte.bankstorage.network.screensync.SyncLargeSlotS2C;
-import net.natte.bankstorage.packet.BuildModePacketC2S;
-import net.natte.bankstorage.packet.ItemStackBobbingAnimationPacketS2C;
-import net.natte.bankstorage.packet.OptionPacketS2C;
-import net.natte.bankstorage.packet.RequestBankStoragePacketC2S;
-import net.natte.bankstorage.packet.RequestBankStoragePacketS2C;
+import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
+import net.natte.bankstorage.packet.client.OptionPacketS2C;
+import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.packet.screensync.BankSyncPacketHandler;
+import net.natte.bankstorage.packet.server.BuildModePacketC2S;
+import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
 import net.natte.bankstorage.rendering.BankDockBlockEntityRenderer;
 import net.natte.bankstorage.rendering.BuildModePreviewRenderer;
 import net.natte.bankstorage.screen.BankScreen;
@@ -102,8 +103,9 @@ public class BankStorageClient implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 
 			while (toggleBuildModeKeyBinding.wasPressed()) {
-				if (Util.isBank(client.player.getStackInHand(client.player.getActiveHand()))) {
-					ClientPlayNetworking.send(new BuildModePacketC2S());
+				ItemStack stack = client.player.getStackInHand(client.player.getActiveHand());
+				if (Util.isBank(stack)) {
+					ClientPlayNetworking.send(new BuildModePacketC2S(stack));
 				}
 			}
 

@@ -1,15 +1,14 @@
-package net.natte.bankstorage.packet;
+package net.natte.bankstorage.packet.client;
 
 import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
-import net.natte.bankstorage.BankStorage;
+import net.natte.bankstorage.util.Util;
 
 public class ItemStackBobbingAnimationPacketS2C implements FabricPacket {
 
     public static final PacketType<ItemStackBobbingAnimationPacketS2C> TYPE = PacketType
-            .create(new Identifier(BankStorage.MOD_ID, "bobbing_s2c"), ItemStackBobbingAnimationPacketS2C::new);
+            .create(Util.ID("bobbing_s2c"), ItemStackBobbingAnimationPacketS2C::new);
 
     public int index;
 

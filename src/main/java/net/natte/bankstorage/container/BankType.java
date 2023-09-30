@@ -8,9 +8,9 @@ import net.minecraft.registry.Registry;
 import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
-import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.screen.BankScreenHandler;
+import net.natte.bankstorage.util.Util;
 
 public class BankType {
 
@@ -44,7 +44,7 @@ public class BankType {
 
     public void register(List<BankType> types, Settings settings) {
         this.item = new BankItem(settings.maxCount(1), this);
-        Identifier identifier = new Identifier(BankStorage.MOD_ID, this.name);
+        Identifier identifier = Util.ID(this.name);
         Registry.register(Registries.ITEM, identifier, this.item);
         this.screenHandlerType = new ScreenHandlerType<>(BankScreenHandler.fromType(this),
                 FeatureFlags.VANILLA_FEATURES);
@@ -65,6 +65,6 @@ public class BankType {
     }
 
     public Identifier getGuiTexture() {
-        return new Identifier(BankStorage.MOD_ID, "textures/gui/" + this.cols + "x" + this.rows + ".png");
+        return Util.ID("textures/gui/" + this.cols + "x" + this.rows + ".png");
     }
 }

@@ -14,8 +14,8 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.util.Util;
@@ -24,13 +24,15 @@ public class BuildModePreviewRenderer implements EndTick {
 
     public static final BuildModePreviewRenderer Instance = new BuildModePreviewRenderer();
 
-    private static final Identifier WIDGET_TEXTURE = new Identifier(BankStorage.MOD_ID, "textures/gui/widgets.png");
+    private static final Identifier WIDGET_TEXTURE = Util.ID("textures/gui/widgets.png");
 
     public ItemStack stackInHand;
     public UUID uuid;
     private MinecraftClient client;
 
     private CachedBankStorage bankStorage;
+
+    private Hand hand;
 
     public BuildModePreviewRenderer() {
         this.stackInHand = ItemStack.EMPTY;
@@ -58,16 +60,18 @@ public class BuildModePreviewRenderer implements EndTick {
 
         int selectedSlot = bankStorage.options.selectedItemSlot;
 
+        int handXOffset = this.hand == Hand.OFF_HAND ? -169 : 118;
+
         if (items.size() == 1) {
             context.drawTexture(WIDGET_TEXTURE,
-                    scaledWidth / 2 - 169, scaledHeight - 22, 0, 0, 22, 22);
+                    scaledWidth / 2 + handXOffset, scaledHeight - 22, 0, 0, 22, 22);
         } else if (selectedSlot == 0 || selectedSlot == items.size() - 1) {
             boolean isLeft = bankStorage.options.selectedItemSlot > 0;
             context.drawTexture(WIDGET_TEXTURE,
-                    scaledWidth / 2 - (isLeft ? 189 : 169), scaledHeight - 22, 22, 0, 42, 22);
+                    scaledWidth / 2 - (isLeft ? 20 : 0) + handXOffset, scaledHeight - 22, 22, 0, 42, 22);
         } else {
             context.drawTexture(WIDGET_TEXTURE,
-                    scaledWidth / 2 - 189, scaledHeight - 22, 64, 0, 62, 22);
+                    scaledWidth / 2 - 20 + handXOffset, scaledHeight - 22, 64, 0, 62, 22);
         }
 
         for (int i = -1; i <= 1; ++i) {
@@ -76,13 +80,13 @@ public class BuildModePreviewRenderer implements EndTick {
                 continue;
             ItemStack itemStack = items.get(index);
             int y = scaledHeight - 19;
-            int x = scaledWidth / 2 - i * 20 - 166;
+            int x = scaledWidth / 2 - i * 20 + 3 + handXOffset;
 
             renderHotbarItem(context, x, y, tickDelta, this.client.player, itemStack, 0);
         }
 
         context.drawTexture(WIDGET_TEXTURE,
-                scaledWidth / 2 - 170, scaledHeight - 22 - 1, 0, 22, 24, 22);
+                scaledWidth / 2 - 1 + handXOffset, scaledHeight - 22 - 1, 0, 22, 24, 22);
         matrixStack.pop();
 
         RenderSystem.disableBlend();
@@ -115,16 +119,29 @@ public class BuildModePreviewRenderer implements EndTick {
 
         if (client.player == null)
             return;
-        ItemStack stackInHand = this.client.player.getStackInHand(this.client.player.getActiveHand());
 
-        if (Util.isBank(stackInHand)) {
-            if (stackInHand != this.stackInHand) {
+        ItemStack right = this.client.player.getMainHandStack();
+        ItemStack left = this.client.player.getOffHandStack();
+
+        if (Util.isBank(right)) {
+            if (right != this.stackInHand) {
                 clearBank();
-                this.stackInHand = stackInHand;
+                this.stackInHand = right;
                 if (Util.hasUUID(this.stackInHand)) {
                     this.setUUID(Util.getUUID(this.stackInHand));
                 }
                 updateBank();
+                this.hand = Hand.MAIN_HAND;
+            }
+        } else if (Util.isBank(left)) {
+            if (left != this.stackInHand) {
+                clearBank();
+                this.stackInHand = left;
+                if (Util.hasUUID(this.stackInHand)) {
+                    this.setUUID(Util.getUUID(this.stackInHand));
+                }
+                updateBank();
+                this.hand = Hand.OFF_HAND;
             }
         } else {
             this.stackInHand = ItemStack.EMPTY;

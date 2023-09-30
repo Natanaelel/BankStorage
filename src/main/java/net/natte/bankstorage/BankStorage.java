@@ -34,12 +34,12 @@ import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.BankFunctionality;
 import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.options.BuildMode;
-import net.natte.bankstorage.packet.SortPacketC2S;
-import net.natte.bankstorage.packet.BuildModePacketC2S;
-import net.natte.bankstorage.packet.OptionPacketS2C;
-import net.natte.bankstorage.packet.PickupModePacketC2S;
-import net.natte.bankstorage.packet.RequestBankStoragePacketC2S;
-import net.natte.bankstorage.packet.ScrollPacketC2S;
+import net.natte.bankstorage.packet.client.OptionPacketS2C;
+import net.natte.bankstorage.packet.server.BuildModePacketC2S;
+import net.natte.bankstorage.packet.server.PickupModePacketC2S;
+import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
+import net.natte.bankstorage.packet.server.ScrollPacketC2S;
+import net.natte.bankstorage.packet.server.SortPacketC2S;
 import net.natte.bankstorage.recipe.BankRecipeSerializer;
 import net.natte.bankstorage.util.Util;
 import net.natte.bankstorage.world.BankStateSaverAndLoader;
@@ -203,10 +203,9 @@ public class BankStorage implements ModInitializer {
 
 	}
 
-	public static void onChangeBuildMode(ServerPlayerEntity player) {
-		ItemStack stackInHand = player.getStackInHand(player.getActiveHand());
-		if (Util.isBank(stackInHand)) {
-			BankItemStorage bankItemStorage = Util.getBankItemStorage(stackInHand,
+	public static void onChangeBuildMode(ServerPlayerEntity player, ItemStack bank) {
+		if (Util.isBank(bank)) {
+			BankItemStorage bankItemStorage = Util.getBankItemStorage(bank,
 					player.getWorld());
 			bankItemStorage.options.buildMode = BuildMode
 					.from((bankItemStorage.options.buildMode.number + 1) % 3);
@@ -214,7 +213,7 @@ public class BankStorage implements ModInitializer {
 					+ bankItemStorage.options.buildMode.toString().toLowerCase()), true);
 
 			ServerPlayNetworking.send(player,
-					new OptionPacketS2C(Util.getUUID(stackInHand), bankItemStorage.options.asNbt()));
+					new OptionPacketS2C(Util.getUUID(bank), bankItemStorage.options.asNbt()));
 		}
 	}
 }

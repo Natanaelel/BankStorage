@@ -7,13 +7,12 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
-import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.util.Util;
 
 public class BankSyncPacketHandler {
 
-    public static final Identifier sync_slot = new Identifier(BankStorage.MOD_ID, "sync_slot");
-    public static final Identifier sync_container = new Identifier(BankStorage.MOD_ID, "sync_container");
+    public static final Identifier sync_slot = Util.ID("sync_slot");
+    public static final Identifier sync_container = Util.ID("sync_container");
 
     public static void sendSyncSlot(ServerPlayerEntity player, int id, int slot, ItemStack stack) {
         PacketByteBuf buf = PacketByteBufs.create();

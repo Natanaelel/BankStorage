@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.options.BankOptions;
-import net.natte.bankstorage.packet.OptionPacketS2C;
+import net.natte.bankstorage.packet.client.OptionPacketS2C;
 
 public class OptionPacketReceiver implements PlayPacketHandler<OptionPacketS2C> {
 

@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.natte.bankstorage.BankStorageClient;
 import net.natte.bankstorage.item.CachedBankStorage;
-import net.natte.bankstorage.packet.RequestBankStoragePacketS2C;
+import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
 
 public class RequestBankStoragePacketReceiver implements PlayPacketHandler<RequestBankStoragePacketS2C> {
 

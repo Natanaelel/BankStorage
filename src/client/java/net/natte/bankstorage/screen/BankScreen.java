@@ -27,8 +27,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
-import net.natte.bankstorage.packet.PickupModePacketC2S;
-import net.natte.bankstorage.packet.SortPacketC2S;
+import net.natte.bankstorage.packet.server.PickupModePacketC2S;
+import net.natte.bankstorage.packet.server.SortPacketC2S;
 import net.natte.bankstorage.rendering.ItemCountUtils;
 
 public class BankScreen extends HandledScreen<BankScreenHandler> {
