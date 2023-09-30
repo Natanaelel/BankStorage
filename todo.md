@@ -1,7 +1,10 @@
-linking
-textures
+description
 
-change mode buttons
+linking
+
+[x] textures
+[x] change mode buttons
+
 [x] sort
 [x] build
 [x] bug when moving items from bank with number keys

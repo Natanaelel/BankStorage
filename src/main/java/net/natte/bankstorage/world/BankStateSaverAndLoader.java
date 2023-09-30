@@ -19,6 +19,7 @@ import net.natte.bankstorage.item.BankItem;
 
 public class BankStateSaverAndLoader extends PersistentState {
 
+    private static final String BANKSTATES_SAVE_NBT_KEY = "BankStates";
     private final Map<UUID, BankItemStorage> BANK_MAP = new HashMap<>();
 
     @Override
@@ -35,7 +36,7 @@ public class BankStateSaverAndLoader extends PersistentState {
             nbtList.add(nbt);
         });
 
-        nbtCompound.put("BankStates", nbtList);
+        nbtCompound.put(BANKSTATES_SAVE_NBT_KEY, nbtList);
 
         BankStorage.LOGGER.info("Saving done");
 
@@ -50,7 +51,7 @@ public class BankStateSaverAndLoader extends PersistentState {
 
         state.BANK_MAP.clear();
 
-        NbtList nbtList = tag.getList("BankStates", NbtElement.COMPOUND_TYPE);
+        NbtList nbtList = tag.getList(BANKSTATES_SAVE_NBT_KEY, NbtElement.COMPOUND_TYPE);
 
         for (NbtElement nbtElement : nbtList) {
             NbtCompound nbt = (NbtCompound) nbtElement;

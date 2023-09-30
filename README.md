@@ -3,7 +3,7 @@ Adds Banks of 7 increasing sizes. A portable storage device that can store from 
 
 ### Features
 - Larger slots: Store more items per slot than normally possible. Up to 1 billion items in a single slot.
-- Different sizes: From Bank 1 with 9 slots to bank 7 with 63 slots each increasing slot sizes.
+- Different sizes: From Bank 1 with 9 slots to bank 7 with 108 slots each with increasing slot sizes.
 - Bank Dock: Dock your bank to easily access it in-world.
 
 ### Pickup modes
@@ -13,6 +13,11 @@ Adds Banks of 7 increasing sizes. A portable storage device that can store from 
 - No pickup: Items go straight into your inventory.
 
 ### Build modes
-- Build mode: Choose any block inside your Bank and place directly from the Bank item
-- Randomized build mode: Similar to Build mode, but blocks get chosen randomly
-- Bag Mode: Right click to open the Bank inventory screen
+- Build mode: Choose any block inside your Bank and place directly from the Bank item.
+- Randomized build mode: Similar to Build mode, but blocks get chosen randomly.
+- Bag Mode: Right click to open the Bank inventory screen.
+
+### How to craft
+- Surround a barrel with 8 blocks of coal to craft the Bank 1.
+- To craft higher tiers, surround the previous tier with 8 block of. the next material
+- Materials used are Coal, Copper, Iron, Gold, Emerald, Diamond and Netherite, in that order.
