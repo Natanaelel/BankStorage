@@ -6,13 +6,13 @@ import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPacketHandler;
-import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.packet.client.OptionPacketS2C;
+import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 
 public class PickupModePacketC2S implements FabricPacket {
@@ -25,19 +25,18 @@ public class PickupModePacketC2S implements FabricPacket {
         @Override
         public void receive(PickupModePacketC2S packet, ServerPlayerEntity player, PacketSender responseSender) {
 
-            ItemStack stackInHand = player.getStackInHand(player.getActiveHand());
+            if (!(player.currentScreenHandler instanceof BankScreenHandler bankScreenHandler))
+                return;
 
-            if (Util.isBank(stackInHand)) {
-                BankItemStorage bankItemStorage = Util.getBankItemStorage(stackInHand, player.getWorld());
-                bankItemStorage.options.pickupMode = PickupMode
-                        .from((bankItemStorage.options.pickupMode.number + 1) % 4);
-                player.sendMessage(Text.translatable(
-                        "popup.bankstorage.pickupmode." + bankItemStorage.options.pickupMode.toString().toLowerCase()),
-                        true);
+            BankItemStorage bankItemStorage = (BankItemStorage) bankScreenHandler.inventory;
+            bankItemStorage.options.pickupMode = PickupMode
+                    .from((bankItemStorage.options.pickupMode.number + 1) % 4);
+            player.sendMessage(Text.translatable(
+                    "popup.bankstorage.pickupmode." + bankItemStorage.options.pickupMode.toString().toLowerCase()),
+                    true);
 
-                ServerPlayNetworking.send(player,
-                        new OptionPacketS2C(Util.getUUID(stackInHand), bankItemStorage.options.asNbt()));
-            }
+            ServerPlayNetworking.send(player,
+                    new OptionPacketS2C(bankItemStorage.uuid, bankItemStorage.options.asNbt()));
 
         }
     }

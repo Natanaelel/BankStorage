@@ -33,6 +33,7 @@ public abstract class BankFunctionality extends Item {
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
 
         ItemStack bank = player.getStackInHand(hand);
+        System.out.println(bank);
         if (bank.getCount() != 1)
             return TypedActionResult.pass(bank);
 

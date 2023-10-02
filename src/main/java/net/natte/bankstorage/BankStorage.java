@@ -205,6 +205,7 @@ public class BankStorage implements ModInitializer {
 
 	public static void onChangeBuildMode(ServerPlayerEntity player, ItemStack bank) {
 		if (Util.isBank(bank)) {
+			// System.out.println("is bank?");
 			BankItemStorage bankItemStorage = Util.getBankItemStorage(bank,
 					player.getWorld());
 			bankItemStorage.options.buildMode = BuildMode
@@ -214,6 +215,9 @@ public class BankStorage implements ModInitializer {
 
 			ServerPlayNetworking.send(player,
 					new OptionPacketS2C(Util.getUUID(bank), bankItemStorage.options.asNbt()));
+		}else{
+			LOGGER.info(player.getName().getString() + " tried to change build mode while holding " + bank);
+			// LOGGER.info(player.getName().getString() + " tried to change build mode while holding " + bank);
 		}
 	}
 }

@@ -104,6 +104,7 @@ public class BankStorageClient implements ClientModInitializer {
 
 			while (toggleBuildModeKeyBinding.wasPressed()) {
 				ItemStack stack = client.player.getStackInHand(client.player.getActiveHand());
+				System.out.println(stack);
 				if (Util.isBank(stack)) {
 					ClientPlayNetworking.send(new BuildModePacketC2S(stack));
 				}
