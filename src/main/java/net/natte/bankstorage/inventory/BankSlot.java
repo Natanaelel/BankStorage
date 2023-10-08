@@ -2,6 +2,8 @@ package net.natte.bankstorage.inventory;
 
 import java.util.Optional;
 
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
@@ -11,10 +13,39 @@ import net.natte.bankstorage.item.BankItem;
 public class BankSlot extends Slot {
 
     public int slotStorageMultiplier;
+    private boolean isLocked = false;
+    private ItemStack lockedStack = null;
 
     public BankSlot(Inventory inventory, int index, int x, int y, int slotStorageMultiplier) {
         super(inventory, index, x, y);
         this.slotStorageMultiplier = slotStorageMultiplier;
+    }
+
+    public BankSlot(Inventory inventory, int index, int x, int y, int slotStorageMultiplier, @Nullable ItemStack lockedStack) {
+        this(inventory, index, x, y, slotStorageMultiplier);
+        if(lockedStack != null){
+            this.isLocked = true;
+            this.lockedStack = lockedStack;
+        }
+
+    }
+
+    public void lock(ItemStack stack){
+        this.isLocked = true;
+        this.lockedStack = stack.copyWithCount(1);
+    }
+
+    public void unlock(){
+        this.isLocked = false;
+        this.lockedStack = null;
+    }
+
+    public boolean isLocked(){
+        return this.isLocked;
+    }
+
+    public ItemStack getLockedStack(){
+        return this.lockedStack;
     }
 
     @Override

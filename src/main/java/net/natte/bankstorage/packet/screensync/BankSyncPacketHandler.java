@@ -39,4 +39,6 @@ public class BankSyncPacketHandler {
 
         ServerPlayNetworking.send(player, BankSyncPacketHandler.sync_container, buf);
     }
+
+    // public static void sendSyncLockedItem(ServerPlayerEntity player,)
 }

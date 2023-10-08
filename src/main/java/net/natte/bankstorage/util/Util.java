@@ -126,7 +126,7 @@ public class Util {
 
     public static BankItemStorage getBankItemStorage(UUID uuid, World world) {
 
-        BankStateSaverAndLoader serverState = BankStateSaverAndLoader.getServerState(world.getServer());
+        BankStateSaverAndLoader serverState = BankStateSaverAndLoader.getServerStateSaverAndLoader(world.getServer());
         BankItemStorage bankItemStorage = serverState.get(uuid);
 
         return bankItemStorage;
@@ -139,7 +139,7 @@ public class Util {
             bank.getOrCreateNbt().putUuid(BankItem.UUID_KEY, uuid);
 
         BankType type = ((BankItem) bank.getItem()).getType();
-        BankStateSaverAndLoader serverState = BankStateSaverAndLoader.getServerState(world.getServer());
+        BankStateSaverAndLoader serverState = BankStateSaverAndLoader.getServerStateSaverAndLoader(world.getServer());
         BankItemStorage bankItemStorage = serverState.getOrCreate(uuid, type, bank.getName());
         return bankItemStorage;
     }

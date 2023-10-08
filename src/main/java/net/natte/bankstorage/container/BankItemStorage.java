@@ -1,9 +1,13 @@
 package net.natte.bankstorage.container;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -31,12 +35,16 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     public UUID uuid;
     public Random random;
 
+    private Map<Integer, ItemStack> lockedSlots;
+
     public BankItemStorage(BankType type, UUID uuid) {
         super(type.rows * type.cols);
         this.type = type;
         this.options = new BankOptions();
         this.uuid = uuid;
         this.random = new Random();
+
+        this.lockedSlots = new HashMap<>();
     }
 
     public BankItemStorage withDisplayName(Text displayName) {
@@ -46,7 +54,6 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     public BankItemStorage asType(BankType type) {
         if (this.type != type) {
-
             return changeType(type);
         }
         return this;
@@ -114,6 +121,18 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
             nbtList.add(itemNbtCompound);
         }
         nbtCompound.put("Items", nbtList);
+
+        
+        NbtList lockedSlotsNbt = new NbtList();
+
+        this.lockedSlots.forEach((slot, lockedStack) -> {
+            NbtCompound lockedSlotNbt = new NbtCompound();
+            lockedSlotNbt.putInt("Slot", slot);
+            lockedStack.writeNbt(lockedSlotNbt);
+            lockedSlotsNbt.add(lockedSlotNbt);
+        });
+        nbtCompound.put("LockedSlots", lockedSlotsNbt);
+
         return nbtCompound;
     }
 
@@ -141,6 +160,13 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
             ItemStack itemStack = Util.largeStackFromNbt(nbt);
             bankItemStorage.stacks.set(j, itemStack);
+        }
+
+        NbtList lockedSlotsNbt = nbtCompound.getList("LockedSlots", NbtElement.COMPOUND_TYPE);
+        for(int i = 0 ; i < lockedSlotsNbt.size(); ++i){
+            NbtCompound lockedSlotNbt = lockedSlotsNbt.getCompound(i);
+            bankItemStorage.lockSlot(lockedSlotNbt.getInt("Slot"), ItemStack.fromNbt(lockedSlotNbt));
+            
         }
 
         return bankItemStorage;
@@ -187,5 +213,17 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
             case NORMAL -> getSelectedItem();
             case RANDOM -> getRandomItem();
         };
+    }
+
+    public @Nullable ItemStack getLockedStack(int slotIndex){
+        return this.lockedSlots.get(slotIndex);
+    }
+
+    public void lockSlot(int slotIndex, ItemStack itemStack){
+        this.lockedSlots.put(slotIndex, itemStack.copyWithCount(1));
+    }
+
+    public void unlockSlot(int slotIndex){
+        this.lockedSlots.remove(slotIndex);
     }
 }

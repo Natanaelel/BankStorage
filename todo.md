@@ -1,7 +1,7 @@
-description
 
 linking
 
+[x] description
 [x] textures
 [x] change mode buttons
 

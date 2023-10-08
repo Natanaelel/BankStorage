@@ -50,11 +50,13 @@ public class BankScreenHandler extends ScreenHandler {
         int rows = this.type.rows;
         int cols = this.type.cols;
 
+        BankItemStorage bankItemStorage = (BankItemStorage) inventory;
         // bank
         for (int y = 0; y < rows; ++y) {
             for (int x = 0; x < cols; ++x) {
-                this.addSlot(new BankSlot(inventory, x + y * cols, 8 + x * 18, 18 + y * 18,
-                        this.type.slotStorageMultiplier));
+                int slotIndex = x + y * cols;
+                this.addSlot(new BankSlot(inventory, slotIndex, 8 + x * 18, 18 + y * 18,
+                        this.type.slotStorageMultiplier, bankItemStorage.getLockedStack(slotIndex)));
             }
         }
 

@@ -75,6 +75,8 @@ public class BankStorage implements ModInitializer {
 
 	public static BlockEntityType<BankDockBlockEntity> BANK_DOCK_BLOCK_ENTITY;
 
+
+
 	@Override
 	public void onInitialize() {
 
@@ -147,7 +149,7 @@ public class BankStorage implements ModInitializer {
 
 										MutableText message = Text.empty();
 										MinecraftServer server = context.getSource().getServer();
-										BankStateSaverAndLoader.getServerState(server).getBankMap()
+										BankStateSaverAndLoader.getServerStateSaverAndLoader(server).getBankMap()
 												.forEach((uuid, bankItemStorage) -> {
 													String command = "/bankstorage fromuuid " + uuid.toString() + " "
 															+ context.getSource().getPlayer().getEntityName();
@@ -205,7 +207,6 @@ public class BankStorage implements ModInitializer {
 
 	public static void onChangeBuildMode(ServerPlayerEntity player, ItemStack bank) {
 		if (Util.isBank(bank)) {
-			// System.out.println("is bank?");
 			BankItemStorage bankItemStorage = Util.getBankItemStorage(bank,
 					player.getWorld());
 			bankItemStorage.options.buildMode = BuildMode
@@ -215,9 +216,8 @@ public class BankStorage implements ModInitializer {
 
 			ServerPlayNetworking.send(player,
 					new OptionPacketS2C(Util.getUUID(bank), bankItemStorage.options.asNbt()));
-		}else{
+		} else {
 			LOGGER.info(player.getName().getString() + " tried to change build mode while holding " + bank);
-			// LOGGER.info(player.getName().getString() + " tried to change build mode while holding " + bank);
 		}
 	}
 }

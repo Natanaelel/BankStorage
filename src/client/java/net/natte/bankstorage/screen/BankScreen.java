@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import com.mojang.datafixers.util.Pair;
-
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -15,7 +14,6 @@ import net.minecraft.client.gui.screen.ingame.HandledScreens.Provider;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -25,14 +23,17 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
+import net.natte.bankstorage.BankStorageClient;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.SortPacketC2S;
 import net.natte.bankstorage.rendering.ItemCountUtils;
+import net.natte.bankstorage.util.Util;
 
 public class BankScreen extends HandledScreen<BankScreenHandler> {
 
+    private static final Identifier WIDGETS_TEXTURE = Util.ID("textures/gui/widgets.png");
 
     private static final NumberFormat FORMAT = NumberFormat.getNumberInstance(Locale.US);
 
@@ -53,7 +54,31 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
             ClientPlayNetworking.send(new SortPacketC2S());
             return true;
         }
+        // left click + lockSlot keybind
+        System.out.println(button);
+        System.out.println(BankStorageClient.lockSlotKeyBinding.isPressed());
+        System.out.println(BankStorageClient.lockSlotKeyBinding.wasPressed());
+        if(button == 0 && BankStorageClient.lockSlotKeyBinding.isPressed()) {
+            client.player.sendMessage(Text.literal("lockslot" + this.getSlotAt(mouseX, mouseY).getIndex()));
+            return true;
+        }
+
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if(BankStorageClient.lockSlotKeyBinding.matchesKey(keyCode, scanCode)){
+            BankStorageClient.lockSlotKeyBinding.setPressed(true);
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+    @Override
+    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+        if(BankStorageClient.lockSlotKeyBinding.matchesKey(keyCode, scanCode)){
+            BankStorageClient.lockSlotKeyBinding.setPressed(false);
+        }
+        return super.keyReleased(keyCode, scanCode, modifiers);
     }
 
     public BankScreen(BankScreenHandler screenHandler, PlayerInventory playerInventory, Text text, BankType type) {
@@ -127,15 +152,14 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
     @Override
     public void drawSlot(DrawContext context, Slot slot) {
         if (slot instanceof BankSlot bankSlot) {
-            drawBankSlot(context, slot);
+            drawBankSlot(context, bankSlot);
         } else {
             super.drawSlot(context, slot);
         }
 
     }
 
-    private void drawBankSlot(DrawContext context, Slot slot) {
-        Pair<Identifier, Identifier> pair;
+    private void drawBankSlot(DrawContext context, BankSlot slot) {
         int i = slot.x;
         int j = slot.y;
         ItemStack itemStack = slot.getStack();
@@ -169,12 +193,21 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         }
         context.getMatrices().push();
         context.getMatrices().translate(0.0f, 0.0f, 100.0f);
-        if (itemStack.isEmpty() && slot.isEnabled() && (pair = slot.getBackgroundSprite()) != null) {
-            Sprite sprite = this.client.getSpriteAtlas((Identifier) pair.getFirst())
-                    .apply((Identifier) pair.getSecond());
-            context.drawSprite(i, j, 0, 16, 16, sprite);
+
+        if (slot.isLocked()) {
+            context.drawTexture(WIDGETS_TEXTURE, i, j, 0, 46, 16, 16);
+        }
+
+        if (itemStack.isEmpty() && slot.isEnabled() && slot.isLocked()) {
+            float[] colors = RenderSystem.getShaderColor().clone();
+
+            RenderSystem.setShaderColor(1f, 1f, 1f, 0.5f);
+
+            context.drawItem(slot.getLockedStack(), i, j);
+            RenderSystem.setShaderColor(colors[0], colors[1], colors[2], colors[3]);
             bl2 = true;
         }
+
         if (!bl2) {
             if (bl) {
                 context.fill(i, j, i + 16, j + 16, -2130706433);

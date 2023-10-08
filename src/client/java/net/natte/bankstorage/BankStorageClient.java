@@ -44,6 +44,7 @@ public class BankStorageClient implements ClientModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(BankStorage.MOD_ID);
 
 	public static KeyBinding toggleBuildModeKeyBinding;
+	public static KeyBinding lockSlotKeyBinding;
 
 	public static BuildModePreviewRenderer buildModePreviewRenderer = new BuildModePreviewRenderer();
 
@@ -97,6 +98,12 @@ public class BankStorageClient implements ClientModInitializer {
 						InputUtil.Type.KEYSYM,
 						GLFW.GLFW_KEY_I,
 						"category.bankstorage"));
+		// not registered, key press handled by BankScreen.java
+		lockSlotKeyBinding = new KeyBinding(
+						"key.bankstorage.lockslot",
+						InputUtil.Type.KEYSYM,
+						GLFW.GLFW_KEY_LEFT_ALT,
+						"category.bankstorage");
 	}
 
 	public void registerKeyBindListeners() {
@@ -104,7 +111,6 @@ public class BankStorageClient implements ClientModInitializer {
 
 			while (toggleBuildModeKeyBinding.wasPressed()) {
 				ItemStack stack = client.player.getStackInHand(client.player.getActiveHand());
-				System.out.println(stack);
 				if (Util.isBank(stack)) {
 					ClientPlayNetworking.send(new BuildModePacketC2S(stack));
 				}
