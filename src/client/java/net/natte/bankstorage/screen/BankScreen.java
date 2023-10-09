@@ -259,21 +259,14 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         context.getMatrices().translate(0.0f, 0.0f, 100.0f);
 
         if (slot.isLocked()) {
-            context.drawTexture(WIDGETS_TEXTURE, i, j, 0, 46, 16, 16);
+            context.drawTexture(WIDGETS_TEXTURE, i, j, itemStack.isEmpty() ? 16 : 0, 46, 16, 16);
+            // if(slot.getLockedStack().isEmpty() || !itemStack.isEmpty()) context.drawTexture(WIDGETS_TEXTURE, i, j, itemStack.isEmpty() ? 16 : 0, 46, 16, 16);
         }
 
         if (itemStack.isEmpty() && slot.isEnabled() && slot.isLocked()) {
-            // float[] colors = RenderSystem.getShaderColor().clone();
-            // DiffuseLighting.disableGuiDepthLighting();
 
-            // RenderSystem.setShaderColor(1f, 1f, 1f, 0.5f);
-            context.setShaderColor(1, 1, 1, 0.5f);
             context.drawItem(slot.getLockedStack(), i, j);
-            context.setShaderColor(1, 1, 1, 1);
-            // context.fill(i, j, i + 16, j + 16, -0x7f000001);
-
-            // RenderSystem.setShaderColor(colors[0], colors[1], colors[2], colors[3]);
-            bl2 = true;
+            context.fill(i, j, i + 16, j + 16, 160, 0x7f8b8b8b);
         }
 
         if (!bl2) {
