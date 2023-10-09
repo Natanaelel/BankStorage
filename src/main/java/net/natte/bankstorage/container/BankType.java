@@ -22,10 +22,10 @@ public class BankType {
 
     private ScreenHandlerType<BankScreenHandler> screenHandlerType;
 
-    public int slotStorageMultiplier;
+    public int stackLimit;
     public BankItem item;
 
-    public BankType(String name, int slotStorageMultiplier, int rows, int cols, int guiTextureWidth,
+    public BankType(String name, int stackLimit, int rows, int cols, int guiTextureWidth,
             int guiTextureHeight) {
         this.name = name;
         this.rows = rows;
@@ -34,7 +34,7 @@ public class BankType {
         this.guiTextureWidth = guiTextureWidth;
         this.guiTextureHeight = guiTextureHeight;
 
-        this.slotStorageMultiplier = slotStorageMultiplier;
+        this.stackLimit = stackLimit;
 
     }
 

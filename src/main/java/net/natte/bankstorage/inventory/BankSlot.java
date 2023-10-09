@@ -12,18 +12,18 @@ import net.natte.bankstorage.util.Util;
 
 public class BankSlot extends Slot {
 
-    public int slotStorageMultiplier;
+    public int stackLimit;
     private boolean isLocked = false;
     private ItemStack lockedStack = null;
 
-    public BankSlot(Inventory inventory, int index, int x, int y, int slotStorageMultiplier) {
+    public BankSlot(Inventory inventory, int index, int x, int y, int stackLimit) {
         super(inventory, index, x, y);
-        this.slotStorageMultiplier = slotStorageMultiplier;
+        this.stackLimit = stackLimit;
     }
 
-    public BankSlot(Inventory inventory, int index, int x, int y, int slotStorageMultiplier,
+    public BankSlot(Inventory inventory, int index, int x, int y, int stackLimit,
             @Nullable ItemStack lockedStack) {
-        this(inventory, index, x, y, slotStorageMultiplier);
+        this(inventory, index, x, y, stackLimit);
         if (lockedStack != null) {
             this.isLocked = true;
             this.lockedStack = lockedStack;
@@ -62,13 +62,13 @@ public class BankSlot extends Slot {
     @Override
     public int getMaxItemCount() {
         // I think unused
-        return 64 * this.slotStorageMultiplier;
+        return this.stackLimit;
     }
 
     @Override
     public int getMaxItemCount(ItemStack stack) {
-        // return stack.getMaxCount() * this.slotStorageMultiplier;
-        return 64 * this.slotStorageMultiplier;
+        // return stack.getMaxCount() * this.stackLimit;
+        return this.stackLimit;
     }
 
     @Override

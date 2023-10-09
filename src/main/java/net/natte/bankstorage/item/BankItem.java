@@ -37,7 +37,7 @@ public class BankItem extends BankFunctionality {
             if (Util.hasUUID(stack))
                 tooltip.add(Text.literal(Util.getUUID(stack).toString()).formatted(Formatting.DARK_AQUA));
         }
-        Text formattedStackLimit = Text.literal(NUMBER_FORMAT.format(64 * this.type.slotStorageMultiplier));
+        Text formattedStackLimit = Text.literal(NUMBER_FORMAT.format(this.type.stackLimit));
         tooltip.add(Text.translatable("tooptip.bankstorage.stacklimit", formattedStackLimit));
         tooltip.add(Text.translatable("tooptip.bankstorage.numslots", Text.literal(String.valueOf(this.type.size()))));
         super.appendTooltip(stack, world, tooltip, context);

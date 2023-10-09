@@ -27,5 +27,9 @@
     "key.bankstorage.lockslot": "Filter Slot",
 
     "tooptip.bankstorage.stacklimit": "§7Stack limit: %s",
-    "tooptip.bankstorage.numslots": "§7Number of slots: %s"
+    "tooptip.bankstorage.numslots": "§7Number of slots: %s",
+
+    "command.bankstorage.hoverinfo": "Click for give command",
+    "command.bankstorage.bankinfo": "%s %d items %s\n",
+    "command.bankstorage.unknownid": "No bank with that id"
 }

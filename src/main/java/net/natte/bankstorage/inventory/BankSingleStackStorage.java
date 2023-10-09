@@ -28,7 +28,7 @@ public class BankSingleStackStorage extends SingleStackStorage {
 
     @Override
     protected int getCapacity(ItemVariant itemVariant) {
-        return storage.getStorageMultiplier() * itemVariant.getItem().getMaxCount();
+        return storage.type.stackLimit;
     }
 
     @Override

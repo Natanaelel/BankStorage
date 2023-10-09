@@ -101,7 +101,7 @@ public class ItemPickupHandler {
 
         boolean pickedUpAny = false;
 
-        int slotSize = 64 * bankItemStorage.type.slotStorageMultiplier;
+        int slotSize = bankItemStorage.type.stackLimit;
         List<Integer> sortedKeys = bankItemStorage
                 .getlockedSlots()
                 .keySet()
@@ -140,7 +140,7 @@ public class ItemPickupHandler {
         boolean pickedUpAny = false;
         // int slotSize = pickedUpStack.getMaxCount() *
         // bankItemStorage.type.slotStorageMultiplier;
-        int slotSize = 64 * bankItemStorage.type.slotStorageMultiplier;
+        int slotSize = bankItemStorage.type.stackLimit;
 
         for (int slot = 0; slot < bankItemStorage.size(); ++slot) {
 
@@ -173,7 +173,7 @@ public class ItemPickupHandler {
         boolean pickedUpAny = false;
         // int slotSize = pickedUpStack.getMaxCount() *
         // bankItemStorage.type.slotStorageMultiplier;
-        int slotSize = 64 * bankItemStorage.type.slotStorageMultiplier;
+        int slotSize = bankItemStorage.type.stackLimit;
 
         for (int slot = 0; slot < bankItemStorage.size(); ++slot) {
 

@@ -19,7 +19,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.text.ClickEvent;
@@ -32,7 +32,6 @@ import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.BankFunctionality;
-import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.packet.client.OptionPacketS2C;
 import net.natte.bankstorage.packet.server.BuildModePacketC2S;
@@ -47,11 +46,17 @@ import net.natte.bankstorage.world.BankStateSaverAndLoader;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.server.command.CommandManager.argument;
 
 public class BankStorage implements ModInitializer {
 
@@ -59,13 +64,13 @@ public class BankStorage implements ModInitializer {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-	private static final BankType BANK_1 = new BankType("bank_1", 4, 1, 9, 176, 114 + 18 * 1);
-	private static final BankType BANK_2 = new BankType("bank_2", 16, 2, 9, 176, 114 + 18 * 2);
-	private static final BankType BANK_3 = new BankType("bank_3", 64, 3, 9, 176, 114 + 18 * 3);
-	private static final BankType BANK_4 = new BankType("bank_4", 256, 4, 9, 176, 114 + 18 * 4);
-	private static final BankType BANK_5 = new BankType("bank_5", 1024, 6, 9, 176, 114 + 18 * 6);
-	private static final BankType BANK_6 = new BankType("bank_6", 4096, 9, 9, 176, 114 + 18 * 9);
-	private static final BankType BANK_7 = new BankType("bank_7", 15625000, 12, 9, 176, 114 + 18 * 12);
+	private static final BankType BANK_1 = new BankType("bank_1", 256, 1, 9, 176, 114 + 18 * 1);
+	private static final BankType BANK_2 = new BankType("bank_2", 1024, 2, 9, 176, 114 + 18 * 2);
+	private static final BankType BANK_3 = new BankType("bank_3", 4096, 3, 9, 176, 114 + 18 * 3);
+	private static final BankType BANK_4 = new BankType("bank_4", 16_384, 4, 9, 176, 114 + 18 * 4);
+	private static final BankType BANK_5 = new BankType("bank_5", 65_536, 6, 9, 176, 114 + 18 * 6);
+	private static final BankType BANK_6 = new BankType("bank_6", 262_144, 9, 9, 176, 114 + 18 * 9);
+	private static final BankType BANK_7 = new BankType("bank_7", 1_000_000_000, 12, 9, 176, 114 + 18 * 12);
 
 	public static final List<BankType> bankTypes = new ArrayList<>();
 
@@ -75,8 +80,6 @@ public class BankStorage implements ModInitializer {
 	private static final BankRecipeSerializer bankRecipeSerializer = new BankRecipeSerializer();
 
 	public static BlockEntityType<BankDockBlockEntity> BANK_DOCK_BLOCK_ENTITY;
-
-
 
 	@Override
 	public void onInitialize() {
@@ -130,68 +133,17 @@ public class BankStorage implements ModInitializer {
 
 	public void registerCommands() {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-			dispatcher.register(CommandManager.literal("bankdata").executes(context -> {
-				ServerPlayerEntity player = context.getSource().getPlayer();
-				ItemStack item = player.getStackInHand(player.getActiveHand());
-
-				if (item.getItem() instanceof BankItem bankItem) {
-					BankItemStorage bankItemStorage = Util.getBankItemStorage(item, context.getSource().getWorld());
-					player.sendMessage(Text.literal(bankItemStorage.saveToNbt().asString()));
-				}
-
-				return Command.SINGLE_SUCCESS;
-			}));
 
 			dispatcher.register(
-					CommandManager.literal("bankstorage")
-							.then(CommandManager.literal("list")
+					literal("bankstorage")
+							.then(literal("list")
 									.requires(context -> context.hasPermissionLevel(2))
-									.executes(context -> {
-
-										MutableText message = Text.empty();
-										MinecraftServer server = context.getSource().getServer();
-										BankStateSaverAndLoader.getServerStateSaverAndLoader(server).getBankMap()
-												.forEach((uuid, bankItemStorage) -> {
-													String command = "/bankstorage fromuuid " + uuid.toString() + " "
-															+ context.getSource().getPlayer().getEntityName();
-													message.append(Text.literal(bankItemStorage.type.getName() + " "
-															+ bankItemStorage.stacks.stream()
-																	.filter(stack -> !stack.isEmpty()).count()
-															+ " items " + bankItemStorage.uuid.toString() + "\n")
-															.styled(style -> style.withClickEvent(new ClickEvent(
-																	ClickEvent.Action.SUGGEST_COMMAND, command))
-																	.withHoverEvent(new HoverEvent(
-																			HoverEvent.Action.SHOW_TEXT,
-																			Text.literal("Click for give command")))));
-												});
-										context.getSource().sendMessage(message);
-										return Command.SINGLE_SUCCESS;
-									}))
-							.then(CommandManager.literal("fromuuid")
+									.executes(BankStorage::listBankStorages))
+							.then(literal("fromuuid")
 									.requires(context -> context.hasPermissionLevel(2))
-									.then(CommandManager.argument("uuid", UuidArgumentType.uuid())
-											.then(CommandManager.argument("player", EntityArgumentType.player())
-													.executes(context -> {
-														ServerPlayerEntity player = EntityArgumentType.getPlayer(
-																context,
-																"player");
-														UUID uuid = UuidArgumentType.getUuid(context, "uuid");
-														BankItemStorage bank = Util.getBankItemStorage(uuid,
-																context.getSource().getWorld());
-														if (bank == null) {
-															context.getSource().sendFeedback(
-																	() -> Text.literal("No bank with that id"),
-																	false);
-															return 0;
-														}
-														ItemStack stack = Registries.ITEM
-																.get(new Identifier(MOD_ID, bank.type.getName()))
-																.getDefaultStack();
-														stack.getOrCreateNbt().putUuid(BankFunctionality.UUID_KEY,
-																uuid);
-														player.getInventory().insertStack(stack);
-														return Command.SINGLE_SUCCESS;
-													})))));
+									.then(argument("uuid", UuidArgumentType.uuid())
+											.then(argument("player", EntityArgumentType.player())
+													.executes(BankStorage::restoreBankCommand)))));
 		});
 	}
 
@@ -222,4 +174,61 @@ public class BankStorage implements ModInitializer {
 			LOGGER.info(player.getName().getString() + " tried to change build mode while holding " + bank);
 		}
 	}
+
+	private static int listBankStorages(CommandContext<ServerCommandSource> context) {
+
+		MutableText message = Text.empty();
+		MinecraftServer server = context.getSource().getServer();
+		ServerPlayerEntity player = context.getSource().getPlayer();
+
+		Map<UUID, BankItemStorage> bankMap = BankStateSaverAndLoader.getServerStateSaverAndLoader(server).getBankMap();
+
+		for (Map.Entry<UUID, BankItemStorage> entry : bankMap.entrySet()) {
+			UUID uuid = entry.getKey();
+			BankItemStorage bankItemStorage = entry.getValue();
+
+			long nonEmptyStacks = bankItemStorage.stacks.stream().filter(stack -> !stack.isEmpty()).count();
+
+			String command = "/bankstorage fromuuid " + uuid.toString() + " " + player.getEntityName();
+
+			ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command);
+			HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+					Text.translatable("command.bankstorage.hoverinfo"));
+
+			message.append(Text
+					.translatable("command.bankstorage.bankinfo", bankItemStorage.type.getName(), nonEmptyStacks,
+							bankItemStorage.uuid.toString())
+					.styled(style -> style
+							.withClickEvent(clickEvent)
+							.withHoverEvent(hoverEvent)));
+		}
+		context.getSource().sendMessage(message);
+		return Command.SINGLE_SUCCESS;
+
+	}
+
+	private static int restoreBankCommand(CommandContext<ServerCommandSource> context) {
+
+		ServerPlayerEntity player;
+		try {
+			player = EntityArgumentType.getPlayer(context, "player");
+		} catch (CommandSyntaxException e) {
+			return 0;
+		}
+		UUID uuid = UuidArgumentType.getUuid(context, "uuid");
+		BankItemStorage bank = Util.getBankItemStorage(uuid,
+				context.getSource().getWorld());
+		if (bank == null) {
+			context.getSource().sendFeedback(() -> Text.translatable("command.bankstorage.unknownid"), false);
+			return 0;
+		}
+		ItemStack stack = Registries.ITEM
+				.get(Util.ID(bank.type.getName()))
+				.getDefaultStack();
+		stack.getOrCreateNbt().putUuid(BankFunctionality.UUID_KEY,
+				uuid);
+		player.getInventory().insertStack(stack);
+		return Command.SINGLE_SUCCESS;
+	}
+
 }
