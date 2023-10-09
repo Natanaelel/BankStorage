@@ -1,5 +1,7 @@
 package net.natte.bankstorage.packet.screensync;
 
+import java.util.Map;
+
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.item.ItemStack;
@@ -40,5 +42,7 @@ public class BankSyncPacketHandler {
         ServerPlayNetworking.send(player, BankSyncPacketHandler.sync_container, buf);
     }
 
-    // public static void sendSyncLockedItem(ServerPlayerEntity player,)
+    public static void sendSyncLockedSlots(ServerPlayerEntity player, int syncId, Map<Integer, ItemStack> lockedSlots){
+        ServerPlayNetworking.send(player, new LockedSlotsPacketS2C(syncId, lockedSlots));
+    }
 }

@@ -84,7 +84,6 @@ public class VersionStateSaverAndLoader {
     }
 
     private static BankStateSaverAndLoader readNbtVersion1(NbtCompound nbtCompound) {
-        BankStorage.LOGGER.info("Loading banks from nbt");
 
         BankStateSaverAndLoader state = new BankStateSaverAndLoader();
 
@@ -94,12 +93,10 @@ public class VersionStateSaverAndLoader {
 
         for (NbtElement nbtElement : nbtList) {
             NbtCompound nbt = (NbtCompound) nbtElement;
-            UUID uuid = nbt.getUuid(BankItem.UUID_KEY);
+            UUID uuid = nbt.getUuid("uuid");
             BankItemStorage bankItemStorage = BankItemStorage.createFromNbt(nbt.getCompound("bank"));
             state.getBankMap().put(uuid, bankItemStorage);
         }
-
-        BankStorage.LOGGER.info("Loading done");
 
         return state;
     }

@@ -1,5 +1,7 @@
 package net.natte.bankstorage.screen;
 
+import java.util.Map;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerPropertyUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
@@ -7,6 +9,7 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerSyncHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.collection.DefaultedList;
+import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.packet.screensync.BankSyncPacketHandler;
 
 /*
@@ -26,14 +29,20 @@ public class BankScreenSync implements ScreenHandlerSyncHandler {
             int[] indices) {
         BankSyncPacketHandler.sendSyncContainer(player, screenHandler.nextRevision(),
                 screenHandler.syncId, inventory, stack);
+                Map<Integer, ItemStack> lockedSlots = ((BankItemStorage)((BankScreenHandler) screenHandler).inventory).getlockedSlots();
+        BankSyncPacketHandler.sendSyncLockedSlots(player, screenHandler.syncId, lockedSlots);
+
+        
         for (int i = 0; i < indices.length; ++i) {
             this.broadcastDataValue(screenHandler, i, indices[i]);
         }
+
     }
 
     @Override
     public void updateSlot(ScreenHandler screenHandler, int slot, ItemStack stack) {
         BankSyncPacketHandler.sendSyncSlot(player, screenHandler.syncId, slot, stack);
+
     }
 
     @Override

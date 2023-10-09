@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -26,6 +25,7 @@ import net.minecraft.util.math.MathHelper;
 import net.natte.bankstorage.BankStorageClient;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
+import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
 import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.SortPacketC2S;
 import net.natte.bankstorage.rendering.ItemCountUtils;
@@ -55,12 +55,75 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
             return true;
         }
         // left click + lockSlot keybind
-        System.out.println(button);
-        System.out.println(BankStorageClient.lockSlotKeyBinding.isPressed());
-        System.out.println(BankStorageClient.lockSlotKeyBinding.wasPressed());
-        if(button == 0 && BankStorageClient.lockSlotKeyBinding.isPressed()) {
-            client.player.sendMessage(Text.literal("lockslot" + this.getSlotAt(mouseX, mouseY).getIndex()));
-            return true;
+        if (button == 0 && BankStorageClient.lockSlotKeyBinding.isPressed()) {
+            Slot slot = this.getSlotAt(mouseX, mouseY);
+            if (slot instanceof BankSlot hoveredSlot) {
+                int hoveredSlotIndex = hoveredSlot.getIndex();
+                ItemStack hoveredStack = hoveredSlot.getStack();
+                ItemStack cursorStack = this.handler.getCursorStack();
+                boolean isLocked = hoveredSlot.isLocked();
+                if (!isLocked) {
+                    if (hoveredStack.isEmpty()) {
+                        if (cursorStack.isEmpty()) { // empty unlocked, cursor empty
+                            ClientPlayNetworking.send(new LockSlotPacketC2S(this.handler.syncId, hoveredSlotIndex,
+                                    ItemStack.EMPTY, true));
+                            this.cancelNextRelease = true;
+                            return true;
+                        } else { // empty unlocked, cursor has
+                            ClientPlayNetworking.send(new LockSlotPacketC2S(this.handler.syncId, hoveredSlotIndex,
+                                    cursorStack, true));
+                            this.cancelNextRelease = true;
+                            return true;
+                        }
+                    } else {
+                        if (cursorStack.isEmpty()) { // has unlocked, cursor empty
+                            ClientPlayNetworking
+                                    .send(new LockSlotPacketC2S(this.handler.syncId, hoveredSlotIndex, hoveredStack,
+                                            true));
+                            this.cancelNextRelease = true;
+                            return true;
+                        } else { // has unlocked, cursor has
+                            if(ItemStack.canCombine(hoveredStack, cursorStack)){
+                                ClientPlayNetworking
+                                    .send(new LockSlotPacketC2S(this.handler.syncId, hoveredSlotIndex, hoveredStack,
+                                            true));
+                            }
+                            this.cancelNextRelease = true;
+                            return true;
+                        }
+                    }
+                } else {
+                    if (hoveredStack.isEmpty()) {
+                        if (cursorStack.isEmpty()) { // empty locked, cursor empty
+                            ClientPlayNetworking.send(new LockSlotPacketC2S(this.handler.syncId, hoveredSlotIndex,
+                                    ItemStack.EMPTY, false));
+                            this.cancelNextRelease = true;
+                            return true;
+                        } else { // empty locked, cursor has
+                            ClientPlayNetworking.send(new LockSlotPacketC2S(this.handler.syncId, hoveredSlotIndex,
+                                    cursorStack, true));
+                            this.cancelNextRelease = true;
+                            return true;
+                        }
+                    } else {
+                        if (cursorStack.isEmpty()) { // has locked, cursor empty
+                            ClientPlayNetworking
+                                    .send(new LockSlotPacketC2S(this.handler.syncId, hoveredSlotIndex, ItemStack.EMPTY, false));
+                            this.cancelNextRelease = true;
+                            return true;
+                        } else { // has locked, cursor has
+                            this.cancelNextRelease = true;
+                            return true;
+                        }
+                    }
+                }
+                // ItemStack lockedStack = this.handler.getCursorStack().isEmpty() ?
+                // hoveredSlot.getStack() : this.handler.getCursorStack();
+                // ClientPlayNetworking.send(new LockSlotPacketC2S(this.handler.syncId,
+                // hoveredSlotIndex, lockedStack));
+                // this.cancelNextRelease = true;
+                // return true;
+            }
         }
 
         return super.mouseClicked(mouseX, mouseY, button);
@@ -68,14 +131,15 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if(BankStorageClient.lockSlotKeyBinding.matchesKey(keyCode, scanCode)){
+        if (BankStorageClient.lockSlotKeyBinding.matchesKey(keyCode, scanCode)) {
             BankStorageClient.lockSlotKeyBinding.setPressed(true);
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
+
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        if(BankStorageClient.lockSlotKeyBinding.matchesKey(keyCode, scanCode)){
+        if (BankStorageClient.lockSlotKeyBinding.matchesKey(keyCode, scanCode)) {
             BankStorageClient.lockSlotKeyBinding.setPressed(false);
         }
         return super.keyReleased(keyCode, scanCode, modifiers);
@@ -199,12 +263,16 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         }
 
         if (itemStack.isEmpty() && slot.isEnabled() && slot.isLocked()) {
-            float[] colors = RenderSystem.getShaderColor().clone();
+            // float[] colors = RenderSystem.getShaderColor().clone();
+            // DiffuseLighting.disableGuiDepthLighting();
 
-            RenderSystem.setShaderColor(1f, 1f, 1f, 0.5f);
-
+            // RenderSystem.setShaderColor(1f, 1f, 1f, 0.5f);
+            context.setShaderColor(1, 1, 1, 0.5f);
             context.drawItem(slot.getLockedStack(), i, j);
-            RenderSystem.setShaderColor(colors[0], colors[1], colors[2], colors[3]);
+            context.setShaderColor(1, 1, 1, 1);
+            // context.fill(i, j, i + 16, j + 16, -0x7f000001);
+
+            // RenderSystem.setShaderColor(colors[0], colors[1], colors[2], colors[3]);
             bl2 = true;
         }
 
@@ -229,6 +297,11 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
 
     public boolean canInsertItemIntoSlot(/* @Nullable */ Slot slot, ItemStack stack, boolean allowOverflow) {
         boolean bl = !slot.hasStack();
+        if(slot instanceof BankSlot bankSlot){
+            if(bankSlot.isLocked()){
+                if(!Util.canCombine(stack, bankSlot.getLockedStack())) return false;
+            }
+        }
         if (!bl && ItemStack.canCombine(stack, slot.getStack())) {
             return slot.getStack().getCount() + (allowOverflow ? 0 : stack.getCount()) <= slot.getMaxItemCount(stack);
         }

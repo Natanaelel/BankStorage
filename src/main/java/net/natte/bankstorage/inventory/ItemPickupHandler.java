@@ -1,5 +1,7 @@
 package net.natte.bankstorage.inventory;
 
+import java.util.List;
+
 import com.google.common.collect.Iterables;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -52,6 +54,8 @@ public class ItemPickupHandler {
                 }
 
                 if (mode == PickupMode.ALL) {
+                    if (addToLockedSlot(bankItemStorage, pickedUpStack))
+                        bankPickedUpAny = true;
                     if (addToExistingSlot(bankItemStorage, pickedUpStack))
                         bankPickedUpAny = true;
                     if (addToAnySlot(bankItemStorage, pickedUpStack))
@@ -61,6 +65,8 @@ public class ItemPickupHandler {
                 if (mode == PickupMode.FILTERED || mode == PickupMode.VOID) {
 
                     if (hasSlotWithItem(bankItemStorage, pickedUpStack)) {
+                        if (addToLockedSlot(bankItemStorage, pickedUpStack))
+                            bankPickedUpAny = true;
                         if (addToExistingSlot(bankItemStorage, pickedUpStack))
                             bankPickedUpAny = true;
                         if (addToAnySlot(bankItemStorage, pickedUpStack))
@@ -89,12 +95,52 @@ public class ItemPickupHandler {
         return false;
     }
 
+    public static boolean addToLockedSlot(BankItemStorage bankItemStorage, ItemStack pickedUpStack) {
+        if (pickedUpStack.isEmpty())
+            return false;
+
+        boolean pickedUpAny = false;
+
+        int slotSize = 64 * bankItemStorage.type.slotStorageMultiplier;
+        List<Integer> sortedKeys = bankItemStorage
+                .getlockedSlots()
+                .keySet()
+                .stream()
+                .sorted()
+                .toList();
+        for (int index : sortedKeys) {
+            if (Util.canCombine(bankItemStorage.getLockedStack(index), pickedUpStack)) {
+                ItemStack stackInSlot = bankItemStorage.getStack(index);
+                int spaceLeft = slotSize - stackInSlot.getCount();
+                int toMove = Math.min(pickedUpStack.getCount(), spaceLeft);
+                if (toMove > 0) {
+                    pickedUpAny = true;
+                    if (stackInSlot.isEmpty()) {
+                        bankItemStorage.setStack(index, pickedUpStack.copyWithCount(toMove));
+                    } else {
+                        stackInSlot.increment(toMove);
+                    }
+                    pickedUpStack.decrement(toMove);
+                    bankItemStorage.markDirty();
+
+                    if (pickedUpStack.isEmpty())
+                        return pickedUpAny;
+                }
+            }
+        }
+        ;
+
+        return pickedUpAny;
+    }
+
     public static boolean addToExistingSlot(BankItemStorage bankItemStorage, ItemStack pickedUpStack) {
         if (pickedUpStack.isEmpty())
             return false;
 
         boolean pickedUpAny = false;
-        int slotSize = pickedUpStack.getMaxCount() * bankItemStorage.type.slotStorageMultiplier;
+        // int slotSize = pickedUpStack.getMaxCount() *
+        // bankItemStorage.type.slotStorageMultiplier;
+        int slotSize = 64 * bankItemStorage.type.slotStorageMultiplier;
 
         for (int slot = 0; slot < bankItemStorage.size(); ++slot) {
 
@@ -125,11 +171,17 @@ public class ItemPickupHandler {
             return false;
 
         boolean pickedUpAny = false;
-        int slotSize = pickedUpStack.getMaxCount() * bankItemStorage.type.slotStorageMultiplier;
+        // int slotSize = pickedUpStack.getMaxCount() *
+        // bankItemStorage.type.slotStorageMultiplier;
+        int slotSize = 64 * bankItemStorage.type.slotStorageMultiplier;
 
         for (int slot = 0; slot < bankItemStorage.size(); ++slot) {
 
             ItemStack stackInSlot = bankItemStorage.getStack(slot);
+            ItemStack lockedStack = bankItemStorage.getLockedStack(slot);
+
+            if (lockedStack != null && !Util.canCombine(pickedUpStack, lockedStack))
+                continue;
 
             if (stackInSlot.isEmpty()) {
                 pickedUpAny = true;
@@ -162,6 +214,11 @@ public class ItemPickupHandler {
     public static boolean hasSlotWithItem(BankItemStorage bankItemStorage, ItemStack itemStack) {
         for (int i = 0; i < bankItemStorage.size(); ++i) {
             if (ItemStack.canCombine(bankItemStorage.getStack(i), itemStack)) {
+                return true;
+            }
+        }
+        for (int i : bankItemStorage.getlockedSlots().keySet()) {
+            if (Util.canCombine(bankItemStorage.getLockedStack(i), itemStack)) {
                 return true;
             }
         }

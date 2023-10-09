@@ -3,6 +3,7 @@ package net.natte.bankstorage.util;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -11,6 +12,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.natte.bankstorage.BankStorage;
@@ -29,6 +31,10 @@ public class Util {
 
     public static boolean isAllowedInBank(ItemStack itemStack) {
         return !isBank(itemStack);
+    }
+
+    public static boolean canCombine(ItemStack left, ItemStack right) {
+        return left.getItem() == right.getItem() && Objects.equals(left.getNbt(), right.getNbt());
     }
 
     public static UUID getOrCreateUuid(ItemStack itemStack) {
@@ -88,38 +94,63 @@ public class Util {
         buf.writeNbt(Util.largeStackAsNbt(stack));
     }
 
-    // todo? fix unlikely bug where bank contains one item count > Integer.MAX_VALUE
-    public static void sortBank(BankItemStorage bankItemStorage) {
+    public static void sortBank(BankItemStorage bankItemStorage, ServerPlayerEntity player) {
 
         // collect unique elements with *unlimited* stack size
-        List<ItemStack> collectedItems = new ArrayList<>();
-        for (ItemStack itemStack : bankItemStorage.stacks) {
+        // and clear bank
+        List<HugeItemStack> collectedItems = new ArrayList<>();
+        for (int i = 0; i < bankItemStorage.size(); ++i) {
+            ItemStack itemStack = bankItemStorage.stacks.get(i);
+            bankItemStorage.setStack(i, ItemStack.EMPTY);
             boolean didExist = false;
-            for (ItemStack existing : collectedItems) {
-                if (ItemStack.canCombine(itemStack, existing)) {
-                    existing.increment(itemStack.getCount());
+            for (HugeItemStack existing : collectedItems) {
+                if (ItemStack.canCombine(itemStack, existing.stack)) {
+                    existing.count += itemStack.getCount();
                     didExist = true;
+                    break;
                 }
             }
             if (!didExist && !itemStack.isEmpty())
-                collectedItems.add(itemStack.copy());
+                collectedItems.add(new HugeItemStack(itemStack.copyWithCount(1), (long) itemStack.getCount()));
         }
 
         // sort
-        collectedItems.sort(Comparator.comparingInt(ItemStack::getCount).reversed());
+        collectedItems.sort(Comparator.comparingLong(HugeItemStack::getCount).reversed());
 
-        // fill bank one slot at a time
-        for (int i = 0; i < bankItemStorage.size(); i++) {
-            boolean isEmpty = collectedItems.isEmpty();
-            if (!isEmpty) {
-                ItemStack stack = collectedItems.get(0);
-                int maxCount = stack.getMaxCount() * bankItemStorage.getStorageMultiplier();
-                bankItemStorage.setStack(i, stack.split(maxCount));
-                if (stack.isEmpty()) {
-                    collectedItems.remove(0);
+        int slotSize = bankItemStorage.getMaxCountPerStack();
+
+        // first fill locked slots with their item
+        for (HugeItemStack collectedItem : collectedItems) {
+            bankItemStorage
+                    .getlockedSlots()
+                    .keySet()
+                    .stream()
+                    .filter(index -> Util.canCombine(collectedItem.stack, bankItemStorage.getLockedStack(index)))
+                    .sorted()
+                    .forEach(index -> bankItemStorage.setStack(index, collectedItem.split(slotSize)));
+        }
+
+        // fill empty bank slots one at a time
+        for (HugeItemStack collectedItem : collectedItems) {
+
+            if (collectedItem.count == 0)
+                continue;
+            for (int i = 0; i < bankItemStorage.size(); ++i) {
+                if (bankItemStorage.getLockedStack(i) != null)
+                    continue;
+                ItemStack existingStack = bankItemStorage.getStack(i);
+                if (existingStack.isEmpty()) {
+                    bankItemStorage.setStack(i, collectedItem.split(slotSize));
                 }
-            } else {
-                bankItemStorage.setStack(i, ItemStack.EMPTY);
+            }
+        }
+        
+        // insert remaining items into player inventory or drop
+        for (HugeItemStack collectedItem : collectedItems) {
+
+            while (collectedItem.count > 0) {
+                BankStorage.LOGGER.warn("Item does not fit in bank after sort. This *should* be impossible. item: " + collectedItem.stack + " count: " + collectedItem.count);
+                player.getInventory().offerOrDrop(collectedItem.split(collectedItem.stack.getMaxCount()));
             }
         }
     }
@@ -144,7 +175,28 @@ public class Util {
         return bankItemStorage;
     }
 
-    public static Identifier ID(String path){
+    public static Identifier ID(String path) {
         return new Identifier(BankStorage.MOD_ID, path);
+    }
+}
+
+// if somehow one bank has more than Integer.MAX_VALUE total of one item
+class HugeItemStack {
+    public ItemStack stack;
+    public long count;
+
+    public HugeItemStack(ItemStack stack, long count) {
+        this.stack = stack;
+        this.count = count;
+    }
+
+    public long getCount() {
+        return this.count;
+    }
+
+    public ItemStack split(int count) {
+        int toMove = (int) Math.min(this.count, count);
+        this.count -= toMove;
+        return this.stack.copyWithCount(toMove);
     }
 }

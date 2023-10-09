@@ -8,7 +8,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.Slot;
-import net.natte.bankstorage.item.BankItem;
+import net.natte.bankstorage.util.Util;
 
 public class BankSlot extends Slot {
 
@@ -21,36 +21,42 @@ public class BankSlot extends Slot {
         this.slotStorageMultiplier = slotStorageMultiplier;
     }
 
-    public BankSlot(Inventory inventory, int index, int x, int y, int slotStorageMultiplier, @Nullable ItemStack lockedStack) {
+    public BankSlot(Inventory inventory, int index, int x, int y, int slotStorageMultiplier,
+            @Nullable ItemStack lockedStack) {
         this(inventory, index, x, y, slotStorageMultiplier);
-        if(lockedStack != null){
+        if (lockedStack != null) {
             this.isLocked = true;
             this.lockedStack = lockedStack;
         }
 
     }
 
-    public void lock(ItemStack stack){
+    public void lock(ItemStack stack) {
         this.isLocked = true;
         this.lockedStack = stack.copyWithCount(1);
     }
 
-    public void unlock(){
+    public void unlock() {
         this.isLocked = false;
         this.lockedStack = null;
     }
 
-    public boolean isLocked(){
+    public boolean isLocked() {
         return this.isLocked;
     }
 
-    public ItemStack getLockedStack(){
+    public ItemStack getLockedStack() {
         return this.lockedStack;
     }
 
     @Override
     public boolean canInsert(ItemStack stack) {
-        return !(stack.getItem() instanceof BankItem) && super.canInsert(stack);
+        if (this.isLocked && !Util.canCombine(stack, this.lockedStack))
+            return false;
+        if (!Util.isAllowedInBank(stack))
+            return false;
+
+        return super.canInsert(stack);
     }
 
     @Override
@@ -61,7 +67,8 @@ public class BankSlot extends Slot {
 
     @Override
     public int getMaxItemCount(ItemStack stack) {
-        return stack.getMaxCount() * this.slotStorageMultiplier;
+        // return stack.getMaxCount() * this.slotStorageMultiplier;
+        return 64 * this.slotStorageMultiplier;
     }
 
     @Override

@@ -9,12 +9,12 @@ import net.natte.bankstorage.item.BankItem;
 public class BankSingleStackStorage extends SingleStackStorage {
 
     private final BankItemStorage storage;
-	final int slot;
+    final int slot;
 
     public BankSingleStackStorage(BankItemStorage storage, int slot) {
-		this.storage = storage;
-		this.slot = slot;
-	}
+        this.storage = storage;
+        this.slot = slot;
+    }
 
     @Override
     protected ItemStack getStack() {
@@ -30,9 +30,17 @@ public class BankSingleStackStorage extends SingleStackStorage {
     protected int getCapacity(ItemVariant itemVariant) {
         return storage.getStorageMultiplier() * itemVariant.getItem().getMaxCount();
     }
+
     @Override
     protected boolean canInsert(ItemVariant itemVariant) {
-        return !(itemVariant.getItem() instanceof BankItem) && super.canInsert(itemVariant);
+
+        if (itemVariant.getItem() instanceof BankItem)
+            return false;
+        ItemStack lockedStack = this.storage.getLockedStack(this.slot);
+        if (lockedStack != null && !itemVariant.matches(lockedStack))
+            return false;
+
+        return super.canInsert(itemVariant);
     }
-    
+
 }

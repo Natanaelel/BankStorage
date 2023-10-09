@@ -39,7 +39,6 @@ public class BankDockBlock extends Block implements BlockEntityProvider {
             ItemStack stackInHand = player.getStackInHand(hand);
             if (bankDockBlockEntity.hasBank()) {
 
-
                 // pick up bank from dock
                 if (stackInHand.isEmpty() && player.isSneaking()) {
                     // player.getInventory().insertStack(bankDockBlockEntity.pickUpBank());

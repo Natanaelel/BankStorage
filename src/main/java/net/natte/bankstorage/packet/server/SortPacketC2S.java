@@ -26,7 +26,7 @@ public class SortPacketC2S implements FabricPacket {
                 return;
             BankItemStorage bankItemStorage = (BankItemStorage) bankScreenHandler.inventory;
 
-            Util.sortBank(bankItemStorage);
+            Util.sortBank(bankItemStorage, player);
 
         }
     }

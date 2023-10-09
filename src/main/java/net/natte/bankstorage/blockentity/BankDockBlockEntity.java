@@ -43,8 +43,8 @@ public class BankDockBlockEntity extends BlockEntity {
     public ItemStack pickUpBank() {
         ItemStack bank = this.bankItem;
         this.bankItem = ItemStack.EMPTY;
-        this.markDirty();
         this.storage = null;
+        this.markDirty();
         return bank;
     }
 

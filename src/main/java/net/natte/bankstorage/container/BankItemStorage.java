@@ -21,7 +21,6 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.text.Text;
 import net.natte.bankstorage.BankStorage;
-import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.screen.BankScreenHandler;
@@ -36,6 +35,7 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     public Random random;
 
     private Map<Integer, ItemStack> lockedSlots;
+    private boolean isLockedSlotsDirty = false;
 
     public BankItemStorage(BankType type, UUID uuid) {
         super(type.rows * type.cols);
@@ -122,7 +122,6 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         }
         nbtCompound.put("Items", nbtList);
 
-        
         NbtList lockedSlotsNbt = new NbtList();
 
         this.lockedSlots.forEach((slot, lockedStack) -> {
@@ -163,10 +162,10 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         }
 
         NbtList lockedSlotsNbt = nbtCompound.getList("LockedSlots", NbtElement.COMPOUND_TYPE);
-        for(int i = 0 ; i < lockedSlotsNbt.size(); ++i){
+        for (int i = 0; i < lockedSlotsNbt.size(); ++i) {
             NbtCompound lockedSlotNbt = lockedSlotsNbt.getCompound(i);
             bankItemStorage.lockSlot(lockedSlotNbt.getInt("Slot"), ItemStack.fromNbt(lockedSlotNbt));
-            
+
         }
 
         return bankItemStorage;
@@ -184,7 +183,10 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     @Override
     public boolean canInsert(ItemStack stack) {
-        return !(stack.getItem() instanceof BankItem) && super.canInsert(stack);
+        if (!Util.isAllowedInBank(stack))
+            return false;
+
+        return super.canInsert(stack);
     }
 
     public List<ItemStack> getBlockItems() {
@@ -215,15 +217,29 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         };
     }
 
-    public @Nullable ItemStack getLockedStack(int slotIndex){
+    public @Nullable ItemStack getLockedStack(int slotIndex) {
         return this.lockedSlots.get(slotIndex);
     }
 
-    public void lockSlot(int slotIndex, ItemStack itemStack){
+    public void lockSlot(int slotIndex, ItemStack itemStack) {
         this.lockedSlots.put(slotIndex, itemStack.copyWithCount(1));
+        this.setLockedSlotsDirty(true);
     }
 
-    public void unlockSlot(int slotIndex){
+    public void unlockSlot(int slotIndex) {
         this.lockedSlots.remove(slotIndex);
+        this.setLockedSlotsDirty(true);
+    }
+
+    public Map<Integer, ItemStack> getlockedSlots() {
+        return this.lockedSlots;
+    }
+
+    public boolean isLockedSlotsDirty() {
+        return this.isLockedSlotsDirty;
+    }
+
+    public void setLockedSlotsDirty(boolean isLockedSlotsDirty) {
+        this.isLockedSlotsDirty = isLockedSlotsDirty;
     }
 }

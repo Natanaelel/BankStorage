@@ -37,6 +37,7 @@ public class BankScreenHandler extends ScreenHandler {
     // container
     // and can therefore directly provide it as an argument. This inventory will
     // then be synced to the client.
+
     public BankScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, BankType type) {
         super(type.getScreenHandlerType(), syncId);
 
@@ -123,38 +124,73 @@ public class BankScreenHandler extends ScreenHandler {
         if (fromLast) {
             i = endIndex - 1;
         }
-        if (stack.isStackable() || !stack.isStackable()) {
-            while (!stack.isEmpty() && (fromLast ? i >= startIndex : i < endIndex)) {
-                slot = this.slots.get(i);
-                int maxStackCount = slot.getMaxItemCount(stack);
-                itemStack = slot.getStack();
-                if (!itemStack.isEmpty() && ItemStack.canCombine(stack, itemStack)) {
-                    int j = itemStack.getCount() + stack.getCount();
-                    if (j <= maxStackCount) {
-                        stack.setCount(0);
-                        itemStack.setCount(j);
+        // add to locked stack
+        while (!stack.isEmpty() && (fromLast ? i >= startIndex : i < endIndex)) {
+            slot = this.slots.get(i);
+            int slotSize = slot.getMaxItemCount(stack);
+            itemStack = slot.getStack();
+            if (slot instanceof BankSlot bankSlot && bankSlot.isLocked() && bankSlot.canInsert(stack)) {
+                // if (!itemStack.isEmpty() && ItemStack.canCombine(stack, itemStack) && ((slot
+                // instanceof BankSlot bankSlot) ? bankSlot.canInsert(stack) : true)) {
+                if (itemStack.isEmpty()) {
+                    slot.setStack(stack.split(slotSize));
+                    slot.markDirty();
+                    bl = true;
+                } else {
+                    int toMove = Math.min(slotSize - itemStack.getCount(), Math.min(slotSize, stack.getCount()));
+                    if (toMove > 0) {
+                        itemStack.increment(toMove);
+                        stack.decrement(toMove);
                         slot.markDirty();
                         bl = true;
-                    } else if (itemStack.getCount() < maxStackCount) {
-                        stack.decrement(maxStackCount - itemStack.getCount());
-                        itemStack.setCount(maxStackCount);
-                        slot.markDirty();
-                        bl = true;
+
                     }
+
                 }
-                if (fromLast) {
-                    --i;
-                    continue;
-                }
-                ++i;
             }
+            if (fromLast) {
+                --i;
+                continue;
+            }
+            ++i;
         }
+
+        // add to existing stack
+        i = fromLast ? endIndex - 1 : startIndex;
+        while (!stack.isEmpty() && (fromLast ? i >= startIndex : i < endIndex)) {
+            slot = this.slots.get(i);
+            int maxStackCount = slot.getMaxItemCount(stack);
+            itemStack = slot.getStack();
+            if (!itemStack.isEmpty() && ItemStack.canCombine(stack, itemStack)
+                    && ((slot instanceof BankSlot bankSlot) ? bankSlot.canInsert(stack) : true)) {
+                int j = itemStack.getCount() + stack.getCount();
+                if (j <= maxStackCount) {
+                    stack.setCount(0);
+                    itemStack.setCount(j);
+                    slot.markDirty();
+                    bl = true;
+                } else if (itemStack.getCount() < maxStackCount) {
+                    stack.decrement(maxStackCount - itemStack.getCount());
+                    itemStack.setCount(maxStackCount);
+                    slot.markDirty();
+                    bl = true;
+                }
+            }
+            if (fromLast) {
+                --i;
+                continue;
+            }
+            ++i;
+        }
+
+        // add to new stack
         if (!stack.isEmpty()) {
             i = fromLast ? endIndex - 1 : startIndex;
             while (fromLast ? i >= startIndex : i < endIndex) {
                 slot = this.slots.get(i);
                 itemStack = slot.getStack();
-                if (itemStack.isEmpty() && slot.canInsert(stack)) {
+                if (itemStack.isEmpty() && slot.canInsert(stack)
+                        && ((slot instanceof BankSlot bankSlot) ? bankSlot.canInsert(stack) : true)) {
                     if (stack.getCount() > slot.getMaxItemCount()) {
                         slot.setStack(stack.split(slot.getMaxItemCount()));
                     } else {
@@ -162,7 +198,7 @@ public class BankScreenHandler extends ScreenHandler {
                     }
                     slot.markDirty();
                     bl = true;
-                    break;
+                    // break;
                 }
                 if (fromLast) {
                     --i;

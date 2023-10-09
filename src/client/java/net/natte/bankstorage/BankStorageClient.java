@@ -17,7 +17,6 @@ import net.fabricmc.fabric.impl.client.rendering.BlockEntityRendererRegistryImpl
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
 import net.minecraft.item.ItemStack;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.CachedBankStorage;
@@ -26,10 +25,14 @@ import net.natte.bankstorage.network.OptionPacketReceiver;
 import net.natte.bankstorage.network.RequestBankStoragePacketReceiver;
 import net.natte.bankstorage.network.screensync.SyncLargeSlotInventoryS2C;
 import net.natte.bankstorage.network.screensync.SyncLargeSlotS2C;
+import net.natte.bankstorage.network.screensync.SyncLockSlotReceiver;
+import net.natte.bankstorage.network.screensync.SyncLockedSlotsReceiver;
 import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
 import net.natte.bankstorage.packet.client.OptionPacketS2C;
 import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.packet.screensync.BankSyncPacketHandler;
+import net.natte.bankstorage.packet.screensync.LockSlotPacketS2C;
+import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
 import net.natte.bankstorage.packet.server.BuildModePacketC2S;
 import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
 import net.natte.bankstorage.rendering.BankDockBlockEntityRenderer;
@@ -93,17 +96,9 @@ public class BankStorageClient implements ClientModInitializer {
 
 	public void registerKeyBinds() {
 		toggleBuildModeKeyBinding = KeyBindingHelper.registerKeyBinding(
-				new KeyBinding(
-						"key.bankstorage.togglebuildmode",
-						InputUtil.Type.KEYSYM,
-						GLFW.GLFW_KEY_I,
-						"category.bankstorage"));
-		// not registered, key press handled by BankScreen.java
-		lockSlotKeyBinding = new KeyBinding(
-						"key.bankstorage.lockslot",
-						InputUtil.Type.KEYSYM,
-						GLFW.GLFW_KEY_LEFT_ALT,
-						"category.bankstorage");
+				new KeyBinding("key.bankstorage.togglebuildmode", GLFW.GLFW_KEY_I, "category.bankstorage"));
+		lockSlotKeyBinding = KeyBindingHelper.registerKeyBinding(
+				new KeyBinding("key.bankstorage.lockslot", GLFW.GLFW_KEY_LEFT_ALT, "category.bankstorage"));
 	}
 
 	public void registerKeyBindListeners() {
@@ -129,5 +124,7 @@ public class BankStorageClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(BankSyncPacketHandler.sync_slot, new SyncLargeSlotS2C());
 		ClientPlayNetworking.registerGlobalReceiver(BankSyncPacketHandler.sync_container,
 				new SyncLargeSlotInventoryS2C());
+		ClientPlayNetworking.registerGlobalReceiver(LockSlotPacketS2C.TYPE, new SyncLockSlotReceiver());
+		ClientPlayNetworking.registerGlobalReceiver(LockedSlotsPacketS2C.TYPE, new SyncLockedSlotsReceiver());
 	}
 }
