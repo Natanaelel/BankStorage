@@ -32,7 +32,8 @@ public class BankDockBlock extends Block implements BlockEntityProvider {
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand,
             BlockHitResult hit) {
-
+        System.out.println(world.isClient);
+        // if(world.isClient) return ActionResult.FAIL;
         BlockEntity blockEntity = world.getBlockEntity(pos);
         // BankStorage.BANK_DOCK_BLOCK;
         if (blockEntity instanceof BankDockBlockEntity bankDockBlockEntity) {
@@ -45,8 +46,8 @@ public class BankDockBlock extends Block implements BlockEntityProvider {
                     ItemStack bankInDock = bankDockBlockEntity.pickUpBank();
                     bankInDock.setBobbingAnimationTime(5);
                     player.setStackInHand(hand, bankInDock);
-
-                    world.playSound(player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2f, (player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 1.4f + 2.0f, false);
+                    world.playSoundFromEntity(null, player, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2f,
+                            (player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 1.4f + 2.0f);
                     return ActionResult.SUCCESS;
                 }
 
@@ -56,8 +57,8 @@ public class BankDockBlock extends Block implements BlockEntityProvider {
                     ItemStack bankInDock = bankDockBlockEntity.pickUpBank();
                     bankInDock.setBobbingAnimationTime(5);
                     player.setStackInHand(hand, bankInDock);
-
-                    world.playSound(player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2f, (player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 1.4f + 2.0f, false);
+                    world.playSoundFromEntity(null, player, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2f,
+                            (player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 1.4f + 2.0f);
 
                     bankDockBlockEntity.putBank(stackInHand);
                     return ActionResult.SUCCESS;
@@ -66,7 +67,7 @@ public class BankDockBlock extends Block implements BlockEntityProvider {
                 // open bank screen
                 if (!world.isClient) {
                     BankItemStorage bankItemStorage = Util.getBankItemStorage(bankDockBlockEntity.getBank(), world);
-                    player.openHandledScreen(bankItemStorage);
+                    player.openHandledScreen(bankItemStorage.withDockPosition(pos));
                 }
 
                 return ActionResult.SUCCESS;
@@ -75,8 +76,8 @@ public class BankDockBlock extends Block implements BlockEntityProvider {
                 if (Util.isBank(stackInHand)) {
                     bankDockBlockEntity.putBank(player.getStackInHand(hand));
                     player.setStackInHand(hand, ItemStack.EMPTY);
-                    world.playSound(pos.getX() + 0.5f, pos.getY() +  0.5f, pos.getZ() + 0.5f, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2f, 0.0f, false);
-
+                    world.playSound(null, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f,
+                            SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.BLOCKS, 0.2f, 0.0f, 0);
 
                     return ActionResult.SUCCESS;
                 }

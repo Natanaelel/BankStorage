@@ -53,6 +53,7 @@ public class BankStorageClient implements ClientModInitializer {
 
 	static {
 		Util.isShiftDown = () -> Screen.hasShiftDown();
+		CachedBankStorage.setCacheUpdater(uuid -> CachedBankStorage.bankRequestQueue.add(uuid));
 	}
 
 	@Override

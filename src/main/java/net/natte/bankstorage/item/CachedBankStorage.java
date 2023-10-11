@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -19,6 +20,8 @@ public class CachedBankStorage {
     public static Map<UUID, CachedBankStorage> BANK_CACHE = new HashMap<>();
 
     public static Set<UUID> bankRequestQueue = new HashSet<>();
+
+    private static Consumer<UUID> requestCacheUpdate = uuid -> {};
 
     public List<ItemStack> items;
 
@@ -33,6 +36,14 @@ public class CachedBankStorage {
         this.uuid = uuid;
         this.options = options;
         this.random = new Random(randomSeed);
+    }
+
+    public static void requestCacheUpdate(UUID uuid){
+        requestCacheUpdate.accept(uuid);
+    }
+    
+    public static void setCacheUpdater(Consumer<UUID> consumer){
+        requestCacheUpdate = consumer;
     }
 
     public ItemStack getSelectedItem() {

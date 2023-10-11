@@ -12,6 +12,7 @@ import net.minecraft.world.World;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.options.PickupMode;
+import net.natte.bankstorage.packet.NetworkUtil;
 import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
 import net.natte.bankstorage.util.Util;
 
@@ -84,6 +85,7 @@ public class ItemPickupHandler {
                 if (bankPickedUpAny) {
                     ServerPlayNetworking.send(((ServerPlayerEntity) playerInventory.player),
                             new ItemStackBobbingAnimationPacketS2C(index));
+                    NetworkUtil.syncCachedBankS2C(bankItemStorage.uuid, (ServerPlayerEntity) playerInventory.player);
                 }
 
                 if (pickedUpStack.isEmpty()) {

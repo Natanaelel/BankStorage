@@ -74,7 +74,7 @@ public class BankStorage implements ModInitializer {
 
 	public static final List<BankType> bankTypes = new ArrayList<>();
 
-	private static final Block BANK_DOCK_BLOCK = new BankDockBlock(FabricBlockSettings.create().strength(5.0f, 6.0f)
+	public static final Block BANK_DOCK_BLOCK = new BankDockBlock(FabricBlockSettings.create().strength(5.0f, 6.0f)
 			.mapColor(MapColor.BLACK).requiresTool().sounds(BlockSoundGroup.METAL).nonOpaque());
 
 	private static final BankRecipeSerializer bankRecipeSerializer = new BankRecipeSerializer();
@@ -136,11 +136,10 @@ public class BankStorage implements ModInitializer {
 
 			dispatcher.register(
 					literal("bankstorage")
+							.requires(context -> context.hasPermissionLevel(2))
 							.then(literal("list")
-									.requires(context -> context.hasPermissionLevel(2))
 									.executes(BankStorage::listBankStorages))
 							.then(literal("fromuuid")
-									.requires(context -> context.hasPermissionLevel(2))
 									.then(argument("uuid", UuidArgumentType.uuid())
 											.then(argument("player", EntityArgumentType.player())
 													.executes(BankStorage::restoreBankCommand)))));

@@ -7,11 +7,14 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
+import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
@@ -19,6 +22,7 @@ import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.BankItem;
+import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.world.BankStateSaverAndLoader;
 
 public class Util {
@@ -144,12 +148,13 @@ public class Util {
                 }
             }
         }
-        
+
         // insert remaining items into player inventory or drop
         for (HugeItemStack collectedItem : collectedItems) {
 
             while (collectedItem.count > 0) {
-                BankStorage.LOGGER.warn("Item does not fit in bank after sort. This *should* be impossible. item: " + collectedItem.stack + " count: " + collectedItem.count);
+                BankStorage.LOGGER.warn("Item does not fit in bank after sort. This *should* be impossible. item: "
+                        + collectedItem.stack + " count: " + collectedItem.count);
                 player.getInventory().offerOrDrop(collectedItem.split(collectedItem.stack.getMaxCount()));
             }
         }
@@ -177,6 +182,14 @@ public class Util {
 
     public static Identifier ID(String path) {
         return new Identifier(BankStorage.MOD_ID, path);
+    }
+
+    public static @Nullable UUID getUUIDFromScreenHandler(ScreenHandler screenHandler) {
+        if (!(screenHandler instanceof BankScreenHandler bankScreenHandler))
+            return null;
+        if (!(bankScreenHandler.inventory instanceof BankItemStorage bankItemStorage))
+            return null;
+        return bankItemStorage.uuid;
     }
 }
 

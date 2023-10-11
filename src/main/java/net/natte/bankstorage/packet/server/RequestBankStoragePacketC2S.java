@@ -1,19 +1,14 @@
 package net.natte.bankstorage.packet.server;
 
-import java.util.List;
 import java.util.UUID;
 
 import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPacketHandler;
-import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.MathHelper;
-import net.natte.bankstorage.container.BankItemStorage;
-import net.natte.bankstorage.item.CachedBankStorage;
-import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
+import net.natte.bankstorage.packet.NetworkUtil;
 import net.natte.bankstorage.util.Util;
 
 public class RequestBankStoragePacketC2S implements FabricPacket {
@@ -27,14 +22,7 @@ public class RequestBankStoragePacketC2S implements FabricPacket {
         @Override
         public void receive(RequestBankStoragePacketC2S packet, ServerPlayerEntity player,
                 PacketSender responseSender) {
-
-            BankItemStorage bankItemStorage = Util.getBankItemStorage(packet.uuid, player.getWorld());
-            long randomSeed = (long) (Math.random() * 0xBEEEF);
-            bankItemStorage.random.setSeed(randomSeed);
-            List<ItemStack> items = bankItemStorage.getBlockItems();
-            bankItemStorage.options.selectedItemSlot = MathHelper.clamp(bankItemStorage.options.selectedItemSlot, 0, items.size() - 1);
-            responseSender.sendPacket(new RequestBankStoragePacketS2C(
-                    new CachedBankStorage(items, packet.uuid, bankItemStorage.options, randomSeed), randomSeed));
+                    NetworkUtil.syncCachedBankS2C(packet.uuid, player);
         }
     }
 

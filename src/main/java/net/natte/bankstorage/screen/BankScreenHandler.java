@@ -1,6 +1,8 @@
 package net.natte.bankstorage.screen;
 
 import java.util.Optional;
+import java.util.UUID;
+
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.player.PlayerEntity;
@@ -8,16 +10,23 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.resource.featuretoggle.FeatureSet;
+import net.minecraft.screen.Property;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.state.property.IntProperty;
+import net.minecraft.text.Text;
 import net.minecraft.util.ClickType;
+import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.inventory.LockedSlot;
 import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.item.CachedBankStorage;
+import net.natte.bankstorage.packet.NetworkUtil;
 import net.natte.bankstorage.util.Util;
 
 public class BankScreenHandler extends ScreenHandler {
@@ -26,9 +35,12 @@ public class BankScreenHandler extends ScreenHandler {
 
     private BankType type;
 
+    private final ScreenHandlerContext context;
+
     public static net.minecraft.screen.ScreenHandlerType.Factory<BankScreenHandler> fromType(BankType type) {
         return (syncId, playerInventory) -> {
-            return new BankScreenHandler(syncId, playerInventory, new BankItemStorage(type, null), type);
+            return new BankScreenHandler(syncId, playerInventory, new BankItemStorage(type, null), type,
+                    ScreenHandlerContext.EMPTY);
         };
     }
 
@@ -38,8 +50,13 @@ public class BankScreenHandler extends ScreenHandler {
     // and can therefore directly provide it as an argument. This inventory will
     // then be synced to the client.
 
-    public BankScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, BankType type) {
+    public BankScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, BankType type,
+            ScreenHandlerContext context) {
         super(type.getScreenHandlerType(), syncId);
+        this.context = context;
+
+        // addListener(null);
+        enableSyncing();
 
         checkSize(inventory, type.size());
 
@@ -47,7 +64,6 @@ public class BankScreenHandler extends ScreenHandler {
         this.inventory = inventory;
 
         inventory.onOpen(playerInventory.player);
-
         int rows = this.type.rows;
         int cols = this.type.cols;
 
@@ -79,11 +95,18 @@ public class BankScreenHandler extends ScreenHandler {
                 this.addSlot(new Slot(playerInventory, x, 8 + x * 18, inventoryY + 58));
             }
         }
+
     }
 
     @Override
     public boolean canUse(PlayerEntity player) {
-        return this.inventory.canPlayerUse(player);
+        return this.context.get((world, pos) -> {
+            if (!(world.getBlockEntity(pos) instanceof BankDockBlockEntity blockEntity))
+                return false;
+            if (!blockEntity.hasBank())
+                return false;
+            return true;
+        }, true);
     }
 
     // Shift + Player Inv Slot
@@ -280,7 +303,12 @@ public class BankScreenHandler extends ScreenHandler {
             if (stackInSlot.getCount() > stackInSlot.getMaxCount())
                 return;
         }
+        System.out.println("onslotclick client? " + player.getWorld().isClient);
+        UUID uuid = Util.getUUIDFromScreenHandler(this);
+        System.out.println(uuid);
+        // if(uuid != null) CachedBankStorage.requestCacheUpdate(uuid);
         super.onSlotClick(slotIndex, button, actionType, player);
+        if(uuid != null) NetworkUtil.syncCachedBankS2C(uuid, ((ServerPlayerEntity)player));
 
     }
 
@@ -529,15 +557,22 @@ public class BankScreenHandler extends ScreenHandler {
         if (stack.getCount() > stack.getMaxCount()) {
             // return false;
         }
-
+        // this.on
+        onContentChanged(this.inventory);
         return super.handleSlotClick(player, clickType, slot, stack, cursorStack);
     }
 
     @Override
     public void onClosed(PlayerEntity player) {
-        ItemStack stack = player.getStackInHand(player.getActiveHand());
-        if (Util.hasUUID(stack)) {
-            CachedBankStorage.bankRequestQueue.add(Util.getUUID(stack));
+        ItemStack left = player.getOffHandStack();
+        ItemStack right = player.getMainHandStack();
+        if (Util.hasUUID(left)) {
+            CachedBankStorage.requestCacheUpdate(Util.getUUID(left));
+            player.sendMessage(Text.literal("cache update left"), false);
+        }
+        if (Util.hasUUID(right)) {
+            CachedBankStorage.requestCacheUpdate(Util.getUUID(right));
+            player.sendMessage(Text.literal("cache update right"), false);
         }
         super.onClosed(player);
     }
@@ -553,4 +588,12 @@ public class BankScreenHandler extends ScreenHandler {
         }
         return ScreenHandler.canInsertItemIntoSlot(slot, stack, allowOverflow);
     }
+
+    @Override
+    public void onContentChanged(Inventory inventory) {
+        super.onContentChanged(inventory);
+
+        System.out.println("content changed");
+    }
+
 }

@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.base.SingleStackStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedStorage;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.ItemStack;
@@ -50,7 +51,14 @@ public class BankDockBlockEntity extends BlockEntity {
 
     public void putBank(ItemStack bank) {
         this.bankItem = bank.copy();
-        this.markDirty();            
+        this.markDirty();
+    }
+
+    @Override
+    public void markDirty() {
+        world.updateListeners(pos, getCachedState(), getCachedState(), Block.NOTIFY_LISTENERS);
+        
+        super.markDirty();
     }
 
     @Override
@@ -85,10 +93,9 @@ public class BankDockBlockEntity extends BlockEntity {
 
     public Storage<ItemVariant> getItemStorage() {
 
-        
         if (this.storage == null) {
             BankItemStorage bankItemStorage = getInventory();
-            if(bankItemStorage == null){
+            if (bankItemStorage == null) {
                 return Storage.empty();
             }
             this.storage = createItemStorage(bankItemStorage);

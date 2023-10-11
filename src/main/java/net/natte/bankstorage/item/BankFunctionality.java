@@ -6,6 +6,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
@@ -14,6 +15,7 @@ import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
+import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 
 public abstract class BankFunctionality extends Item {
@@ -31,22 +33,22 @@ public abstract class BankFunctionality extends Item {
 
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
-
+        player.sendMessage(Text.literal(hand.name()));
         ItemStack bank = player.getStackInHand(hand);
         if (bank.getCount() != 1)
             return TypedActionResult.pass(bank);
 
         if (world.isClient)
-            return TypedActionResult.pass(bank);
+            return player.isSneaking() ? TypedActionResult.success(bank) : TypedActionResult.fail(bank);
 
         if (player.isSneaking()) {
             BankStorage.onChangeBuildMode((ServerPlayerEntity) player, bank);
             return TypedActionResult.success(bank);
         }
-
         BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, world);
-        player.openHandledScreen(bankItemStorage);
-        return TypedActionResult.success(bank);
+        if (!(player.currentScreenHandler instanceof BankScreenHandler))
+            player.openHandledScreen(bankItemStorage);
+        return TypedActionResult.consume(bank);
     }
 
     @Override
@@ -81,7 +83,7 @@ public abstract class BankFunctionality extends Item {
                     .useOnBlock(new ItemUsageContext(world, player, context.getHand(), itemStack, context.hit));
             player.setStackInHand(context.getHand(), bank);
             if (world.isClient)
-                CachedBankStorage.bankRequestQueue.add(Util.getUUID(bank));
+                CachedBankStorage.requestCacheUpdate(Util.getUUID(bank));
 
             return useResult;
         } else {

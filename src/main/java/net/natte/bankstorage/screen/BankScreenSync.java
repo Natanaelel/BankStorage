@@ -1,6 +1,7 @@
 package net.natte.bankstorage.screen;
 
 import java.util.Map;
+import java.util.UUID;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerPropertyUpdateS2CPacket;
@@ -10,7 +11,10 @@ import net.minecraft.screen.ScreenHandlerSyncHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.collection.DefaultedList;
 import net.natte.bankstorage.container.BankItemStorage;
+import net.natte.bankstorage.item.CachedBankStorage;
+import net.natte.bankstorage.packet.NetworkUtil;
 import net.natte.bankstorage.packet.screensync.BankSyncPacketHandler;
+import net.natte.bankstorage.util.Util;
 
 /*
  * Credit Tfarcenim
@@ -27,12 +31,13 @@ public class BankScreenSync implements ScreenHandlerSyncHandler {
     @Override
     public void updateState(ScreenHandler screenHandler, DefaultedList<ItemStack> inventory, ItemStack stack,
             int[] indices) {
+        System.out.println("updatestate");
         BankSyncPacketHandler.sendSyncContainer(player, screenHandler.nextRevision(),
                 screenHandler.syncId, inventory, stack);
-                Map<Integer, ItemStack> lockedSlots = ((BankItemStorage)((BankScreenHandler) screenHandler).inventory).getlockedSlots();
+        Map<Integer, ItemStack> lockedSlots = ((BankItemStorage) ((BankScreenHandler) screenHandler).inventory)
+                .getlockedSlots();
         BankSyncPacketHandler.sendSyncLockedSlots(player, screenHandler.syncId, lockedSlots);
 
-        
         for (int i = 0; i < indices.length; ++i) {
             this.broadcastDataValue(screenHandler, i, indices[i]);
         }
@@ -41,19 +46,29 @@ public class BankScreenSync implements ScreenHandlerSyncHandler {
 
     @Override
     public void updateSlot(ScreenHandler screenHandler, int slot, ItemStack stack) {
+        System.out.println("updateslot " + slot + " " + stack);
         BankSyncPacketHandler.sendSyncSlot(player, screenHandler.syncId, slot, stack);
-
+        // UUID uuid = ((BankItemStorage) ((BankScreenHandler) screenHandler).inventory).uuid;
+        // CachedBankStorage.requestCacheUpdate(uuid);
+        NetworkUtil.syncCachedBankS2C(Util.getUUIDFromScreenHandler(screenHandler), this.player);
+        System.out.println(Util.getUUIDFromScreenHandler(screenHandler));
     }
 
     @Override
     public void updateCursorStack(ScreenHandler screenHandler, ItemStack stack) {
+        System.out.println("cursor stack");
         player.networkHandler
                 .sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-1, player.currentScreenHandler.nextRevision(), -1,
                         stack));
     }
 
+    // public void updateLockSlot(ScreenHandler screenHandler, int slot, ItemStack itemStack, boolean shouldLock){
+    //     player
+    // }
+
     @Override
     public void updateProperty(ScreenHandler screenHandler, int i, int j) {
+        System.out.println("property");
         this.broadcastDataValue(screenHandler, i, j);
     }
 

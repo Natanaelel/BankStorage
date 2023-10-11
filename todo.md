@@ -1,5 +1,24 @@
+sync locked slots to all clients
+
+sync settings when bank upgraded
+
+
+sync cached bank to client when 
+- [x] screen closed
+- [x] changed 
+- [x] item picked up
 
 linking
+
+[x] play sound on server
+
+[x] close screen when dock broken
+
+[x] critial! sync dock block state data
+[x] open right bank when holding one in each hand
+
+[x] opening screen should not start to consume food in offhand
+
 
 [x] description
 [x] textures

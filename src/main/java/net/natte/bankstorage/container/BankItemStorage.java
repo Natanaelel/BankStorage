@@ -19,7 +19,9 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.options.BankOptions;
@@ -71,7 +73,24 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     @Override
     public BankScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity playerEntity) {
-        return new BankScreenHandler(syncId, playerInventory, this, this.type);
+        return new BankScreenHandler(syncId, playerInventory, this, this.type,
+                ScreenHandlerContext.EMPTY);
+    }
+
+    public NamedScreenHandlerFactory withDockPosition(BlockPos pos) {
+        return new NamedScreenHandlerFactory() {
+
+            public BankScreenHandler createMenu(int syncId, PlayerInventory playerInventory,
+                    PlayerEntity playerEntity) {
+                return new BankScreenHandler(syncId, playerInventory, BankItemStorage.this, BankItemStorage.this.type,
+                        ScreenHandlerContext.create(playerEntity.getWorld(), pos));
+            }
+
+            @Override
+            public Text getDisplayName() {
+                return BankItemStorage.this.getDisplayName();
+            }
+        };
     }
 
     @Override
@@ -83,7 +102,7 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     public void markDirty() {
         super.markDirty();
         if (this.uuid != null)
-            CachedBankStorage.bankRequestQueue.add(this.uuid);
+            CachedBankStorage.requestCacheUpdate(this.uuid);
     }
 
     @Override

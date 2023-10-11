@@ -4,6 +4,9 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.function.Consumer;
+
+import org.jetbrains.annotations.Nullable;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.font.TextRenderer;
@@ -62,71 +65,33 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
                 ItemStack hoveredStack = hoveredSlot.getStack();
                 ItemStack cursorStack = this.handler.getCursorStack();
                 boolean isLocked = hoveredSlot.isLocked();
-                if (!isLocked) {
-                    if (hoveredStack.isEmpty()) {
-                        if (cursorStack.isEmpty()) { // empty unlocked, cursor empty
-                            ClientPlayNetworking.send(new LockSlotPacketC2S(this.handler.syncId, hoveredSlotIndex,
-                                    ItemStack.EMPTY, true));
-                            this.cancelNextRelease = true;
-                            return true;
-                        } else { // empty unlocked, cursor has
-                            ClientPlayNetworking.send(new LockSlotPacketC2S(this.handler.syncId, hoveredSlotIndex,
-                                    cursorStack, true));
-                            this.cancelNextRelease = true;
-                            return true;
-                        }
-                    } else {
-                        if (cursorStack.isEmpty()) { // has unlocked, cursor empty
-                            ClientPlayNetworking
-                                    .send(new LockSlotPacketC2S(this.handler.syncId, hoveredSlotIndex, hoveredStack,
-                                            true));
-                            this.cancelNextRelease = true;
-                            return true;
-                        } else { // has unlocked, cursor has
-                            if(ItemStack.canCombine(hoveredStack, cursorStack)){
-                                ClientPlayNetworking
-                                    .send(new LockSlotPacketC2S(this.handler.syncId, hoveredSlotIndex, hoveredStack,
-                                            true));
-                            }
-                            this.cancelNextRelease = true;
-                            return true;
-                        }
+
+                Consumer<@Nullable ItemStack> lockSlot = stack -> {
+                    ClientPlayNetworking.send(new LockSlotPacketC2S(this.handler.syncId, hoveredSlotIndex,
+                            stack == null ? ItemStack.EMPTY : stack, stack != null));
+                };
+
+                if (isLocked) {
+                    if (cursorStack.isEmpty()) {
+                        lockSlot.accept(null);
+                    } else if (hoveredStack.isEmpty()) {
+                        lockSlot.accept(cursorStack);
                     }
                 } else {
                     if (hoveredStack.isEmpty()) {
-                        if (cursorStack.isEmpty()) { // empty locked, cursor empty
-                            ClientPlayNetworking.send(new LockSlotPacketC2S(this.handler.syncId, hoveredSlotIndex,
-                                    ItemStack.EMPTY, false));
-                            this.cancelNextRelease = true;
-                            return true;
-                        } else { // empty locked, cursor has
-                            ClientPlayNetworking.send(new LockSlotPacketC2S(this.handler.syncId, hoveredSlotIndex,
-                                    cursorStack, true));
-                            this.cancelNextRelease = true;
-                            return true;
-                        }
-                    } else {
-                        if (cursorStack.isEmpty()) { // has locked, cursor empty
-                            ClientPlayNetworking
-                                    .send(new LockSlotPacketC2S(this.handler.syncId, hoveredSlotIndex, ItemStack.EMPTY, false));
-                            this.cancelNextRelease = true;
-                            return true;
-                        } else { // has locked, cursor has
-                            this.cancelNextRelease = true;
-                            return true;
-                        }
+                        lockSlot.accept(cursorStack);
+                    } else if (cursorStack.isEmpty() || ItemStack.canCombine(hoveredStack, cursorStack)) {
+                        lockSlot.accept(hoveredStack);
                     }
+                    
                 }
-                // ItemStack lockedStack = this.handler.getCursorStack().isEmpty() ?
-                // hoveredSlot.getStack() : this.handler.getCursorStack();
-                // ClientPlayNetworking.send(new LockSlotPacketC2S(this.handler.syncId,
-                // hoveredSlotIndex, lockedStack));
-                // this.cancelNextRelease = true;
-                // return true;
+                this.cancelNextRelease = true;
+                return true;
             }
         }
 
         return super.mouseClicked(mouseX, mouseY, button);
+
     }
 
     @Override
@@ -160,7 +125,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
     @Override
     protected void init() {
         super.init();
-
+        this.handler.addListener(new BankScreenListener());
         this.addDrawableChild(
                 ButtonWidget
                         .builder(Text.translatable("button.bankstorage.sort"),
@@ -260,7 +225,9 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
 
         if (slot.isLocked()) {
             context.drawTexture(WIDGETS_TEXTURE, i, j, itemStack.isEmpty() ? 16 : 0, 46, 16, 16);
-            // if(slot.getLockedStack().isEmpty() || !itemStack.isEmpty()) context.drawTexture(WIDGETS_TEXTURE, i, j, itemStack.isEmpty() ? 16 : 0, 46, 16, 16);
+            // if(slot.getLockedStack().isEmpty() || !itemStack.isEmpty())
+            // context.drawTexture(WIDGETS_TEXTURE, i, j, itemStack.isEmpty() ? 16 : 0, 46,
+            // 16, 16);
         }
 
         if (itemStack.isEmpty() && slot.isEnabled() && slot.isLocked()) {
@@ -290,9 +257,10 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
 
     public boolean canInsertItemIntoSlot(/* @Nullable */ Slot slot, ItemStack stack, boolean allowOverflow) {
         boolean bl = !slot.hasStack();
-        if(slot instanceof BankSlot bankSlot){
-            if(bankSlot.isLocked()){
-                if(!Util.canCombine(stack, bankSlot.getLockedStack())) return false;
+        if (slot instanceof BankSlot bankSlot) {
+            if (bankSlot.isLocked()) {
+                if (!Util.canCombine(stack, bankSlot.getLockedStack()))
+                    return false;
             }
         }
         if (!bl && ItemStack.canCombine(stack, slot.getStack())) {
