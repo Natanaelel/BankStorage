@@ -1,17 +1,16 @@
-sync locked slots to all clients
-
-can move with number keys when opening docked bank
 
 sync settings when bank upgraded
 
+linking
 
-sync cached bank to client when 
+[x] sync locked slots to all clients
+
+[x] sync cached bank to client when 
 - [x] screen closed
 - [x] changed 
 - [x] item picked up
 
-linking
-
+[x] can move with number keys when opening docked bank
 [x] play sound on server
 
 [x] close screen when dock broken
