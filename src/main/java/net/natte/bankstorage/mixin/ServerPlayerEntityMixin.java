@@ -15,8 +15,8 @@ public class ServerPlayerEntityMixin {
 
     @Inject(method = "onScreenHandlerOpened", at = @At("RETURN"))
     private void customSync(ScreenHandler screenHandler, CallbackInfo ci) {
-        if (screenHandler instanceof BankScreenHandler) {
-            screenHandler.updateSyncHandler(new BankScreenSync((ServerPlayerEntity) (Object) this));
+        if (screenHandler instanceof BankScreenHandler bankScreenHandler) {
+            bankScreenHandler.setBankScreenSync(new BankScreenSync((ServerPlayerEntity) (Object) this));
         }
     }
 }

@@ -3,7 +3,7 @@ package net.natte.bankstorage.network.screensync;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.PlayPacketHandler;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.natte.bankstorage.inventory.BankSlot;
+import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
 import net.natte.bankstorage.screen.BankScreenHandler;
 
@@ -14,10 +14,8 @@ public class SyncLockedSlotsReceiver implements PlayPacketHandler<LockedSlotsPac
             return;
         if (!(player.currentScreenHandler instanceof BankScreenHandler bankScreenHandler))
             return;
-        packet.lockedSlots.forEach((slot, stack) -> {
-            if (bankScreenHandler.slots.get(slot) instanceof BankSlot bankSlot) {
-                bankSlot.lock(stack);
-            }
-        });
+        if (!(bankScreenHandler.inventory instanceof BankItemStorage bankItemStorage))
+            return;
+        bankScreenHandler.setLockedSlotsNoSync(packet.lockedSlots);
     }
 }

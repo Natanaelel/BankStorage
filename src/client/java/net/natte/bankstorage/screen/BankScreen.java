@@ -125,7 +125,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
     @Override
     protected void init() {
         super.init();
-        this.handler.addListener(new BankScreenListener());
+        // this.handler.addListener(new BankScreenListener());
         this.addDrawableChild(
                 ButtonWidget
                         .builder(Text.translatable("button.bankstorage.sort"),

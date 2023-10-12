@@ -3,16 +3,11 @@ package net.natte.bankstorage.packet.server;
 import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.PacketType;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPacketHandler;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.natte.bankstorage.container.BankItemStorage;
-import net.natte.bankstorage.inventory.BankSlot;
-import net.natte.bankstorage.packet.screensync.LockSlotPacketS2C;
-// import net.natte.bankstorage.packet.screensync.LockSlotPacketS2C;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 
@@ -28,20 +23,13 @@ public class LockSlotPacketC2S implements FabricPacket {
             ScreenHandler screenHandler = player.currentScreenHandler;
             if (!(screenHandler instanceof BankScreenHandler bankScreenHandler))
                 return;
-            BankItemStorage bankItemStorage = (BankItemStorage) bankScreenHandler.inventory;
-            if (packet.shouldLock) {
-                bankItemStorage.lockSlot(packet.slot, packet.stack);
-                ((BankSlot)bankScreenHandler.getSlot(packet.slot)).lock(packet.stack);
-                ServerPlayNetworking.send(player, new LockSlotPacketS2C(packet.syncId, packet.slot, packet.stack.copyWithCount(1), true));
-            } else {
-                bankItemStorage.unlockSlot(packet.slot);
-                // bankScreenHandler.
-                // screenHandler.
-                // screenHandler
-                ((BankSlot)bankScreenHandler.getSlot(packet.slot)).unlock();
-                ServerPlayNetworking.send(player, new LockSlotPacketS2C(packet.syncId, packet.slot, packet.stack.copyWithCount(1), false));
-            }
 
+            if (packet.shouldLock) {
+                bankScreenHandler.lockSlot(packet.slot, packet.stack);
+            } else {
+                bankScreenHandler.unlockSlot(packet.slot);
+            }
+            bankScreenHandler.lockedSlotsMarkDirty();
         }
     }
 

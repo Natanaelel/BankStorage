@@ -6,6 +6,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
@@ -15,7 +16,6 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
-import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.util.Util;
 
 public class BankDockBlock extends Block implements BlockEntityProvider {
@@ -32,23 +32,21 @@ public class BankDockBlock extends Block implements BlockEntityProvider {
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand,
             BlockHitResult hit) {
-        System.out.println(world.isClient);
-        // if(world.isClient) return ActionResult.FAIL;
         BlockEntity blockEntity = world.getBlockEntity(pos);
-        // BankStorage.BANK_DOCK_BLOCK;
+
         if (blockEntity instanceof BankDockBlockEntity bankDockBlockEntity) {
             ItemStack stackInHand = player.getStackInHand(hand);
             if (bankDockBlockEntity.hasBank()) {
 
                 // pick up bank from dock
                 if (stackInHand.isEmpty() && player.isSneaking()) {
-                    // player.getInventory().insertStack(bankDockBlockEntity.pickUpBank());
                     ItemStack bankInDock = bankDockBlockEntity.pickUpBank();
                     bankInDock.setBobbingAnimationTime(5);
                     player.setStackInHand(hand, bankInDock);
+
                     world.playSoundFromEntity(null, player, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2f,
                             (player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 1.4f + 2.0f);
-                    return ActionResult.SUCCESS;
+                    return ActionResult.FAIL;
                 }
 
                 // swap hand and dock
@@ -57,6 +55,8 @@ public class BankDockBlock extends Block implements BlockEntityProvider {
                     ItemStack bankInDock = bankDockBlockEntity.pickUpBank();
                     bankInDock.setBobbingAnimationTime(5);
                     player.setStackInHand(hand, bankInDock);
+                    world.playSound(null, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f,
+                            SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.BLOCKS, 0.2f, 0.0f, 0);
                     world.playSoundFromEntity(null, player, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2f,
                             (player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 1.4f + 2.0f);
 
@@ -66,8 +66,8 @@ public class BankDockBlock extends Block implements BlockEntityProvider {
 
                 // open bank screen
                 if (!world.isClient) {
-                    BankItemStorage bankItemStorage = Util.getBankItemStorage(bankDockBlockEntity.getBank(), world);
-                    player.openHandledScreen(bankItemStorage.withDockPosition(pos));
+                    NamedScreenHandlerFactory screenHandlerFactory = Util.getBankItemStorage(bankDockBlockEntity.getBank(), world).withDockPosition(pos);
+                    player.openHandledScreen(screenHandlerFactory);
                 }
 
                 return ActionResult.SUCCESS;

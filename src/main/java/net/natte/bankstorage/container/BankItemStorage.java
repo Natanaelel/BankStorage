@@ -37,7 +37,7 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     public Random random;
 
     private Map<Integer, ItemStack> lockedSlots;
-    private boolean isLockedSlotsDirty = false;
+    private short lockedSlotsRevision = 0;
 
     public BankItemStorage(BankType type, UUID uuid) {
         super(type.rows * type.cols);
@@ -101,8 +101,10 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     @Override
     public void markDirty() {
         super.markDirty();
-        if (this.uuid != null)
+        updateLockedSlotsRevision();
+        if (this.uuid != null){
             CachedBankStorage.requestCacheUpdate(this.uuid);
+        }
     }
 
     @Override
@@ -238,23 +240,25 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     public void lockSlot(int slotIndex, ItemStack itemStack) {
         this.lockedSlots.put(slotIndex, itemStack.copyWithCount(1));
-        this.setLockedSlotsDirty(true);
     }
 
     public void unlockSlot(int slotIndex) {
         this.lockedSlots.remove(slotIndex);
-        this.setLockedSlotsDirty(true);
     }
 
     public Map<Integer, ItemStack> getlockedSlots() {
         return this.lockedSlots;
     }
 
-    public boolean isLockedSlotsDirty() {
-        return this.isLockedSlotsDirty;
+    public boolean isLockedSlotsDirty(short revision) {
+        return this.lockedSlotsRevision != revision;
     }
 
-    public void setLockedSlotsDirty(boolean isLockedSlotsDirty) {
-        this.isLockedSlotsDirty = isLockedSlotsDirty;
+    public void updateLockedSlotsRevision() {
+        this.lockedSlotsRevision = (short) ((this.lockedSlotsRevision + 1) & Short.MAX_VALUE);
+    }
+
+    public short getLockedSlotsRevision(){
+        return this.lockedSlotsRevision;
     }
 }

@@ -1,5 +1,7 @@
 sync locked slots to all clients
 
+can move with number keys when opening docked bank
+
 sync settings when bank upgraded
 
 

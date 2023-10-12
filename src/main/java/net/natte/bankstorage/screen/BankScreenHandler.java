@@ -1,5 +1,6 @@
 package net.natte.bankstorage.screen;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -10,14 +11,11 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.resource.featuretoggle.FeatureSet;
-import net.minecraft.screen.Property;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.state.property.IntProperty;
-import net.minecraft.text.Text;
 import net.minecraft.util.ClickType;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.container.BankItemStorage;
@@ -37,6 +35,10 @@ public class BankScreenHandler extends ScreenHandler {
 
     private final ScreenHandlerContext context;
 
+    private BankScreenSync bankScreenSync;
+
+    private short lockedSlotsRevision = 0;
+
     public static net.minecraft.screen.ScreenHandlerType.Factory<BankScreenHandler> fromType(BankType type) {
         return (syncId, playerInventory) -> {
             return new BankScreenHandler(syncId, playerInventory, new BankItemStorage(type, null), type,
@@ -54,9 +56,6 @@ public class BankScreenHandler extends ScreenHandler {
             ScreenHandlerContext context) {
         super(type.getScreenHandlerType(), syncId);
         this.context = context;
-
-        // addListener(null);
-        enableSyncing();
 
         checkSize(inventory, type.size());
 
@@ -89,7 +88,8 @@ public class BankScreenHandler extends ScreenHandler {
         for (int x = 0; x < 9; ++x) {
             // cannot move opened dank
             if (playerInventory.selectedSlot == x
-                    && playerInventory.getStack(playerInventory.selectedSlot).getItem() instanceof BankItem) {
+                    && playerInventory.getStack(playerInventory.selectedSlot).getItem() instanceof BankItem
+                    && this.context == ScreenHandlerContext.EMPTY) {
                 this.addSlot(new LockedSlot(playerInventory, x, 8 + x * 18, inventoryY + 58));
             } else {
                 this.addSlot(new Slot(playerInventory, x, 8 + x * 18, inventoryY + 58));
@@ -152,9 +152,8 @@ public class BankScreenHandler extends ScreenHandler {
             slot = this.slots.get(i);
             int slotSize = slot.getMaxItemCount(stack);
             itemStack = slot.getStack();
+
             if (slot instanceof BankSlot bankSlot && bankSlot.isLocked() && bankSlot.canInsert(stack)) {
-                // if (!itemStack.isEmpty() && ItemStack.canCombine(stack, itemStack) && ((slot
-                // instanceof BankSlot bankSlot) ? bankSlot.canInsert(stack) : true)) {
                 if (itemStack.isEmpty()) {
                     slot.setStack(stack.split(slotSize));
                     slot.markDirty();
@@ -294,7 +293,9 @@ public class BankScreenHandler extends ScreenHandler {
 
         if (actionType == SlotActionType.SWAP) {
             // cannot move opened BankItem with numbers
-            if (this.slots.get(slotIndex) instanceof LockedSlot || button == player.getInventory().selectedSlot)
+            if (this.slots.get(slotIndex) instanceof LockedSlot ||
+                    (button == player.getInventory().selectedSlot
+                            && this.slots.get(this.slots.size() - 9 + button) instanceof LockedSlot))
                 return;
 
             ItemStack stackInSlot = this.slots.get(slotIndex).getStack();
@@ -303,12 +304,12 @@ public class BankScreenHandler extends ScreenHandler {
             if (stackInSlot.getCount() > stackInSlot.getMaxCount())
                 return;
         }
-        System.out.println("onslotclick client? " + player.getWorld().isClient);
+
         UUID uuid = Util.getUUIDFromScreenHandler(this);
-        System.out.println(uuid);
-        // if(uuid != null) CachedBankStorage.requestCacheUpdate(uuid);
+
         super.onSlotClick(slotIndex, button, actionType, player);
-        if(uuid != null) NetworkUtil.syncCachedBankS2C(uuid, ((ServerPlayerEntity)player));
+        if (uuid != null)
+            NetworkUtil.syncCachedBankS2C(uuid, ((ServerPlayerEntity) player));
 
     }
 
@@ -557,7 +558,6 @@ public class BankScreenHandler extends ScreenHandler {
         if (stack.getCount() > stack.getMaxCount()) {
             // return false;
         }
-        // this.on
         onContentChanged(this.inventory);
         return super.handleSlotClick(player, clickType, slot, stack, cursorStack);
     }
@@ -568,11 +568,9 @@ public class BankScreenHandler extends ScreenHandler {
         ItemStack right = player.getMainHandStack();
         if (Util.hasUUID(left)) {
             CachedBankStorage.requestCacheUpdate(Util.getUUID(left));
-            player.sendMessage(Text.literal("cache update left"), false);
         }
         if (Util.hasUUID(right)) {
             CachedBankStorage.requestCacheUpdate(Util.getUUID(right));
-            player.sendMessage(Text.literal("cache update right"), false);
         }
         super.onClosed(player);
     }
@@ -590,10 +588,71 @@ public class BankScreenHandler extends ScreenHandler {
     }
 
     @Override
-    public void onContentChanged(Inventory inventory) {
-        super.onContentChanged(inventory);
-
-        System.out.println("content changed");
+    public void sendContentUpdates() {
+        super.sendContentUpdates();
+        if (this.bankScreenSync == null)
+            return;
+        BankItemStorage bankItemStorage = (BankItemStorage) inventory;
+        if (bankItemStorage.isLockedSlotsDirty(lockedSlotsRevision)) {
+            this.setLockedSlotsNoSync(bankItemStorage.getlockedSlots());
+            this.bankScreenSync.syncLockedSlots(this, bankItemStorage.getlockedSlots());
+            this.lockedSlotsRevision = bankItemStorage.getLockedSlotsRevision();
+        }
     }
 
+    public void setBankScreenSync(BankScreenSync bankScreenSync) {
+        this.updateSyncHandler(bankScreenSync);
+        this.bankScreenSync = bankScreenSync;
+    }
+
+    public void lockSlot(int index, ItemStack stack) {
+        ((BankSlot) this.slots.get(index)).lock(stack);
+        ((BankItemStorage) this.inventory).lockSlot(index, stack);
+    }
+
+    public void unlockSlot(int index) {
+        ((BankSlot) this.slots.get(index)).unlock();
+        ((BankItemStorage) this.inventory).unlockSlot(index);
+    }
+
+    public void setLockedSlots(Map<Integer, ItemStack> lockedSlots) {
+        BankItemStorage bankItemStorage = (BankItemStorage) this.inventory;
+
+        for (int i = 0; i < this.slots.size(); ++i) {
+            Slot slot = this.slots.get(i);
+            if (!(slot instanceof BankSlot bankSlot))
+                continue;
+            ItemStack stack = lockedSlots.get(i);
+            if (stack == null) {
+                bankItemStorage.lockSlot(i, stack);
+                bankSlot.unlock();
+            } else {
+                bankItemStorage.unlockSlot(i);
+                bankSlot.lock(stack);
+            }
+        }
+        this.lockedSlotsMarkDirty();
+    }
+
+    public void setLockedSlotsNoSync(Map<Integer, ItemStack> lockedSlots) {
+        BankItemStorage bankItemStorage = (BankItemStorage) this.inventory;
+
+        for (int i = 0; i < this.slots.size(); ++i) {
+            Slot slot = this.slots.get(i);
+            if (!(slot instanceof BankSlot bankSlot))
+                continue;
+            ItemStack stack = lockedSlots.get(i);
+            if (stack == null) {
+                bankItemStorage.unlockSlot(i);
+                bankSlot.unlock();
+            } else {
+                bankItemStorage.lockSlot(i, stack);
+                bankSlot.lock(stack);
+            }
+        }
+    }
+
+    public void lockedSlotsMarkDirty() {
+        ((BankItemStorage) this.inventory).updateLockedSlotsRevision();
+    }
 }
