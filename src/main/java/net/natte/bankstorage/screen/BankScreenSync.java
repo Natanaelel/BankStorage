@@ -13,7 +13,6 @@ import net.minecraft.util.collection.DefaultedList;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.packet.NetworkUtil;
 import net.natte.bankstorage.packet.screensync.BankSyncPacketHandler;
-// import net.natte.bankstorage.packet.screensync.LockSlotPacketS2C;
 import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
 import net.natte.bankstorage.util.Util;
 

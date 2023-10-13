@@ -22,6 +22,10 @@ import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.BankItem;
+import net.natte.bankstorage.item.LinkItem;
+// import net.natte.bankstorage.item.LinkItem;
+import net.natte.bankstorage.options.BankOptions;
+import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.world.BankStateSaverAndLoader;
 
@@ -33,28 +37,20 @@ public class Util {
         return itemStack.getItem() instanceof BankItem;
     }
 
+    public static boolean isLink(ItemStack itemStack) {
+        return itemStack.getItem() instanceof LinkItem;
+    }
+
+    public static boolean isBankLike(ItemStack itemStack) {
+        return isBank(itemStack) || isLink(itemStack);
+    }
+
     public static boolean isAllowedInBank(ItemStack itemStack) {
-        return !isBank(itemStack);
+        return !isBank(itemStack) && !isLink(itemStack);
     }
 
     public static boolean canCombine(ItemStack left, ItemStack right) {
         return left.getItem() == right.getItem() && Objects.equals(left.getNbt(), right.getNbt());
-    }
-
-    public static UUID getOrCreateUuid(ItemStack itemStack) {
-        NbtCompound nbt = itemStack.getOrCreateNbt();
-        UUID uuid;
-        if (nbt.contains(BankItem.UUID_KEY)) {
-            uuid = nbt.getUuid(BankItem.UUID_KEY);
-        } else {
-            uuid = UUID.randomUUID();
-            nbt.putUuid(BankItem.UUID_KEY, uuid);
-        }
-        return uuid;
-    }
-
-    public static UUID getUUID(ItemStack itemStack) {
-        return itemStack.getNbt().getUuid(BankItem.UUID_KEY);
     }
 
     public static boolean hasUUID(ItemStack itemStack) {
@@ -62,6 +58,46 @@ public class Util {
             return false;
         if (!itemStack.getNbt().contains(BankItem.UUID_KEY))
             return false;
+        return true;
+    }
+
+    public static UUID getUUID(ItemStack itemStack) {
+        return itemStack.getNbt().getUuid(BankItem.UUID_KEY);
+    }
+
+    public static boolean hasOptions(ItemStack itemStack) {
+        if (!itemStack.hasNbt())
+            return false;
+        if (!itemStack.getNbt().contains(BankItem.OPTIONS_KEY))
+            return false;
+        return true;
+    }
+
+    public static BankOptions getOptions(ItemStack itemStack) {
+        return BankOptions.fromNbt(itemStack.getNbt().getCompound(BankItem.OPTIONS_KEY));
+    }
+
+    public static BankOptions getOrCreateOptions(ItemStack itemStack) {
+        if (hasOptions(itemStack)) {
+            return getOptions(itemStack);
+        } else {
+            return new BankOptions();
+        }
+    }
+
+    public static void setOptions(ItemStack itemStack, BankOptions options) {
+        itemStack.getOrCreateNbt().put(BankItem.OPTIONS_KEY, options.asNbt());
+    }
+
+    public static boolean changeBuildMode(ItemStack bank) {
+        if (!isBankLike(bank))
+            return false;
+        // if (!hasOptions(bank))
+        // return false;
+
+        BankOptions options = getOrCreateOptions(bank);
+        options.buildMode = BuildMode.from((options.buildMode.number + 1) % 3);
+        Util.setOptions(bank, options);
         return true;
     }
 
@@ -169,6 +205,16 @@ public class Util {
     }
 
     public static BankItemStorage getBankItemStorage(ItemStack bank, World world) {
+
+        if (Util.isLink(bank)) {
+            if (!Util.hasUUID(bank))
+                return null;
+            BankItemStorage bankItemStorage = getBankItemStorage(Util.getUUID(bank), world);
+            if(bankItemStorage.type != LinkItem.getType(bank)){
+                LinkItem.setTypeName(bank, bankItemStorage.type.getName());
+            }
+            return bankItemStorage;
+        }
 
         UUID uuid = hasUUID(bank) ? getUUID(bank) : UUID.randomUUID();
         if (!hasUUID(bank))

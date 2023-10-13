@@ -1,0 +1,6 @@
+{
+  "parent": "bankstorage:model/link",
+  "textures": {
+    "bank": "bankstorage:item/bank_2_holo"
+  }
+}

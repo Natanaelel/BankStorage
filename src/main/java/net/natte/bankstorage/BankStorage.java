@@ -31,16 +31,14 @@ import net.natte.bankstorage.block.BankDockBlock;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
-import net.natte.bankstorage.item.BankFunctionality;
-import net.natte.bankstorage.options.BuildMode;
-import net.natte.bankstorage.packet.client.OptionPacketS2C;
-import net.natte.bankstorage.packet.server.BuildModePacketC2S;
+import net.natte.bankstorage.item.BankItem;
+import net.natte.bankstorage.item.LinkItem;
 import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
-import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
 import net.natte.bankstorage.packet.server.ScrollPacketC2S;
 import net.natte.bankstorage.packet.server.SortPacketC2S;
-import net.natte.bankstorage.recipe.BankRecipeSerializer;
+import net.natte.bankstorage.recipe.BankLinkRecipe;
+import net.natte.bankstorage.recipe.BankRecipe;
 import net.natte.bankstorage.util.Util;
 import net.natte.bankstorage.world.BankStateSaverAndLoader;
 
@@ -72,12 +70,12 @@ public class BankStorage implements ModInitializer {
 	private static final BankType BANK_6 = new BankType("bank_6", 262_144, 9, 9, 176, 114 + 18 * 9);
 	private static final BankType BANK_7 = new BankType("bank_7", 1_000_000_000, 12, 9, 176, 114 + 18 * 12);
 
+	public static final LinkItem LINK_ITEM = new LinkItem(new FabricItemSettings().maxCount(1));
+
 	public static final List<BankType> bankTypes = new ArrayList<>();
 
 	public static final Block BANK_DOCK_BLOCK = new BankDockBlock(FabricBlockSettings.create().strength(5.0f, 6.0f)
 			.mapColor(MapColor.BLACK).requiresTool().sounds(BlockSoundGroup.METAL).nonOpaque());
-
-	private static final BankRecipeSerializer bankRecipeSerializer = new BankRecipeSerializer();
 
 	public static BlockEntityType<BankDockBlockEntity> BANK_DOCK_BLOCK_ENTITY;
 
@@ -86,10 +84,15 @@ public class BankStorage implements ModInitializer {
 
 		registerBanks();
 		registerDock();
+		registerLink();
 		registerRecipes();
 		registerCommands();
 		registerNetworkListeners();
 
+	}
+
+	private void registerLink() {
+		Registry.register(Registries.ITEM, Util.ID("bank_link"), LINK_ITEM);
 	}
 
 	private void registerBanks() {
@@ -106,6 +109,7 @@ public class BankStorage implements ModInitializer {
 			bankTypes.forEach(type -> {
 				group.add(type.item);
 			});
+			group.add(LINK_ITEM);
 			group.add(BANK_DOCK_BLOCK);
 		});
 	}
@@ -127,7 +131,8 @@ public class BankStorage implements ModInitializer {
 	}
 
 	private void registerRecipes() {
-		Registry.register(Registries.RECIPE_SERIALIZER, new Identifier(MOD_ID, "bank_upgrade"), bankRecipeSerializer);
+		Registry.register(Registries.RECIPE_SERIALIZER, new Identifier(MOD_ID, "bank_upgrade"), new BankRecipe.Serializer());
+		Registry.register(Registries.RECIPE_SERIALIZER, new Identifier(MOD_ID, "bank_link"), new BankLinkRecipe.Serializer());
 
 	}
 
@@ -151,27 +156,10 @@ public class BankStorage implements ModInitializer {
 		ServerPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketC2S.TYPE,
 				new RequestBankStoragePacketC2S.Receiver());
 		ServerPlayNetworking.registerGlobalReceiver(SortPacketC2S.TYPE, new SortPacketC2S.Receiver());
-		ServerPlayNetworking.registerGlobalReceiver(BuildModePacketC2S.TYPE, new BuildModePacketC2S.Receiver());
-		ServerPlayNetworking.registerGlobalReceiver(PickupModePacketC2S.TYPE, new PickupModePacketC2S.Receiver());
+		// ServerPlayNetworking.registerGlobalReceiver(PickupModePacketC2S.TYPE, new PickupModePacketC2S.Receiver());
 		ServerPlayNetworking.registerGlobalReceiver(ScrollPacketC2S.TYPE, new ScrollPacketC2S.Receiver());
 		ServerPlayNetworking.registerGlobalReceiver(LockSlotPacketC2S.TYPE, new LockSlotPacketC2S.Receiver());
 
-	}
-
-	public static void onChangeBuildMode(ServerPlayerEntity player, ItemStack bank) {
-		if (Util.isBank(bank)) {
-			BankItemStorage bankItemStorage = Util.getBankItemStorage(bank,
-					player.getWorld());
-			bankItemStorage.options.buildMode = BuildMode
-					.from((bankItemStorage.options.buildMode.number + 1) % 3);
-			player.sendMessage(Text.translatable("popup.bankstorage.buildmode."
-					+ bankItemStorage.options.buildMode.toString().toLowerCase()), true);
-
-			ServerPlayNetworking.send(player,
-					new OptionPacketS2C(Util.getUUID(bank), bankItemStorage.options.asNbt()));
-		} else {
-			LOGGER.info(player.getName().getString() + " tried to change build mode while holding " + bank);
-		}
 	}
 
 	private static int listBankStorages(CommandContext<ServerCommandSource> context) {
@@ -224,7 +212,7 @@ public class BankStorage implements ModInitializer {
 		ItemStack stack = Registries.ITEM
 				.get(Util.ID(bank.type.getName()))
 				.getDefaultStack();
-		stack.getOrCreateNbt().putUuid(BankFunctionality.UUID_KEY,
+		stack.getOrCreateNbt().putUuid(BankItem.UUID_KEY,
 				uuid);
 		player.getInventory().insertStack(stack);
 		return Command.SINGLE_SUCCESS;

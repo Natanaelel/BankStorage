@@ -12,7 +12,7 @@ public class BankOptions {
         return writeNbt(new NbtCompound());
     }
 
-    public NbtCompound writeNbt(NbtCompound nbt) {
+    private NbtCompound writeNbt(NbtCompound nbt) {
         nbt.putByte("pickup", pickupMode.number);
         nbt.putByte("build", buildMode.number);
         nbt.putInt("slot", selectedItemSlot);

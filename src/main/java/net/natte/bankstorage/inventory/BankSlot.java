@@ -13,8 +13,7 @@ import net.natte.bankstorage.util.Util;
 public class BankSlot extends Slot {
 
     public int stackLimit;
-    private boolean isLocked = false;
-    private ItemStack lockedStack = null;
+    private @Nullable ItemStack lockedStack = null;
 
     public BankSlot(Inventory inventory, int index, int x, int y, int stackLimit) {
         super(inventory, index, x, y);
@@ -25,33 +24,30 @@ public class BankSlot extends Slot {
             @Nullable ItemStack lockedStack) {
         this(inventory, index, x, y, stackLimit);
         if (lockedStack != null) {
-            this.isLocked = true;
             this.lockedStack = lockedStack;
         }
 
     }
 
     public void lock(ItemStack stack) {
-        this.isLocked = true;
         this.lockedStack = stack.copyWithCount(1);
     }
 
     public void unlock() {
-        this.isLocked = false;
         this.lockedStack = null;
     }
 
     public boolean isLocked() {
-        return this.isLocked;
+        return this.lockedStack != null;
     }
 
-    public ItemStack getLockedStack() {
+    public @Nullable ItemStack getLockedStack() {
         return this.lockedStack;
     }
 
     @Override
     public boolean canInsert(ItemStack stack) {
-        if (this.isLocked && !Util.canCombine(stack, this.lockedStack))
+        if (this.lockedStack != null && !Util.canCombine(stack, this.lockedStack))
             return false;
         if (!Util.isAllowedInBank(stack))
             return false;

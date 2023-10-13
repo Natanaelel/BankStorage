@@ -1,7 +1,26 @@
 
-sync settings when bank upgraded
+find bug, fix bug with more bugs
+playtest / play / test
 
-linking
+[x?] sync settings when bank upgraded
+
+
+
+bankoptions functions as normal
+- build mode keybind
+- [x] build mode change on click air
+- pickup mode button
+add pickup mode keybind
+
+
+[x] offhand bugginess
+
+[x] linking
+- [x] new item
+- [x] build mode and pickup mode saved in itemstack as nbt
+- [x] textured according to linked tier
+- [x] textures
+
 
 [x] sync locked slots to all clients
 

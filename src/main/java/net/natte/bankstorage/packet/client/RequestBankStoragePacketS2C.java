@@ -9,7 +9,6 @@ import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.natte.bankstorage.item.CachedBankStorage;
-import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.util.Util;
 
 public class RequestBankStoragePacketS2C implements FabricPacket {
@@ -33,9 +32,9 @@ public class RequestBankStoragePacketS2C implements FabricPacket {
         }
         UUID uuid = buf.readUuid();
         Long randomSeed = buf.readLong();
-        BankOptions options = BankOptions.fromNbt(buf.readNbt());
+        // BankOptions options = BankOptions.fromNbt(buf.readNbt());
 
-        this.cachedBankStorage = new CachedBankStorage(items, uuid, options, randomSeed);
+        this.cachedBankStorage = new CachedBankStorage(items, uuid, randomSeed);
 
         // never used here, just a reminder. this.randomSeed = randomSeed;
     }
@@ -49,7 +48,7 @@ public class RequestBankStoragePacketS2C implements FabricPacket {
         }
         buf.writeUuid(this.cachedBankStorage.uuid);
         buf.writeLong(this.randomSeed);
-        buf.writeNbt(this.cachedBankStorage.options.asNbt());
+        // buf.writeNbt(this.cachedBankStorage.options.asNbt());
 
     }
 

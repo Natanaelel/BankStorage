@@ -48,7 +48,8 @@ public class ItemPickupHandler {
                     continue;
 
                 BankItemStorage bankItemStorage = Util.getBankItemStorage(itemStack, world);
-                PickupMode mode = bankItemStorage.options.pickupMode;
+                // PickupMode mode = bankItemStorage.options.pickupMode;
+                PickupMode mode = Util.getOrCreateOptions(itemStack).pickupMode;
 
                 if (mode == PickupMode.NONE) {
                     continue;

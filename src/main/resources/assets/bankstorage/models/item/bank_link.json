@@ -1,0 +1,46 @@
+{
+  "overrides": [
+    {
+      "predicate": {
+        "linked_bank": 0.1
+      },
+      "model": "bankstorage:item/link_1"
+    },
+    {
+      "predicate": {
+        "linked_bank": 0.2
+      },
+      "model": "bankstorage:item/link_2"
+    },
+    {
+      "predicate": {
+        "linked_bank": 0.3
+      },
+      "model": "bankstorage:item/link_3"
+    },
+    {
+      "predicate": {
+        "linked_bank": 0.4
+      },
+      "model": "bankstorage:item/link_4"
+    },
+    {
+      "predicate": {
+        "linked_bank": 0.5
+      },
+      "model": "bankstorage:item/link_5"
+    },
+    {
+      "predicate": {
+        "linked_bank": 0.6
+      },
+      "model": "bankstorage:item/link_6"
+    },
+    {
+      "predicate": {
+        "linked_bank": 0.7
+      },
+      "model": "bankstorage:item/link_7"
+    }
+  ]
+}

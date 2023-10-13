@@ -22,7 +22,6 @@ import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.inventory.LockedSlot;
-import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.packet.NetworkUtil;
 import net.natte.bankstorage.util.Util;
@@ -88,7 +87,7 @@ public class BankScreenHandler extends ScreenHandler {
         for (int x = 0; x < 9; ++x) {
             // cannot move opened dank
             if (playerInventory.selectedSlot == x
-                    && playerInventory.getStack(playerInventory.selectedSlot).getItem() instanceof BankItem
+                    && Util.isBankLike(playerInventory.getStack(playerInventory.selectedSlot))
                     && this.context == ScreenHandlerContext.EMPTY) {
                 this.addSlot(new LockedSlot(playerInventory, x, 8 + x * 18, inventoryY + 58));
             } else {
@@ -593,7 +592,7 @@ public class BankScreenHandler extends ScreenHandler {
         if (this.bankScreenSync == null)
             return;
         BankItemStorage bankItemStorage = (BankItemStorage) inventory;
-        if (bankItemStorage.isLockedSlotsDirty(lockedSlotsRevision)) {
+        if (bankItemStorage.getLockedSlotsRevision() != this.lockedSlotsRevision) {
             this.setLockedSlotsNoSync(bankItemStorage.getlockedSlots());
             this.bankScreenSync.syncLockedSlots(this, bankItemStorage.getlockedSlots());
             this.lockedSlotsRevision = bankItemStorage.getLockedSlotsRevision();

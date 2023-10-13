@@ -17,6 +17,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.natte.bankstorage.item.CachedBankStorage;
+import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.util.Util;
 
@@ -31,8 +32,11 @@ public class BuildModePreviewRenderer implements EndTick {
     private MinecraftClient client;
 
     private CachedBankStorage bankStorage;
+    private BankOptions options = new BankOptions();
 
     private Hand hand;
+
+    private int ticks = 0;
 
     public BuildModePreviewRenderer() {
         this.stackInHand = ItemStack.EMPTY;
@@ -43,7 +47,7 @@ public class BuildModePreviewRenderer implements EndTick {
             return;
         if (this.bankStorage == null)
             return;
-        if (this.bankStorage.options.buildMode == BuildMode.NONE)
+        if (this.options.buildMode == BuildMode.NONE)
             return;
         if (this.bankStorage.items.isEmpty())
             return;
@@ -58,7 +62,7 @@ public class BuildModePreviewRenderer implements EndTick {
         MatrixStack matrixStack = context.getMatrices();
         matrixStack.push();
 
-        int selectedSlot = bankStorage.options.selectedItemSlot;
+        int selectedSlot = this.options.selectedItemSlot;
 
         int handXOffset = this.hand == Hand.OFF_HAND ? -169 : 118;
 
@@ -66,7 +70,7 @@ public class BuildModePreviewRenderer implements EndTick {
             context.drawTexture(WIDGET_TEXTURE,
                     scaledWidth / 2 + handXOffset, scaledHeight - 22, 0, 0, 22, 22);
         } else if (selectedSlot == 0 || selectedSlot == items.size() - 1) {
-            boolean isLeft = bankStorage.options.selectedItemSlot > 0;
+            boolean isLeft = this.options.selectedItemSlot > 0;
             context.drawTexture(WIDGET_TEXTURE,
                     scaledWidth / 2 - (isLeft ? 20 : 0) + handXOffset, scaledHeight - 22, 22, 0, 42, 22);
         } else {
@@ -120,10 +124,14 @@ public class BuildModePreviewRenderer implements EndTick {
         if (client.player == null)
             return;
 
+        this.ticks = (this.ticks + 1) % (20 * 5);
+        if (this.ticks == 0 && this.uuid != null && this.options.buildMode != BuildMode.NONE)
+            CachedBankStorage.requestCacheUpdate(this.uuid);
+
         ItemStack right = this.client.player.getMainHandStack();
         ItemStack left = this.client.player.getOffHandStack();
 
-        if (Util.isBank(right)) {
+        if (Util.isBankLike(right)) {
             if (right != this.stackInHand) {
                 clearBank();
                 this.stackInHand = right;
@@ -133,7 +141,7 @@ public class BuildModePreviewRenderer implements EndTick {
                 updateBank();
                 this.hand = Hand.MAIN_HAND;
             }
-        } else if (Util.isBank(left)) {
+        } else if (Util.isBankLike(left)) {
             if (left != this.stackInHand) {
                 clearBank();
                 this.stackInHand = left;
@@ -154,8 +162,13 @@ public class BuildModePreviewRenderer implements EndTick {
         this.bankStorage = bankStorage;
     }
 
+    public void setOptions(BankOptions options) {
+        this.options = options;
+    }
+
     public void updateBank() {
         setBankStorage(CachedBankStorage.getBankStorage(this.stackInHand));
+        setOptions(Util.getOrCreateOptions(this.stackInHand));
     }
 
     public void clearBank() {

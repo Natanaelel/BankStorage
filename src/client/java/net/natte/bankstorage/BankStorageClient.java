@@ -16,22 +16,23 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.impl.client.rendering.BlockEntityRendererRegistryImpl;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
+import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.CachedBankStorage;
+import net.natte.bankstorage.item.LinkItem;
 import net.natte.bankstorage.network.ItemStackBobbingAnimationPacketReceiver;
-import net.natte.bankstorage.network.OptionPacketReceiver;
 import net.natte.bankstorage.network.RequestBankStoragePacketReceiver;
 import net.natte.bankstorage.network.screensync.SyncLargeSlotInventoryS2C;
 import net.natte.bankstorage.network.screensync.SyncLargeSlotS2C;
 import net.natte.bankstorage.network.screensync.SyncLockedSlotsReceiver;
 import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
-import net.natte.bankstorage.packet.client.OptionPacketS2C;
 import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.packet.screensync.BankSyncPacketHandler;
 import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
-import net.natte.bankstorage.packet.server.BuildModePacketC2S;
 import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
 import net.natte.bankstorage.rendering.BankDockBlockEntityRenderer;
 import net.natte.bankstorage.rendering.BuildModePreviewRenderer;
@@ -60,9 +61,18 @@ public class BankStorageClient implements ClientModInitializer {
 		registerHandledScreens();
 		registerKeyBinds();
 		registerKeyBindListeners();
+		registerModelPredicates();
 		registerRenderers();
 		registerNetworkListeners();
 		registerTickEvents();
+
+	}
+
+	private void registerModelPredicates() {
+		ModelPredicateProviderRegistry.register(BankStorage.LINK_ITEM, new Identifier("linked_bank"),
+				(itemStack, clientWorld, livingEntity, i) -> {
+					return Float.valueOf(LinkItem.getTypeName(itemStack).split("_")[1]) / 10;
+				});
 
 	}
 
@@ -70,6 +80,7 @@ public class BankStorageClient implements ClientModInitializer {
 
 		HudRenderCallback.EVENT.register(buildModePreviewRenderer::render);
 
+		BlockEntityRendererRegistryImpl.register(BankStorage.BANK_DOCK_BLOCK_ENTITY, BankDockBlockEntityRenderer::new);
 		BlockEntityRendererRegistryImpl.register(BankStorage.BANK_DOCK_BLOCK_ENTITY, BankDockBlockEntityRenderer::new);
 	}
 
@@ -106,7 +117,11 @@ public class BankStorageClient implements ClientModInitializer {
 			while (toggleBuildModeKeyBinding.wasPressed()) {
 				ItemStack stack = client.player.getStackInHand(client.player.getActiveHand());
 				if (Util.isBank(stack)) {
-					ClientPlayNetworking.send(new BuildModePacketC2S(stack));
+					if (Util.changeBuildMode(stack))
+						client.player.sendMessage(Text.translatable("popup.bankstorage.buildmode."
+								+ Util.getOptions(stack).buildMode.toString().toLowerCase()), true);
+
+					// ClientPlayNetworking.send(new BuildModePacketC2S(stack));
 				}
 			}
 
@@ -116,7 +131,6 @@ public class BankStorageClient implements ClientModInitializer {
 	public void registerNetworkListeners() {
 		ClientPlayNetworking.registerGlobalReceiver(ItemStackBobbingAnimationPacketS2C.TYPE,
 				new ItemStackBobbingAnimationPacketReceiver());
-		ClientPlayNetworking.registerGlobalReceiver(OptionPacketS2C.TYPE, new OptionPacketReceiver());
 		ClientPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketS2C.TYPE,
 				new RequestBankStoragePacketReceiver());
 

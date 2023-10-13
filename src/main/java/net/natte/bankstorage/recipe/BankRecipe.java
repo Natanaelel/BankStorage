@@ -1,10 +1,15 @@
 package net.natte.bankstorage.recipe;
 
 import java.util.Optional;
+
+import com.google.gson.JsonObject;
+
 import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.recipe.ShapedRecipe;
 import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.util.Identifier;
 import net.natte.bankstorage.item.BankItem;
 
 public class BankRecipe extends ShapedRecipe {
@@ -27,4 +32,19 @@ public class BankRecipe extends ShapedRecipe {
 
         return result;
     }
+
+    public static class Serializer extends ShapedRecipe.Serializer {
+
+        @Override
+        public BankRecipe read(Identifier id, JsonObject json) {
+            return new BankRecipe(super.read(id, json));
+        }
+
+        @Override
+        public BankRecipe read(Identifier id, PacketByteBuf buf) {
+            return new BankRecipe(super.read(id, buf));
+
+        }
+    }
+
 }

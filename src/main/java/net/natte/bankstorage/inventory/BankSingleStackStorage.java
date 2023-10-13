@@ -4,7 +4,7 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.base.SingleStackStorage;
 import net.minecraft.item.ItemStack;
 import net.natte.bankstorage.container.BankItemStorage;
-import net.natte.bankstorage.item.BankItem;
+import net.natte.bankstorage.util.Util;
 
 public class BankSingleStackStorage extends SingleStackStorage {
 
@@ -34,7 +34,7 @@ public class BankSingleStackStorage extends SingleStackStorage {
     @Override
     protected boolean canInsert(ItemVariant itemVariant) {
 
-        if (itemVariant.getItem() instanceof BankItem)
+        if (!Util.isAllowedInBank(itemVariant.getItem().getDefaultStack()))
             return false;
         ItemStack lockedStack = this.storage.getLockedStack(this.slot);
         if (lockedStack != null && !itemVariant.matches(lockedStack))

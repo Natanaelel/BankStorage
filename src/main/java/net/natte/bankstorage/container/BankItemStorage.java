@@ -30,7 +30,7 @@ import net.natte.bankstorage.util.Util;
 
 public class BankItemStorage extends SimpleInventory implements NamedScreenHandlerFactory {
 
-    public BankOptions options;
+    // public BankOptions options;
     public BankType type;
     private Text displayName;
     public UUID uuid;
@@ -38,11 +38,12 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     private Map<Integer, ItemStack> lockedSlots;
     private short lockedSlotsRevision = 0;
+    private short revision = 0;
 
     public BankItemStorage(BankType type, UUID uuid) {
         super(type.rows * type.cols);
         this.type = type;
-        this.options = new BankOptions();
+        // this.options = new BankOptions();
         this.uuid = uuid;
         this.random = new Random();
 
@@ -102,7 +103,8 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     public void markDirty() {
         super.markDirty();
         updateLockedSlotsRevision();
-        if (this.uuid != null){
+        updateRevision();
+        if (this.uuid != null) {
             CachedBankStorage.requestCacheUpdate(this.uuid);
         }
     }
@@ -123,7 +125,7 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         NbtCompound nbtCompound = new NbtCompound();
 
         nbtCompound.putUuid("uuid", this.uuid);
-        nbtCompound.put("options", this.options.asNbt());
+        // nbtCompound.put("options", this.options.asNbt());
         nbtCompound.putString("type", this.type.getName());
 
         NbtList nbtList = new NbtList();
@@ -161,7 +163,8 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
         BankItemStorage bankItemStorage = new BankItemStorage(type, uuid);
 
-        bankItemStorage.options = BankOptions.fromNbt(nbtCompound.getCompound("options"));
+        // bankItemStorage.options =
+        // BankOptions.fromNbt(nbtCompound.getCompound("options"));
 
         Inventories.readNbt(nbtCompound, bankItemStorage.stacks);
         NbtList nbtList = nbtCompound.getList("Items", NbtElement.COMPOUND_TYPE);
@@ -188,7 +191,7 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         return bankItemStorage;
     }
 
-    private static BankType getBankTypeFromName(String name) {
+    public static BankType getBankTypeFromName(String name) {
         for (BankType bankType : BankStorage.bankTypes) {
             if (bankType.getName().equals(name)) {
                 return bankType;
@@ -215,9 +218,9 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         return items;
     }
 
-    public ItemStack getSelectedItem() {
+    public ItemStack getSelectedItem(int selectedItemSlot) {
         List<ItemStack> items = getBlockItems();
-        return items.isEmpty() ? ItemStack.EMPTY : items.get(this.options.selectedItemSlot);
+        return items.isEmpty() ? ItemStack.EMPTY : items.get(selectedItemSlot);
     }
 
     public ItemStack getRandomItem() {
@@ -225,11 +228,11 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         return items.isEmpty() ? ItemStack.EMPTY : items.get(this.random.nextInt(items.size()));
     }
 
-    public ItemStack chooseItemToPlace() {
+    public ItemStack chooseItemToPlace(BankOptions options) {
 
-        return switch (this.options.buildMode) {
+        return switch (options.buildMode) {
             case NONE -> ItemStack.EMPTY;
-            case NORMAL -> getSelectedItem();
+            case NORMAL -> getSelectedItem(options.selectedItemSlot);
             case RANDOM -> getRandomItem();
         };
     }
@@ -250,15 +253,20 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         return this.lockedSlots;
     }
 
-    public boolean isLockedSlotsDirty(short revision) {
-        return this.lockedSlotsRevision != revision;
+    public short getLockedSlotsRevision() {
+        return this.lockedSlotsRevision;
     }
 
     public void updateLockedSlotsRevision() {
         this.lockedSlotsRevision = (short) ((this.lockedSlotsRevision + 1) & Short.MAX_VALUE);
     }
 
-    public short getLockedSlotsRevision(){
-        return this.lockedSlotsRevision;
+    public short getRevision() {
+        return this.revision;
     }
+
+    private void updateRevision() {
+        this.revision = (short) ((this.revision + 1) & Short.MAX_VALUE);
+    }
+
 }

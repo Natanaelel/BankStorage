@@ -38,3 +38,8 @@ hs_err_*.log
 replay_*.log
 *.hprof
 *.jfr
+
+
+# me
+
+textures_not_necessarily_used

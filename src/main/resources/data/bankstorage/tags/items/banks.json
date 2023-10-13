@@ -1,0 +1,12 @@
+{
+    "replace": false,
+    "values": [
+        "bankstorage:bank_1",
+        "bankstorage:bank_2",
+        "bankstorage:bank_3",
+        "bankstorage:bank_4",
+        "bankstorage:bank_5",
+        "bankstorage:bank_6",
+        "bankstorage:bank_7"
+    ]
+}

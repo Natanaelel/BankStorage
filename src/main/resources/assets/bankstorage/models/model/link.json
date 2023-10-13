@@ -1,0 +1,7 @@
+{
+  "parent": "bankstorage:model/alink",
+  "textures": {
+    "holo": "bankstorage:item/holo",
+    "frame": "bankstorage:item/frame"
+  }
+}

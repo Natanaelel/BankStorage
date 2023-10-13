@@ -29,7 +29,7 @@ import net.natte.bankstorage.BankStorageClient;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
-import net.natte.bankstorage.packet.server.PickupModePacketC2S;
+// import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.SortPacketC2S;
 import net.natte.bankstorage.rendering.ItemCountUtils;
 import net.natte.bankstorage.util.Util;
@@ -135,7 +135,8 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         this.addDrawableChild(
                 ButtonWidget
                         .builder(Text.translatable("button.bankstorage.pickupmode"),
-                                button -> ClientPlayNetworking.send(new PickupModePacketC2S()))
+                                // button -> ClientPlayNetworking.send(new PickupModePacketC2S()))
+                                button -> {})
                         .dimensions(x + titleX + this.type.guiTextureWidth - 110, y + titleY - 2, 40, 12).build());
 
     }

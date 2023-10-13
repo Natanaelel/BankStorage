@@ -1,16 +1,16 @@
 package net.natte.bankstorage.item;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
-import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
@@ -18,8 +18,6 @@ import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 
 public abstract class BankFunctionality extends Item {
-
-    public static final String UUID_KEY = "bank:uuid";
 
     public BankFunctionality(Settings settings) {
         super(settings);
@@ -40,13 +38,17 @@ public abstract class BankFunctionality extends Item {
             return player.isSneaking() ? TypedActionResult.success(bank) : TypedActionResult.fail(bank);
 
         if (player.isSneaking()) {
-            BankStorage.onChangeBuildMode((ServerPlayerEntity) player, bank);
+            if (Util.changeBuildMode(bank))
+                player.sendMessage(Text.translatable("popup.bankstorage.buildmode."
+                        + Util.getOptions(bank).buildMode.toString().toLowerCase()), true);
+
             return TypedActionResult.success(bank);
         }
         BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, world);
         if (!(player.currentScreenHandler instanceof BankScreenHandler))
             player.openHandledScreen(bankItemStorage);
-        return TypedActionResult.consume(bank);
+        // return TypedActionResult.consume(bank);
+        return TypedActionResult.success(bank);
     }
 
     @Override
@@ -58,23 +60,16 @@ public abstract class BankFunctionality extends Item {
         if (bank.getCount() != 1)
             return ActionResult.PASS;
 
-        BankOptions options;
-        if (world.isClient) {
-            CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(bank);
-            options = cachedBankStorage == null ? new BankOptions() : cachedBankStorage.options;
-        } else {
-            BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, world);
-            options = bankItemStorage.options;
-        }
+        BankOptions options = Util.getOrCreateOptions(bank);
 
         if (options.buildMode == BuildMode.NORMAL || options.buildMode == BuildMode.RANDOM) {
             ItemStack itemStack;
             if (world.isClient) {
                 CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(bank);
-                itemStack = cachedBankStorage.chooseItemToPlace();
+                itemStack = cachedBankStorage.chooseItemToPlace(options);
             } else {
                 BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, world);
-                itemStack = bankItemStorage.chooseItemToPlace();
+                itemStack = bankItemStorage.chooseItemToPlace(options);
             }
             player.setStackInHand(context.getHand(), itemStack);
             ActionResult useResult = itemStack
@@ -87,6 +82,14 @@ public abstract class BankFunctionality extends Item {
         } else {
             return ActionResult.PASS;
         }
+    }
+
+    @Override
+    public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
+        if (selected) {
+
+        }
+
     }
 
     @Override
