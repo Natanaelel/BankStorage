@@ -1,5 +1,7 @@
 package net.natte.bankstorage.item;
 
+import java.util.Random;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
@@ -11,6 +13,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+import net.natte.bankstorage.access.SyncedRandomAccess;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
@@ -45,8 +48,12 @@ public abstract class BankFunctionality extends Item {
             return TypedActionResult.success(bank);
         }
         BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, world);
+        if (bankItemStorage == null) {
+            player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
+            return TypedActionResult.fail(bank);
+        }
         if (!(player.currentScreenHandler instanceof BankScreenHandler))
-            player.openHandledScreen(bankItemStorage);
+            player.openHandledScreen(bankItemStorage.withItem(bank));
         // return TypedActionResult.consume(bank);
         return TypedActionResult.success(bank);
     }
@@ -57,6 +64,8 @@ public abstract class BankFunctionality extends Item {
         World world = context.getWorld();
         ItemStack bank = player.getStackInHand(context.getHand());
 
+        Random random = ((SyncedRandomAccess) player).bankstorage$getSyncedRandom();
+
         if (bank.getCount() != 1)
             return ActionResult.PASS;
 
@@ -66,10 +75,20 @@ public abstract class BankFunctionality extends Item {
             ItemStack itemStack;
             if (world.isClient) {
                 CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(bank);
-                itemStack = cachedBankStorage.chooseItemToPlace(options);
+                if (cachedBankStorage == null) {
+                    if (Util.isLink(bank))
+                        player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
+                    return ActionResult.FAIL;
+                }
+                itemStack = cachedBankStorage.chooseItemToPlace(options, random);
             } else {
                 BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, world);
-                itemStack = bankItemStorage.chooseItemToPlace(options);
+                if (bankItemStorage == null) {
+                    if (Util.isLink(bank))
+                        player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
+                    return ActionResult.FAIL;
+                }
+                itemStack = bankItemStorage.chooseItemToPlace(options, random);
             }
             player.setStackInHand(context.getHand(), itemStack);
             ActionResult useResult = itemStack

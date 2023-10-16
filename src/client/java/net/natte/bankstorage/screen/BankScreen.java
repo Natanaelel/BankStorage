@@ -8,19 +8,22 @@ import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens.Provider;
-import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -28,8 +31,9 @@ import net.minecraft.util.math.MathHelper;
 import net.natte.bankstorage.BankStorageClient;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
+import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
-// import net.natte.bankstorage.packet.server.PickupModePacketC2S;
+import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.SortPacketC2S;
 import net.natte.bankstorage.rendering.ItemCountUtils;
 import net.natte.bankstorage.util.Util;
@@ -49,12 +53,42 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         };
     }
 
+    public BankScreen(BankScreenHandler screenHandler, PlayerInventory playerInventory, Text text, BankType type) {
+        super(screenHandler, playerInventory, text);
+
+        this.type = type;
+        this.texture = this.type.getGuiTexture();
+        this.backgroundWidth = this.type.guiTextureWidth;
+        this.backgroundHeight = this.type.guiTextureHeight;
+
+        this.playerInventoryTitleY += this.type.rows * 18 - 52;
+
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        PickupModeOption initialPickupMode = PickupModeOption
+                .from(Util.getOrCreateOptions(this.handler.getBankLikeItem()).pickupMode);
+        this.addDrawableChild(
+                new TexturedCyclingButtonWidget<PickupModeOption>(initialPickupMode,
+                        x + titleX + this.type.guiTextureWidth - 49, y + titleY - 4, 14,
+                        14, 14, WIDGETS_TEXTURE, this::onPickupModeButtonPress));
+
+        this.addDrawableChild(
+                new TexturedCyclingButtonWidget<SortButton>(SortButton.DEFAULT,
+                        x + titleX + this.type.guiTextureWidth - 31, y + titleY - 4,
+                        14, 14, 14, WIDGETS_TEXTURE, this::onSortButtonPress));
+    }
+
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
 
         // middle click sorting
         if (button == 2 && (this.getSlotAt(mouseX, mouseY) instanceof BankSlot)) {
+            client.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f));
             ClientPlayNetworking.send(new SortPacketC2S());
+
             return true;
         }
         // left click + lockSlot keybind
@@ -83,7 +117,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
                     } else if (cursorStack.isEmpty() || ItemStack.canCombine(hoveredStack, cursorStack)) {
                         lockSlot.accept(hoveredStack);
                     }
-                    
+
                 }
                 this.cancelNextRelease = true;
                 return true;
@@ -108,37 +142,6 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
             BankStorageClient.lockSlotKeyBinding.setPressed(false);
         }
         return super.keyReleased(keyCode, scanCode, modifiers);
-    }
-
-    public BankScreen(BankScreenHandler screenHandler, PlayerInventory playerInventory, Text text, BankType type) {
-        super(screenHandler, playerInventory, text);
-
-        this.type = type;
-        this.texture = this.type.getGuiTexture();
-        this.backgroundWidth = this.type.guiTextureWidth;
-        this.backgroundHeight = this.type.guiTextureHeight;
-
-        this.playerInventoryTitleY += this.type.rows * 18 - 52;
-
-    }
-
-    @Override
-    protected void init() {
-        super.init();
-        // this.handler.addListener(new BankScreenListener());
-        this.addDrawableChild(
-                ButtonWidget
-                        .builder(Text.translatable("button.bankstorage.sort"),
-                                button -> ClientPlayNetworking.send(new SortPacketC2S()))
-                        .dimensions(x + titleX + this.type.guiTextureWidth - 60, y + titleY - 2, 40, 12).build());
-
-        this.addDrawableChild(
-                ButtonWidget
-                        .builder(Text.translatable("button.bankstorage.pickupmode"),
-                                // button -> ClientPlayNetworking.send(new PickupModePacketC2S()))
-                                button -> {})
-                        .dimensions(x + titleX + this.type.guiTextureWidth - 110, y + titleY - 2, 40, 12).build());
-
     }
 
     @Override
@@ -225,16 +228,19 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         context.getMatrices().translate(0.0f, 0.0f, 100.0f);
 
         if (slot.isLocked()) {
+            // locked slot texture
             context.drawTexture(WIDGETS_TEXTURE, i, j, itemStack.isEmpty() ? 16 : 0, 46, 16, 16);
-            // if(slot.getLockedStack().isEmpty() || !itemStack.isEmpty())
-            // context.drawTexture(WIDGETS_TEXTURE, i, j, itemStack.isEmpty() ? 16 : 0, 46,
-            // 16, 16);
         }
 
         if (itemStack.isEmpty() && slot.isEnabled() && slot.isLocked()) {
-
+            // transparent item (not transparent)
             context.drawItem(slot.getLockedStack(), i, j);
-            context.fill(i, j, i + 16, j + 16, 160, 0x7f8b8b8b);
+
+            // overlay transparent texture with backgroud color to trick everyone into
+            // thinking the item is transparent
+            RenderSystem.enableBlend();
+            context.drawTexture(WIDGETS_TEXTURE, i, j, 200, 32, 46, 16, 16, 256, 256);
+            RenderSystem.disableBlend();
         }
 
         if (!bl2) {
@@ -324,6 +330,112 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
             }
             context.drawTooltip(this.textRenderer, tooltip, itemStack.getTooltipData(), x, y);
         }
+    }
+
+    private void onPickupModeButtonPress(TexturedCyclingButtonWidget<PickupModeOption> button) {
+        button.state = switch (button.state) {
+            case NO_PICKUP -> PickupModeOption.ALL;
+            case ALL -> PickupModeOption.FILTERED;
+            case FILTERED -> PickupModeOption.VOID_OVERFLOW;
+            case VOID_OVERFLOW -> PickupModeOption.NO_PICKUP;
+        };
+        button.refreshTooltip();
+        ClientPlayNetworking.send(new PickupModePacketC2S(button.state.toPickupMode()));
+    }
+
+    private void onSortButtonPress(TexturedCyclingButtonWidget<SortButton> button) {
+        ClientPlayNetworking.send(new SortPacketC2S());
+    }
+}
+
+enum PickupModeOption implements CycleableOption {
+    NO_PICKUP("no_pickup", 0, 70),
+    ALL("pickup_all", 14, 70),
+    FILTERED("filtered", 28, 70),
+    VOID_OVERFLOW("void_overflow", 42, 70);
+
+    private Text name;
+    private Text info;
+
+    private int uOffset;
+    private int vOffset;
+
+    private PickupModeOption(String name, int uOffset, int vOffset) {
+        this.name = Text.translatable("title.bankstorage.pickupmode." + name);
+        this.info = Text.translatable("tooltip.bankstorage.pickupmode." + name);
+        this.uOffset = uOffset;
+        this.vOffset = vOffset;
+    }
+
+    public static PickupModeOption from(PickupMode pickupMode) {
+        return switch (pickupMode) {
+            case NONE -> NO_PICKUP;
+            case ALL -> ALL;
+            case FILTERED -> FILTERED;
+            case VOID -> VOID_OVERFLOW;
+        };
+    }
+
+    public PickupMode toPickupMode() {
+        return switch (this) {
+            case NO_PICKUP -> PickupMode.NONE;
+            case ALL -> PickupMode.ALL;
+            case FILTERED -> PickupMode.FILTERED;
+            case VOID_OVERFLOW -> PickupMode.VOID;
+        };
+    }
+
+    @Override
+    public Text getName() {
+        return this.name;
+    }
+
+    @Override
+    public Text getInfo() {
+        return this.info;
+    }
+
+    @Override
+    public int uOffset() {
+        return this.uOffset;
+    }
+
+    @Override
+    public int vOffset() {
+        return this.vOffset;
+    }
+
+}
+
+enum SortButton implements CycleableOption {
+    DEFAULT;
+
+    private Text name;
+    private Text info;
+
+    SortButton() {
+        this.name = Text.translatable("title.bankstorage.sort");
+        this.info = Text.translatable("tooltip.bankstorage.sort");
+    }
+
+    @Override
+    public Text getName() {
+        return this.name;
+    }
+
+    @Override
+    public Text getInfo() {
+        return this.info;
+    }
+
+    @Override
+    public int uOffset() {
+        return 0;
+    }
+
+    @Override
+    public int vOffset() {
+        return 98;
     }
 
 }

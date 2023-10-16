@@ -17,11 +17,9 @@ public class RequestBankStoragePacketS2C implements FabricPacket {
             .create(Util.ID("requestbank_s2c"), RequestBankStoragePacketS2C::new);
 
     public CachedBankStorage cachedBankStorage;
-    public long randomSeed;
 
-    public RequestBankStoragePacketS2C(CachedBankStorage cachedBankStorage, long randomSeed) {
+    public RequestBankStoragePacketS2C(CachedBankStorage cachedBankStorage) {
         this.cachedBankStorage = cachedBankStorage;
-        this.randomSeed = randomSeed;
     }
 
     public RequestBankStoragePacketS2C(PacketByteBuf buf) {
@@ -31,10 +29,9 @@ public class RequestBankStoragePacketS2C implements FabricPacket {
             items.add(Util.readLargeStack(buf));
         }
         UUID uuid = buf.readUuid();
-        Long randomSeed = buf.readLong();
         // BankOptions options = BankOptions.fromNbt(buf.readNbt());
 
-        this.cachedBankStorage = new CachedBankStorage(items, uuid, randomSeed);
+        this.cachedBankStorage = new CachedBankStorage(items, uuid);
 
         // never used here, just a reminder. this.randomSeed = randomSeed;
     }
@@ -47,7 +44,6 @@ public class RequestBankStoragePacketS2C implements FabricPacket {
             Util.writeLargeStack(buf, itemStack);
         }
         buf.writeUuid(this.cachedBankStorage.uuid);
-        buf.writeLong(this.randomSeed);
         // buf.writeNbt(this.cachedBankStorage.options.asNbt());
 
     }

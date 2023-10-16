@@ -1,16 +1,28 @@
 
-find bug, fix bug with more bugs
 playtest / play / test
+update description
+- add discord link
 
 [x?] sync settings when bank upgraded
+- sync locked slots
+
+[x] find bug, fix bug with more bugs
+
+[x] warn when trying to open link without uuid
+[x] fix link pickup items
 
 
 
-bankoptions functions as normal
-- build mode keybind
+
+[x] playerbound synced random
+[x] modes when docked
+[x] textured toggle mode button
+
+[x] bankoptions functions as normal
+- [x] build mode keybind
 - [x] build mode change on click air
-- pickup mode button
-add pickup mode keybind
+- [x] pickup mode button
+[x] add pickup mode keybind
 
 
 [x] offhand bugginess

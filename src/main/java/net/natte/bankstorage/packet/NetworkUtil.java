@@ -15,12 +15,10 @@ public class NetworkUtil {
     public static void syncCachedBankS2C(UUID uuid, ServerPlayerEntity player) {
 
         BankItemStorage bankItemStorage = Util.getBankItemStorage(uuid, player.getWorld());
-        long randomSeed = (long) (Math.random() * 0xBEEEF);
-        bankItemStorage.random.setSeed(randomSeed);
         List<ItemStack> items = bankItemStorage.getBlockItems();
         // bankItemStorage.options.selectedItemSlot = MathHelper.clamp(bankItemStorage.options.selectedItemSlot, 0,
                 // items.size() - 1);
         ServerPlayNetworking.send(player, new RequestBankStoragePacketS2C(
-                new CachedBankStorage(items, uuid, randomSeed), randomSeed));
+                new CachedBankStorage(items, uuid)));
     }
 }

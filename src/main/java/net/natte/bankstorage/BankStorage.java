@@ -4,6 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -27,13 +28,17 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.natte.bankstorage.access.SyncedRandomAccess;
 import net.natte.bankstorage.block.BankDockBlock;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.item.LinkItem;
+import net.natte.bankstorage.packet.client.SyncedRandomPacketS2C;
+import net.natte.bankstorage.packet.server.BuildModePacketC2S;
 import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
+import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
 import net.natte.bankstorage.packet.server.ScrollPacketC2S;
 import net.natte.bankstorage.packet.server.SortPacketC2S;
@@ -45,6 +50,7 @@ import net.natte.bankstorage.world.BankStateSaverAndLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +95,17 @@ public class BankStorage implements ModInitializer {
 		registerCommands();
 		registerNetworkListeners();
 
+		registerEventListeners();
+
+	}
+
+	private void registerEventListeners() {
+		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+			long randomSeed = handler.player.getRandom().nextLong();
+			((SyncedRandomAccess) handler.player).bankstorage$setSyncedRandom(new Random(randomSeed));
+			sender.sendPacket(new SyncedRandomPacketS2C(randomSeed));
+		});
+
 	}
 
 	private void registerLink() {
@@ -131,8 +148,10 @@ public class BankStorage implements ModInitializer {
 	}
 
 	private void registerRecipes() {
-		Registry.register(Registries.RECIPE_SERIALIZER, new Identifier(MOD_ID, "bank_upgrade"), new BankRecipe.Serializer());
-		Registry.register(Registries.RECIPE_SERIALIZER, new Identifier(MOD_ID, "bank_link"), new BankLinkRecipe.Serializer());
+		Registry.register(Registries.RECIPE_SERIALIZER, new Identifier(MOD_ID, "bank_upgrade"),
+				new BankRecipe.Serializer());
+		Registry.register(Registries.RECIPE_SERIALIZER, new Identifier(MOD_ID, "bank_link"),
+				new BankLinkRecipe.Serializer());
 
 	}
 
@@ -156,7 +175,8 @@ public class BankStorage implements ModInitializer {
 		ServerPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketC2S.TYPE,
 				new RequestBankStoragePacketC2S.Receiver());
 		ServerPlayNetworking.registerGlobalReceiver(SortPacketC2S.TYPE, new SortPacketC2S.Receiver());
-		// ServerPlayNetworking.registerGlobalReceiver(PickupModePacketC2S.TYPE, new PickupModePacketC2S.Receiver());
+		ServerPlayNetworking.registerGlobalReceiver(PickupModePacketC2S.TYPE, new PickupModePacketC2S.Receiver());
+		ServerPlayNetworking.registerGlobalReceiver(BuildModePacketC2S.TYPE, new BuildModePacketC2S.Receiver());
 		ServerPlayNetworking.registerGlobalReceiver(ScrollPacketC2S.TYPE, new ScrollPacketC2S.Receiver());
 		ServerPlayNetworking.registerGlobalReceiver(LockSlotPacketC2S.TYPE, new LockSlotPacketC2S.Receiver());
 

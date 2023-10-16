@@ -6,9 +6,7 @@ import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.item.base.SingleStackStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedStorage;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -20,14 +18,15 @@ import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.util.math.BlockPos;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
-import net.natte.bankstorage.inventory.BankSingleStackStorage;
 import net.natte.bankstorage.item.BankItem;
+import net.natte.bankstorage.storage.BankCombinedStorage;
+import net.natte.bankstorage.storage.BankSingleStackStorage;
 import net.natte.bankstorage.util.Util;
 
 public class BankDockBlockEntity extends BlockEntity {
 
     private ItemStack bankItem = ItemStack.EMPTY;
-    private CombinedStorage<ItemVariant, SingleStackStorage> storage = null;
+    private BankCombinedStorage storage = null;
 
     public BankDockBlockEntity(BlockPos pos, BlockState state) {
         super(BankStorage.BANK_DOCK_BLOCK_ENTITY, pos, state);
@@ -44,7 +43,6 @@ public class BankDockBlockEntity extends BlockEntity {
     public ItemStack pickUpBank() {
         ItemStack bank = this.bankItem;
         this.bankItem = ItemStack.EMPTY;
-        this.storage = null;
         this.markDirty();
         return bank;
     }
@@ -57,7 +55,7 @@ public class BankDockBlockEntity extends BlockEntity {
     @Override
     public void markDirty() {
         world.updateListeners(pos, getCachedState(), getCachedState(), Block.NOTIFY_LISTENERS);
-        
+        this.storage = null;
         super.markDirty();
     }
 
@@ -104,17 +102,17 @@ public class BankDockBlockEntity extends BlockEntity {
 
     }
 
-    private CombinedStorage<ItemVariant, SingleStackStorage> createItemStorage(BankItemStorage bankItemStorage) {
+    private BankCombinedStorage createItemStorage(BankItemStorage bankItemStorage) {
         int slots = bankItemStorage.size();
 
-        List<SingleStackStorage> storages = new ArrayList<>();
+        List<BankSingleStackStorage> storages = new ArrayList<>();
 
         for (int i = 0; i < slots; i++) {
-            SingleStackStorage storage = new BankSingleStackStorage(bankItemStorage, i);
+            BankSingleStackStorage storage = new BankSingleStackStorage(bankItemStorage, i);
             storages.add(storage);
         }
 
-        return new CombinedStorage<>(storages);
+        return new BankCombinedStorage(storages, Util.getOrCreateOptions(this.bankItem).pickupMode);
     }
 
 }

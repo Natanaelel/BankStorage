@@ -2,10 +2,10 @@ package net.natte.bankstorage.container;
 
 import java.util.List;
 
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.item.Item.Settings;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
 import net.natte.bankstorage.item.BankItem;
@@ -46,8 +46,7 @@ public class BankType {
         this.item = new BankItem(settings.maxCount(1), this);
         Identifier identifier = Util.ID(this.name);
         Registry.register(Registries.ITEM, identifier, this.item);
-        this.screenHandlerType = new ScreenHandlerType<>(BankScreenHandler.fromType(this),
-                FeatureFlags.VANILLA_FEATURES);
+        this.screenHandlerType = new ExtendedScreenHandlerType<>(BankScreenHandler.fromType(this));
         Registry.register(Registries.SCREEN_HANDLER, identifier, screenHandlerType);
         types.add(this);
     }

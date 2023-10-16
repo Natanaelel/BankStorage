@@ -1,4 +1,4 @@
-package net.natte.bankstorage.inventory;
+package net.natte.bankstorage.storage;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.base.SingleStackStorage;
@@ -33,14 +33,17 @@ public class BankSingleStackStorage extends SingleStackStorage {
 
     @Override
     protected boolean canInsert(ItemVariant itemVariant) {
-
-        if (!Util.isAllowedInBank(itemVariant.getItem().getDefaultStack()))
+        if (!Util.isAllowedInBank(itemVariant.toStack()))
             return false;
         ItemStack lockedStack = this.storage.getLockedStack(this.slot);
         if (lockedStack != null && !itemVariant.matches(lockedStack))
             return false;
 
         return super.canInsert(itemVariant);
+    }
+
+    public boolean isLocked() {
+        return this.storage.getLockedStack(this.slot) != null;
     }
 
 }

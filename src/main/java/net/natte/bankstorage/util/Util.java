@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -16,6 +17,10 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.natte.bankstorage.BankStorage;
@@ -26,6 +31,7 @@ import net.natte.bankstorage.item.LinkItem;
 // import net.natte.bankstorage.item.LinkItem;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
+import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.world.BankStateSaverAndLoader;
 
@@ -46,7 +52,7 @@ public class Util {
     }
 
     public static boolean isAllowedInBank(ItemStack itemStack) {
-        return !isBank(itemStack) && !isLink(itemStack);
+        return !isBank(itemStack) && !isLink(itemStack) && itemStack.getItem().canBeNested();
     }
 
     public static boolean canCombine(ItemStack left, ItemStack right) {
@@ -92,11 +98,18 @@ public class Util {
     public static boolean changeBuildMode(ItemStack bank) {
         if (!isBankLike(bank))
             return false;
-        // if (!hasOptions(bank))
-        // return false;
 
         BankOptions options = getOrCreateOptions(bank);
         options.buildMode = BuildMode.from((options.buildMode.number + 1) % 3);
+        Util.setOptions(bank, options);
+        return true;
+    }
+
+    public static boolean changePickupMode(ItemStack bank) {
+        if (!isBankLike(bank))
+            return false;
+        BankOptions options = getOrCreateOptions(bank);
+        options.pickupMode = PickupMode.from((options.pickupMode.number + 1) % 4);
         Util.setOptions(bank, options);
         return true;
     }
@@ -210,7 +223,7 @@ public class Util {
             if (!Util.hasUUID(bank))
                 return null;
             BankItemStorage bankItemStorage = getBankItemStorage(Util.getUUID(bank), world);
-            if(bankItemStorage.type != LinkItem.getType(bank)){
+            if (bankItemStorage.type != LinkItem.getType(bank)) {
                 LinkItem.setTypeName(bank, bankItemStorage.type.getName());
             }
             return bankItemStorage;
@@ -222,7 +235,7 @@ public class Util {
 
         BankType type = ((BankItem) bank.getItem()).getType();
         BankStateSaverAndLoader serverState = BankStateSaverAndLoader.getServerStateSaverAndLoader(world.getServer());
-        BankItemStorage bankItemStorage = serverState.getOrCreate(uuid, type, bank.getName());
+        BankItemStorage bankItemStorage = serverState.getOrCreate(uuid, type);
         return bankItemStorage;
     }
 
@@ -236,6 +249,22 @@ public class Util {
         if (!(bankScreenHandler.inventory instanceof BankItemStorage bankItemStorage))
             return null;
         return bankItemStorage.uuid;
+    }
+
+    public static void invalid(PlayerEntity playerEntity) {
+        playerEntity.sendMessage(invalid());
+    }
+
+    public static Text invalid() {
+        ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.OPEN_URL,
+                Text.translatable("github_url.bankstorage").getString());
+        HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                Text.translatable("open_github_url.bankstorage"));
+        return Text.translatable("invalid.bankstorage").styled(style -> style
+                .withHoverEvent(hoverEvent)
+                .withClickEvent(clickEvent)
+                .withColor(Formatting.RED)
+                .withBold(true));
     }
 }
 

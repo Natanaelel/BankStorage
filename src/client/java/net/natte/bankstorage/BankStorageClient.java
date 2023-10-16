@@ -26,13 +26,19 @@ import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.item.LinkItem;
 import net.natte.bankstorage.network.ItemStackBobbingAnimationPacketReceiver;
 import net.natte.bankstorage.network.RequestBankStoragePacketReceiver;
+import net.natte.bankstorage.network.SyncedRandomPacketReceiver;
 import net.natte.bankstorage.network.screensync.SyncLargeSlotInventoryS2C;
 import net.natte.bankstorage.network.screensync.SyncLargeSlotS2C;
 import net.natte.bankstorage.network.screensync.SyncLockedSlotsReceiver;
+import net.natte.bankstorage.options.BuildMode;
+import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
 import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
+import net.natte.bankstorage.packet.client.SyncedRandomPacketS2C;
 import net.natte.bankstorage.packet.screensync.BankSyncPacketHandler;
 import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
+import net.natte.bankstorage.packet.server.BuildModePacketC2S;
+import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
 import net.natte.bankstorage.rendering.BankDockBlockEntityRenderer;
 import net.natte.bankstorage.rendering.BuildModePreviewRenderer;
@@ -46,6 +52,7 @@ public class BankStorageClient implements ClientModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(BankStorage.MOD_ID);
 
 	public static KeyBinding toggleBuildModeKeyBinding;
+	public static KeyBinding togglePickupModeKeyBinding;
 	public static KeyBinding lockSlotKeyBinding;
 
 	public static BuildModePreviewRenderer buildModePreviewRenderer = new BuildModePreviewRenderer();
@@ -107,6 +114,9 @@ public class BankStorageClient implements ClientModInitializer {
 	public void registerKeyBinds() {
 		toggleBuildModeKeyBinding = KeyBindingHelper.registerKeyBinding(
 				new KeyBinding("key.bankstorage.togglebuildmode", GLFW.GLFW_KEY_I, "category.bankstorage"));
+		togglePickupModeKeyBinding = KeyBindingHelper.registerKeyBinding(
+				new KeyBinding("key.bankstorage.togglepickupmode", GLFW.GLFW_KEY_P, "category.bankstorage"));
+
 		lockSlotKeyBinding = KeyBindingHelper.registerKeyBinding(
 				new KeyBinding("key.bankstorage.lockslot", GLFW.GLFW_KEY_LEFT_ALT, "category.bankstorage"));
 	}
@@ -117,14 +127,28 @@ public class BankStorageClient implements ClientModInitializer {
 			while (toggleBuildModeKeyBinding.wasPressed()) {
 				ItemStack stack = client.player.getStackInHand(client.player.getActiveHand());
 				if (Util.isBank(stack)) {
-					if (Util.changeBuildMode(stack))
+					if (Util.changeBuildMode(stack)) {
+						BuildMode buildMode = Util.getOptions(stack).buildMode;
+
 						client.player.sendMessage(Text.translatable("popup.bankstorage.buildmode."
 								+ Util.getOptions(stack).buildMode.toString().toLowerCase()), true);
 
-					// ClientPlayNetworking.send(new BuildModePacketC2S(stack));
+						ClientPlayNetworking.send(new BuildModePacketC2S(buildMode));
+					}
 				}
 			}
 
+			while (togglePickupModeKeyBinding.wasPressed()) {
+				ItemStack stack = client.player.getStackInHand(client.player.getActiveHand());
+				if (Util.isBank(stack)) {
+					if (Util.changePickupMode(stack)) {
+						PickupMode pickupMode = Util.getOptions(stack).pickupMode;
+						client.player.sendMessage(Text.translatable("popup.bankstorage.pickupmode."
+								+ Util.getOptions(stack).pickupMode.toString().toLowerCase()), true);
+						ClientPlayNetworking.send(new PickupModePacketC2S(pickupMode));
+					}
+				}
+			}
 		});
 	}
 
@@ -133,6 +157,8 @@ public class BankStorageClient implements ClientModInitializer {
 				new ItemStackBobbingAnimationPacketReceiver());
 		ClientPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketS2C.TYPE,
 				new RequestBankStoragePacketReceiver());
+		ClientPlayNetworking.registerGlobalReceiver(SyncedRandomPacketS2C.TYPE,
+				new SyncedRandomPacketReceiver());
 
 		ClientPlayNetworking.registerGlobalReceiver(BankSyncPacketHandler.sync_slot, new SyncLargeSlotS2C());
 		ClientPlayNetworking.registerGlobalReceiver(BankSyncPacketHandler.sync_container,

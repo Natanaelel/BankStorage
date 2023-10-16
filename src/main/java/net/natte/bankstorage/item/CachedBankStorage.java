@@ -29,13 +29,10 @@ public class CachedBankStorage {
 
     // public BankOptions options;
 
-    private Random random;
 
-    public CachedBankStorage(List<ItemStack> items, UUID uuid, long randomSeed) {
+    public CachedBankStorage(List<ItemStack> items, UUID uuid) {
         this.items = items;
         this.uuid = uuid;
-        // this.options = options;
-        this.random = new Random(randomSeed);
     }
 
     public static void requestCacheUpdate(UUID uuid){
@@ -52,17 +49,17 @@ public class CachedBankStorage {
         return this.items.get(selectedItemSlot % this.items.size());
     }
 
-    public ItemStack getRandomItem() {
+    public ItemStack getRandomItem(Random random) {
         if (this.items.isEmpty())
             return ItemStack.EMPTY;
-        return this.items.get(this.random.nextInt(this.items.size()));
+        return this.items.get(random.nextInt(this.items.size()));
     }
 
-    public ItemStack chooseItemToPlace(BankOptions options) {
+    public ItemStack chooseItemToPlace(BankOptions options, Random random) {
         return switch (options.buildMode) {
             case NONE -> ItemStack.EMPTY;
             case NORMAL -> getSelectedItem(options.selectedItemSlot);
-            case RANDOM -> getRandomItem();
+            case RANDOM -> getRandomItem(random);
         };
     }
 

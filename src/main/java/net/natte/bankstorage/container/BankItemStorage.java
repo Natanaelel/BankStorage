@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
@@ -18,8 +19,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandlerContext;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.natte.bankstorage.BankStorage;
@@ -28,35 +30,44 @@ import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 
-public class BankItemStorage extends SimpleInventory implements NamedScreenHandlerFactory {
+public class BankItemStorage extends SimpleInventory implements ExtendedScreenHandlerFactory {
 
     // public BankOptions options;
     public BankType type;
-    private Text displayName;
+    // private Text displayName;
     public UUID uuid;
-    public Random random;
 
     private Map<Integer, ItemStack> lockedSlots;
     private short lockedSlotsRevision = 0;
     private short revision = 0;
+
+    private ItemStack bankLikeItem;
 
     public BankItemStorage(BankType type, UUID uuid) {
         super(type.rows * type.cols);
         this.type = type;
         // this.options = new BankOptions();
         this.uuid = uuid;
-        this.random = new Random();
 
         this.lockedSlots = new HashMap<>();
     }
 
-    public BankItemStorage withDisplayName(Text displayName) {
-        this.displayName = displayName;
+    // public BankItemStorage withDisplayName(Text displayName) {
+    // this.displayName = displayName;
+    // return this;
+    // }
+
+    public BankItemStorage withItem(ItemStack itemStack) {
+        this.bankLikeItem = itemStack;
         return this;
     }
 
     public BankItemStorage asType(BankType type) {
         if (this.type != type) {
+            if (type.size() > this.type.size()) {
+                BankStorage.LOGGER.error(Util.invalid().getString());
+                return this;
+            }
             return changeType(type);
         }
         return this;
@@ -65,9 +76,10 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
     public BankItemStorage changeType(BankType type) {
         BankStorage.LOGGER
                 .info("Upgrading bank from " + this.type.getName() + " to " + type.getName() + " uuid " + this.uuid);
-        BankItemStorage newBankItemStorage = new BankItemStorage(type, this.uuid).withDisplayName(displayName);
+        BankItemStorage newBankItemStorage = new BankItemStorage(type, this.uuid);
         for (int i = 0; i < this.stacks.size(); ++i) {
             newBankItemStorage.stacks.set(i, this.stacks.get(i));
+            newBankItemStorage.lockedSlots = this.lockedSlots;
         }
         return newBankItemStorage;
     }
@@ -78,12 +90,14 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
                 ScreenHandlerContext.EMPTY);
     }
 
-    public NamedScreenHandlerFactory withDockPosition(BlockPos pos) {
-        return new NamedScreenHandlerFactory() {
+    public ExtendedScreenHandlerFactory withDockPosition(BlockPos pos) {
+        return new ExtendedScreenHandlerFactory() {
 
             public BankScreenHandler createMenu(int syncId, PlayerInventory playerInventory,
                     PlayerEntity playerEntity) {
-                return new BankScreenHandler(syncId, playerInventory, BankItemStorage.this, BankItemStorage.this.type,
+                return new BankScreenHandler(syncId, playerInventory,
+                        BankItemStorage.this,
+                        BankItemStorage.this.type,
                         ScreenHandlerContext.create(playerEntity.getWorld(), pos));
             }
 
@@ -91,12 +105,25 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
             public Text getDisplayName() {
                 return BankItemStorage.this.getDisplayName();
             }
+
+            @Override
+            public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
+                BankItemStorage.this.writeScreenOpeningData(player, buf);
+            }
         };
     }
 
     @Override
     public Text getDisplayName() {
-        return displayName;
+        if (this.bankLikeItem == null) {
+            return Util.invalid();
+        }
+
+        return this.bankLikeItem.getName();
+    }
+
+    public ItemStack getItem() {
+        return this.bankLikeItem;
     }
 
     @Override
@@ -223,17 +250,17 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
         return items.isEmpty() ? ItemStack.EMPTY : items.get(selectedItemSlot);
     }
 
-    public ItemStack getRandomItem() {
+    public ItemStack getRandomItem(Random random) {
         List<ItemStack> items = getBlockItems();
-        return items.isEmpty() ? ItemStack.EMPTY : items.get(this.random.nextInt(items.size()));
+        return items.isEmpty() ? ItemStack.EMPTY : items.get(random.nextInt(items.size()));
     }
 
-    public ItemStack chooseItemToPlace(BankOptions options) {
+    public ItemStack chooseItemToPlace(BankOptions options, Random random) {
 
         return switch (options.buildMode) {
             case NONE -> ItemStack.EMPTY;
             case NORMAL -> getSelectedItem(options.selectedItemSlot);
-            case RANDOM -> getRandomItem();
+            case RANDOM -> getRandomItem(random);
         };
     }
 
@@ -267,6 +294,11 @@ public class BankItemStorage extends SimpleInventory implements NamedScreenHandl
 
     private void updateRevision() {
         this.revision = (short) ((this.revision + 1) & Short.MAX_VALUE);
+    }
+
+    @Override
+    public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
+        buf.writeItemStack(bankLikeItem);
     }
 
 }

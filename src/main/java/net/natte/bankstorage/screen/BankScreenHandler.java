@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType.ExtendedFactory;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -36,12 +37,21 @@ public class BankScreenHandler extends ScreenHandler {
 
     private BankScreenSync bankScreenSync;
 
+    private ItemStack bankLikeItem;
+
+    public ItemStack getBankLikeItem() {
+        return this.bankLikeItem;
+    }
+
     private short lockedSlotsRevision = 0;
 
-    public static net.minecraft.screen.ScreenHandlerType.Factory<BankScreenHandler> fromType(BankType type) {
-        return (syncId, playerInventory) -> {
-            return new BankScreenHandler(syncId, playerInventory, new BankItemStorage(type, null), type,
+    public static ExtendedFactory<BankScreenHandler> fromType(BankType type) {
+        return (syncId, playerInventory, packetByteBuf) -> {
+            BankScreenHandler bankScreenHandler = new BankScreenHandler(syncId, playerInventory,
+                    new BankItemStorage(type, null), type,
                     ScreenHandlerContext.EMPTY);
+                    bankScreenHandler.bankLikeItem = packetByteBuf.readItemStack();
+            return bankScreenHandler;
         };
     }
 
@@ -51,10 +61,13 @@ public class BankScreenHandler extends ScreenHandler {
     // and can therefore directly provide it as an argument. This inventory will
     // then be synced to the client.
 
-    public BankScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, BankType type,
+    public BankScreenHandler(int syncId, PlayerInventory playerInventory,
+            Inventory inventory, BankType type,
             ScreenHandlerContext context) {
         super(type.getScreenHandlerType(), syncId);
         this.context = context;
+
+        this.bankLikeItem = inventory instanceof BankItemStorage bankItemStorage ? bankItemStorage.getItem() : ItemStack.EMPTY;
 
         checkSize(inventory, type.size());
 
@@ -106,6 +119,10 @@ public class BankScreenHandler extends ScreenHandler {
                 return false;
             return true;
         }, true);
+    }
+
+    public ScreenHandlerContext getContext(){
+        return this.context;
     }
 
     // Shift + Player Inv Slot

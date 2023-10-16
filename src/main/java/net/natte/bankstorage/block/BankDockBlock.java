@@ -66,7 +66,10 @@ public class BankDockBlock extends Block implements BlockEntityProvider {
 
                 // open bank screen
                 if (!world.isClient) {
-                    NamedScreenHandlerFactory screenHandlerFactory = Util.getBankItemStorage(bankDockBlockEntity.getBank(), world).withDockPosition(pos);
+                    NamedScreenHandlerFactory screenHandlerFactory = Util
+                            .getBankItemStorage(bankDockBlockEntity.getBank(), world)
+                            .withItem(bankDockBlockEntity.getBank())
+                            .withDockPosition(pos);
                     player.openHandledScreen(screenHandlerFactory);
                 }
 

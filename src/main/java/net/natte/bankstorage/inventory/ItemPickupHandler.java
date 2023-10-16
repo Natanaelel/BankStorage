@@ -40,7 +40,7 @@ public class ItemPickupHandler {
 
         for (ItemStack itemStack : items) {
             ++index;
-            if (itemStack.getItem() instanceof BankItem) {
+            if (Util.isBankLike(itemStack)) {
                 boolean bankPickedUpAny = false;
                 if (!itemStack.hasNbt())
                     continue;

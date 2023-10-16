@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.Text;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.World;
@@ -58,9 +57,9 @@ public class BankStateSaverAndLoader extends PersistentState {
     }
 
 
-    public BankItemStorage getOrCreate(UUID uuid, BankType type, Text name) {
+    public BankItemStorage getOrCreate(UUID uuid, BankType type) {
         if (this.state.getBankMap().containsKey(uuid)) {
-            BankItemStorage old = this.state.getBankMap().get(uuid).withDisplayName(name);
+            BankItemStorage old = this.state.getBankMap().get(uuid);//.withDisplayName(name);
             if (old.type != type) {
                 BankItemStorage ugpraded = old.asType(type);
 
@@ -73,7 +72,7 @@ public class BankStateSaverAndLoader extends PersistentState {
             BankStorage.LOGGER.info("creating new bank with uuid " + uuid);
             BankItemStorage bankItemStorage = new BankItemStorage(type, uuid);
             this.state.getBankMap().put(uuid, bankItemStorage);
-            return bankItemStorage.withDisplayName(name);
+            return bankItemStorage;//.withDisplayName(name);
         }
     }
 
