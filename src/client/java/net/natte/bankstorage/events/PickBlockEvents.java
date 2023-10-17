@@ -1,0 +1,85 @@
+package net.natte.bankstorage.events;
+
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.item.ItemStack;
+import net.natte.bankstorage.BankStorageClient;
+import net.natte.bankstorage.item.CachedBankStorage;
+import net.natte.bankstorage.options.BankOptions;
+import net.natte.bankstorage.options.BuildMode;
+import net.natte.bankstorage.packet.server.SelectedSlotPacketC2S;
+import net.natte.bankstorage.util.Util;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.BlockView;
+
+public class PickBlockEvents {
+    public static boolean pickBlock(MinecraftClient client) {
+        ItemStack right = client.player.getMainHandStack();
+        ItemStack left = client.player.getOffHandStack();
+        if (pickBlockFromBank(right, true, client))
+            return true;
+        if (pickBlockFromBank(left, false, client))
+            return true;
+        return false;
+    }
+
+    private static boolean pickBlockFromBank(ItemStack stack, boolean isRight, MinecraftClient client) {
+        if (!Util.isBankLike(stack))
+            return false;
+
+        BankOptions options = Util.getOrCreateOptions(stack);
+        if (options.buildMode == BuildMode.NONE)
+            return false;
+
+        ItemStack pickedStack = getPickedStack(stack, client);
+        if (pickedStack == null)
+            return false;
+        CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(stack);
+        if (cachedBankStorage == null)
+            return false;
+
+        ItemStack currentSelected = cachedBankStorage.getSelectedItem(options.selectedItemSlot);
+        if (!currentSelected.isEmpty() && ItemStack.canCombine(pickedStack, currentSelected)) {
+            return true;
+        }
+        int slot = -1;
+        for (int i = 0; i < cachedBankStorage.items.size(); ++i) {
+            ItemStack itemStack = cachedBankStorage.items.get(i);
+            if (!itemStack.isEmpty() && ItemStack.canCombine(pickedStack, itemStack)) {
+                slot = i;
+                break;
+            }
+        }
+        BankStorageClient.buildModePreviewRenderer.updateBank();
+
+        if (slot == -1)
+            return false;
+        ClientPlayNetworking.send(new SelectedSlotPacketC2S(isRight, slot));
+        return true;
+
+    }
+
+    private static ItemStack getPickedStack(ItemStack stack, MinecraftClient client) {
+        if (client.crosshairTarget == null || client.crosshairTarget.getType() != HitResult.Type.BLOCK) {
+            return null;
+        }
+
+        BlockPos blockPos = ((BlockHitResult) client.crosshairTarget).getBlockPos();
+        BlockState blockState = client.world.getBlockState(blockPos);
+        if (blockState.isAir()) {
+            return null;
+        }
+        Block block = blockState.getBlock();
+        ItemStack pickBlockStack = block.getPickStack((BlockView) client.world, blockPos, blockState);
+
+        if (pickBlockStack.isEmpty()) {
+            return null;
+        }
+        return pickBlockStack;
+
+    }
+}

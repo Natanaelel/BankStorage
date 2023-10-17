@@ -2,16 +2,15 @@
 playtest / play / test
 update description
 - add discord link
+[x] sync settings when bank upgraded
+- [x] sync locked slots
 
-[x?] sync settings when bank upgraded
-- sync locked slots
 
+[x] pick block from bank
 [x] find bug, fix bug with more bugs
 
 [x] warn when trying to open link without uuid
 [x] fix link pickup items
-
-
 
 
 [x] playerbound synced random

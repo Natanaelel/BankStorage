@@ -30,7 +30,7 @@ public abstract class BankFunctionality extends Item {
     public boolean canBeNested() {
         return false;
     }
-
+    
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
         ItemStack bank = player.getStackInHand(hand);
@@ -38,7 +38,7 @@ public abstract class BankFunctionality extends Item {
             return TypedActionResult.pass(bank);
 
         if (world.isClient)
-            return player.isSneaking() ? TypedActionResult.success(bank) : TypedActionResult.fail(bank);
+            return player.isSneaking() ? TypedActionResult.success(bank) : TypedActionResult.consume(bank);
 
         if (player.isSneaking()) {
             if (Util.changeBuildMode(bank))

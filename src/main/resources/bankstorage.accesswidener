@@ -23,3 +23,4 @@ accessible  field   net/minecraft/screen/ScreenHandler                      quic
 accessible  field   net/minecraft/item/ItemUsageContext                     hit                     Lnet/minecraft/util/hit/BlockHitResult;
 
 accessible  field   net/minecraft/client/option/KeyBinding                  KEY_TO_BINDINGS         Ljava/util/Map;
+accessible  method  net/minecraft/client/MinecraftClient                    doItemPick              ()V

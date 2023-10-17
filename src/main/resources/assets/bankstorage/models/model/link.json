@@ -1,7 +1,6 @@
 {
-  "parent": "bankstorage:model/alink",
+  "parent": "bankstorage:model/blink",
   "textures": {
-    "holo": "bankstorage:item/holo",
-    "frame": "bankstorage:item/frame"
+    "holo": "bankstorage:item/holo"
   }
 }

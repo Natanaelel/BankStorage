@@ -52,10 +52,6 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         this.lockedSlots = new HashMap<>();
     }
 
-    // public BankItemStorage withDisplayName(Text displayName) {
-    // this.displayName = displayName;
-    // return this;
-    // }
 
     public BankItemStorage withItem(ItemStack itemStack) {
         this.bankLikeItem = itemStack;
@@ -152,6 +148,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         NbtCompound nbtCompound = new NbtCompound();
 
         nbtCompound.putUuid("uuid", this.uuid);
+        nbtCompound.putString("uuid_string", this.uuid.toString());
         // nbtCompound.put("options", this.options.asNbt());
         nbtCompound.putString("type", this.type.getName());
 
@@ -189,9 +186,6 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         BankType type = getBankTypeFromName(nbtCompound.getString("type"));
 
         BankItemStorage bankItemStorage = new BankItemStorage(type, uuid);
-
-        // bankItemStorage.options =
-        // BankOptions.fromNbt(nbtCompound.getCompound("options"));
 
         Inventories.readNbt(nbtCompound, bankItemStorage.stacks);
         NbtList nbtList = nbtCompound.getList("Items", NbtElement.COMPOUND_TYPE);

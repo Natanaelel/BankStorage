@@ -1,5 +1,4 @@
 {
-	"credit": "Made with Blockbench",
 	"parent": "block/block",
 	"elements": [
 		{
@@ -103,12 +102,5 @@
 				"down": {"uv": [7, 10, 10, 13], "texture": "#side"}
 			}
 		}
-	],
-	"display (unused)": {
-		"thirdperson_righthand": {
-			"rotation": [75, 45, 0],
-			"translation": [0, 2.5, 0],
-			"scale": [0.375, 0.375, 0.375]
-		}
-	}
+	]
 }
