@@ -76,7 +76,7 @@ public class BankDockBlock extends Block implements BlockEntityProvider {
                 return ActionResult.SUCCESS;
             } else {
                 // place bank in dock
-                if (Util.isBank(stackInHand)) {
+                if (Util.isBank(stackInHand) || Util.isLink(stackInHand) ) {
                     bankDockBlockEntity.putBank(player.getStackInHand(hand));
                     player.setStackInHand(hand, ItemStack.EMPTY);
                     world.playSound(null, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f,
