@@ -266,6 +266,9 @@ public class Util {
                 .withColor(Formatting.RED)
                 .withBold(true));
     }
+    public static Text invalid(String context){
+        return invalid().copy().append(Text.literal(" context: " + context));
+    }
 }
 
 // if somehow one bank has more than Integer.MAX_VALUE total of one item

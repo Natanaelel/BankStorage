@@ -32,3 +32,5 @@ Adds Banks of 7 increasing sizes. A portable storage device that can store from 
 - Surround a barrel with 8 blocks of coal to craft the Bank 1.
 - To craft higher tiers, surround the previous tier with 8 block of. the next material
 - Materials used are Coal, Copper, Iron, Gold, Emerald, Diamond and Netherite, in that order.
+
+**[Join the Discord!](https://discord.gg/tXJqWYMZbK)**

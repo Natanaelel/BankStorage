@@ -60,8 +60,8 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
 
     public BankItemStorage asType(BankType type) {
         if (this.type != type) {
-            if (type.size() > this.type.size()) {
-                BankStorage.LOGGER.error(Util.invalid().getString());
+            if (type.size() < this.type.size()) {
+                BankStorage.LOGGER.error(Util.invalid("BankItemStorage.asType(BankType)").getString());
                 return this;
             }
             return changeType(type);
@@ -112,7 +112,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
     @Override
     public Text getDisplayName() {
         if (this.bankLikeItem == null) {
-            return Util.invalid();
+            return Util.invalid("getDisplayName()");
         }
 
         return this.bankLikeItem.getName();
