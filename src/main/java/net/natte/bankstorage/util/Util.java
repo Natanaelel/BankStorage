@@ -52,7 +52,7 @@ public class Util {
     }
 
     public static boolean isAllowedInBank(ItemStack itemStack) {
-        return !isBank(itemStack) && !isLink(itemStack) && itemStack.getItem().canBeNested();
+        return !isBankLike(itemStack) && itemStack.getItem().canBeNested();
     }
 
     public static boolean canCombine(ItemStack left, ItemStack right) {

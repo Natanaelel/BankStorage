@@ -16,7 +16,7 @@ public class ItemEntityMixin {
     // make dropped bankItem never despawn
     @Inject(method = "<init>(Lnet/minecraft/world/World;DDDLnet/minecraft/item/ItemStack;)V", at = @At("RETURN"))
     public void noDespawn(World world, double x, double y, double z, ItemStack stack, CallbackInfo ci) {
-        if (Util.isBank(stack)) {
+        if (Util.isBankLike(stack)) {
             ((ItemEntity) (Object) this).setNeverDespawn();
         }
     }

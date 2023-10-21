@@ -126,7 +126,7 @@ public class BankStorageClient implements ClientModInitializer {
 
 			while (toggleBuildModeKeyBinding.wasPressed()) {
 				ItemStack stack = client.player.getStackInHand(client.player.getActiveHand());
-				if (Util.isBank(stack)) {
+				if (Util.isBankLike(stack)) {
 					if (Util.changeBuildMode(stack)) {
 						BuildMode buildMode = Util.getOptions(stack).buildMode;
 
@@ -140,7 +140,7 @@ public class BankStorageClient implements ClientModInitializer {
 
 			while (togglePickupModeKeyBinding.wasPressed()) {
 				ItemStack stack = client.player.getStackInHand(client.player.getActiveHand());
-				if (Util.isBank(stack)) {
+				if (Util.isBankLike(stack)) {
 					if (Util.changePickupMode(stack)) {
 						PickupMode pickupMode = Util.getOptions(stack).pickupMode;
 						client.player.sendMessage(Text.translatable("popup.bankstorage.pickupmode."

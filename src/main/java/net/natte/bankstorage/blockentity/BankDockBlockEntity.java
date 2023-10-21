@@ -18,7 +18,6 @@ import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.util.math.BlockPos;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
-import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.storage.BankCombinedStorage;
 import net.natte.bankstorage.storage.BankSingleStackStorage;
 import net.natte.bankstorage.util.Util;
@@ -83,7 +82,7 @@ public class BankDockBlockEntity extends BlockEntity {
     }
 
     private BankItemStorage getInventory() {
-        if (this.bankItem.getItem() instanceof BankItem) {
+        if (Util.isBankLike(this.bankItem)) {
             return Util.getBankItemStorage(this.bankItem, this.world);
         }
         return null;
