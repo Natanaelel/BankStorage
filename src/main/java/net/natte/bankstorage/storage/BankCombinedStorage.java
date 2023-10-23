@@ -37,7 +37,6 @@ public class BankCombinedStorage implements Storage<ItemVariant> {
             case FILTERED:
                 amount += insertIntoLockedSlots(resource, maxAmount - amount, transaction);
                 amount += insertIntoNonEmptySlots(resource, maxAmount - amount, transaction);
-                // if(h)
                 if (hasSlotWithItem(resource)) {
                     amount += insertIntoAnySlots(resource, maxAmount - amount, transaction);
                 }
@@ -45,7 +44,9 @@ public class BankCombinedStorage implements Storage<ItemVariant> {
             case VOID:
                 amount += insertIntoLockedSlots(resource, maxAmount - amount, transaction);
                 amount += insertIntoNonEmptySlots(resource, maxAmount - amount, transaction);
-                amount += insertIntoAnySlots(resource, maxAmount - amount, transaction);
+                if (hasSlotWithItem(resource)) {
+                    amount += insertIntoAnySlots(resource, maxAmount - amount, transaction);
+                }
                 return maxAmount;
         }
         return amount;
@@ -53,8 +54,22 @@ public class BankCombinedStorage implements Storage<ItemVariant> {
 
     @Override
     public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
+        return extractFromAnySlot(resource, maxAmount, transaction);
+    }
 
-        return 0;
+    private long extractFromAnySlot(ItemVariant resource, long maxAmount, TransactionContext transaction) {
+        if (maxAmount == 0)
+            return 0;
+        long amount = 0;
+
+        for (BankSingleStackStorage part : this.parts) {
+            amount += part.extract(resource, maxAmount - amount, transaction);
+
+            if (amount == maxAmount)
+                return amount;
+        }
+
+        return amount;
     }
 
     @Override
