@@ -24,6 +24,7 @@
 
   "category.bankstorage": "Bank Storage",
   "key.bankstorage.togglebuildmode": "Toggle build mode",
+  "key.bankstorage.togglepickupmode": "Toggle pickup mode",
   "key.bankstorage.lockslot": "Filter Slot",
 
   "title.bankstorage.pickupmode.no_pickup": "No Pickup",
