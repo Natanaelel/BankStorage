@@ -36,8 +36,12 @@
   "title.bankstorage.pickupmode.void_overflow": "Void Overflow",
   "tooltip.bankstorage.pickupmode.void_overflow": "Overflowing items will get voided",
 
-  "title.bankstorage.sort": "Sort",
-  "tooltip.bankstorage.sort": "Sort inventory by item count",
+  "title.bankstorage.sortmode.count": "Sort",
+  "tooltip.bankstorage.sortmode.count": "Sort by item count",
+  "title.bankstorage.sortmode.name": "Sort",
+  "tooltip.bankstorage.sortmode.name": "Sort by item name",
+  "title.bankstorage.sortmode.mod": "Sort",
+  "tooltip.bankstorage.sortmode.mod": "Sort by mod",
 
   "tooptip.bankstorage.stacklimit": "§7Stack limit: %s",
   "tooptip.bankstorage.numslots": "§7Number of slots: %s",

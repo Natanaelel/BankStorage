@@ -42,12 +42,13 @@ public class BankCombinedStorage implements Storage<ItemVariant> {
                 }
                 break;
             case VOID:
-                amount += insertIntoLockedSlots(resource, maxAmount - amount, transaction);
-                amount += insertIntoNonEmptySlots(resource, maxAmount - amount, transaction);
                 if (hasSlotWithItem(resource)) {
+                    amount += insertIntoLockedSlots(resource, maxAmount - amount, transaction);
+                    amount += insertIntoNonEmptySlots(resource, maxAmount - amount, transaction);
                     amount += insertIntoAnySlots(resource, maxAmount - amount, transaction);
+                    amount = maxAmount;
                 }
-                return maxAmount;
+                break;
         }
         return amount;
     }

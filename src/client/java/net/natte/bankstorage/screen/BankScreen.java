@@ -31,7 +31,9 @@ import net.minecraft.util.math.MathHelper;
 import net.natte.bankstorage.BankStorageClient;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
+import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.PickupMode;
+import net.natte.bankstorage.options.SortMode;
 import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
 import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.SortPacketC2S;
@@ -46,6 +48,8 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
 
     private BankType type;
     private Identifier texture;
+
+    private SortMode sortMode;
 
     public static Provider<BankScreenHandler, BankScreen> fromType(BankType type) {
         return (screenHandler, playerInventory, text) -> {
@@ -68,17 +72,18 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
     @Override
     protected void init() {
         super.init();
-        PickupModeOption initialPickupMode = PickupModeOption
-                .from(Util.getOrCreateOptions(this.handler.getBankLikeItem()).pickupMode);
+        BankOptions options = Util.getOrCreateOptions(this.handler.getBankLikeItem());
+        this.sortMode = options.sortMode;
+        PickupModeOption initialPickupMode = PickupModeOption.from(options.pickupMode);
         this.addDrawableChild(
                 new TexturedCyclingButtonWidget<PickupModeOption>(initialPickupMode,
                         x + titleX + this.type.guiTextureWidth - 49, y + titleY - 4, 14,
                         14, 14, WIDGETS_TEXTURE, this::onPickupModeButtonPress));
 
         this.addDrawableChild(
-                new TexturedCyclingButtonWidget<SortButton>(SortButton.DEFAULT,
+                new SortButtonWidget(options.sortMode,
                         x + titleX + this.type.guiTextureWidth - 31, y + titleY - 4,
-                        14, 14, 14, WIDGETS_TEXTURE, this::onSortButtonPress));
+                        14, 14, WIDGETS_TEXTURE, this::onSortButtonPress));
     }
 
     @Override
@@ -87,8 +92,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         // middle click sorting
         if (button == 2 && (this.getSlotAt(mouseX, mouseY) instanceof BankSlot)) {
             client.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f));
-            ClientPlayNetworking.send(new SortPacketC2S());
-
+            sendSortPacket();
             return true;
         }
         // left click + lockSlot keybind
@@ -343,8 +347,22 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         ClientPlayNetworking.send(new PickupModePacketC2S(button.state.toPickupMode()));
     }
 
-    private void onSortButtonPress(TexturedCyclingButtonWidget<SortButton> button) {
-        ClientPlayNetworking.send(new SortPacketC2S());
+    private void onSortButtonPress(SortButtonWidget button) {
+        if(button.timeSinceLastPressed() < 1000){
+            button.sortMode = switch (button.sortMode) {
+                case COUNT -> SortMode.NAME;
+                case NAME -> SortMode.MOD;
+                case MOD -> SortMode.COUNT;
+            };
+        }
+        this.sortMode = button.sortMode;
+        button.refreshTooltip();
+        sendSortPacket();
+    }
+
+    private void sendSortPacket() {
+
+        ClientPlayNetworking.send(new SortPacketC2S(this.sortMode));
     }
 }
 
@@ -403,39 +421,6 @@ enum PickupModeOption implements CycleableOption {
     @Override
     public int vOffset() {
         return this.vOffset;
-    }
-
-}
-
-enum SortButton implements CycleableOption {
-    DEFAULT;
-
-    private Text name;
-    private Text info;
-
-    SortButton() {
-        this.name = Text.translatable("title.bankstorage.sort");
-        this.info = Text.translatable("tooltip.bankstorage.sort");
-    }
-
-    @Override
-    public Text getName() {
-        return this.name;
-    }
-
-    @Override
-    public Text getInfo() {
-        return this.info;
-    }
-
-    @Override
-    public int uOffset() {
-        return 0;
-    }
-
-    @Override
-    public int vOffset() {
-        return 98;
     }
 
 }

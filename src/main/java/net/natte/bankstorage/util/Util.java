@@ -32,6 +32,7 @@ import net.natte.bankstorage.item.LinkItem;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.options.PickupMode;
+import net.natte.bankstorage.options.SortMode;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.world.BankStateSaverAndLoader;
 
@@ -147,7 +148,7 @@ public class Util {
         buf.writeNbt(Util.largeStackAsNbt(stack));
     }
 
-    public static void sortBank(BankItemStorage bankItemStorage, ServerPlayerEntity player) {
+    public static void sortBank(BankItemStorage bankItemStorage, ServerPlayerEntity player, SortMode sortMode) {
 
         // collect unique elements with *unlimited* stack size
         // and clear bank
@@ -168,7 +169,17 @@ public class Util {
         }
 
         // sort
-        collectedItems.sort(Comparator.comparingLong(HugeItemStack::getCount).reversed());
+        switch (sortMode) {
+            case COUNT:
+                collectedItems.sort(Comparator.comparingLong(HugeItemStack::getCount).reversed());
+                break;
+            case NAME:
+                collectedItems.sort(Comparator.comparing(HugeItemStack::getName));
+                break;
+            case MOD:
+                collectedItems.sort(Comparator.comparing(HugeItemStack::getModName));
+                break;
+        }
 
         int slotSize = bankItemStorage.getMaxCountPerStack();
 
@@ -266,7 +277,8 @@ public class Util {
                 .withColor(Formatting.RED)
                 .withBold(true));
     }
-    public static Text invalid(String context){
+
+    public static Text invalid(String context) {
         return invalid().copy().append(Text.literal(" context: " + context));
     }
 }
@@ -285,9 +297,20 @@ class HugeItemStack {
         return this.count;
     }
 
+    public String getName() {
+        return this.stack.getName().getString();
+    }
+
+    public String getModName() {
+        Identifier id = Registries.ITEM.getId(this.stack.getItem());
+        if(id == null) return "";
+        return id.getNamespace();
+    }
+
     public ItemStack split(int count) {
         int toMove = (int) Math.min(this.count, count);
         this.count -= toMove;
         return this.stack.copyWithCount(toMove);
     }
+
 }
