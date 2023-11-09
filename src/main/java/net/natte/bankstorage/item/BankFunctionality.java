@@ -2,7 +2,6 @@ package net.natte.bankstorage.item;
 
 import java.util.Random;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -30,20 +29,27 @@ public abstract class BankFunctionality extends Item {
     public boolean canBeNested() {
         return false;
     }
-    
+
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
         ItemStack bank = player.getStackInHand(hand);
+
         if (bank.getCount() != 1)
             return TypedActionResult.pass(bank);
 
-        if (world.isClient)
-            return player.isSneaking() ? TypedActionResult.success(bank) : TypedActionResult.consume(bank);
+        boolean isBuildMode = Util.getOrCreateOptions(bank).buildMode != BuildMode.NONE;
 
-        if (player.isSneaking()) {
-            if (Util.changeBuildMode(bank))
-                player.sendMessage(Text.translatable("popup.bankstorage.buildmode."
-                        + Util.getOptions(bank).buildMode.toString().toLowerCase()), true);
+        if (world.isClient)
+            return player.isSneaking() && (isBuildMode ? Util.isBuildModeKeyUnBound : true) ? TypedActionResult.success(bank)
+                    : TypedActionResult.pass(bank);
+
+        if (player.isSneaking() && Util.isBuildModeKeyUnBound) {
+            if (Util.isBuildModeKeyUnBound)
+                if (Util.changeBuildMode(bank)) {
+
+                    player.sendMessage(Text.translatable("popup.bankstorage.buildmode."
+                            + Util.getOptions(bank).buildMode.toString().toLowerCase()), true);
+                }
 
             return TypedActionResult.success(bank);
         }
@@ -52,7 +58,8 @@ public abstract class BankFunctionality extends Item {
             player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
             return TypedActionResult.fail(bank);
         }
-        if (!(player.currentScreenHandler instanceof BankScreenHandler))
+        if (!(player.currentScreenHandler instanceof BankScreenHandler)
+                && (isBuildMode ? Util.isBuildModeKeyUnBound : true))
             player.openHandledScreen(bankItemStorage.withItem(bank));
         // return TypedActionResult.consume(bank);
         return TypedActionResult.success(bank);
@@ -101,14 +108,6 @@ public abstract class BankFunctionality extends Item {
         } else {
             return ActionResult.PASS;
         }
-    }
-
-    @Override
-    public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
-        if (selected) {
-
-        }
-
     }
 
     @Override

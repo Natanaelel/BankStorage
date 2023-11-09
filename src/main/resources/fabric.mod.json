@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 1,
 	"id": "bankstorage",
-	"version": "0.3.4",
+	"version": "0.3.5",
 	"name": "Bank Storage",
 	"description": "A portable storage device that can store up to 1,000,000,000 items per slot.",
 	"authors": [

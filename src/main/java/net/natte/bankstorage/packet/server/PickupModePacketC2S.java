@@ -6,10 +6,10 @@ import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPacketHandler;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.options.BankOptions;
-import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 
@@ -26,7 +26,7 @@ public class PickupModePacketC2S implements FabricPacket {
                 PacketSender responseSender) {
             if (player.currentScreenHandler instanceof BankScreenHandler bankScreenHandler) {
                 BankOptions options = Util.getOrCreateOptions(bankScreenHandler.getBankLikeItem());
-                options.pickupMode = packet.pickupMode;
+                options.pickupMode = options.pickupMode.next();
                 Util.setOptions(bankScreenHandler.getBankLikeItem(), options);
                 bankScreenHandler.getContext().run(
                         (world, blockPos) -> world
@@ -36,32 +36,30 @@ public class PickupModePacketC2S implements FabricPacket {
             } else if (Util.isBankLike(player.getMainHandStack())) {
 
                 BankOptions options = Util.getOrCreateOptions(player.getMainHandStack());
-                options.pickupMode = packet.pickupMode;
+                options.pickupMode = options.pickupMode.next();
                 Util.setOptions(player.getMainHandStack(), options);
-            
+                player.sendMessage(Text.translatable("popup.bankstorage.pickupmode."
+                        + options.pickupMode.toString().toLowerCase()), true);
+
             } else if (Util.isBankLike(player.getOffHandStack())) {
-            
+
                 BankOptions options = Util.getOrCreateOptions(player.getOffHandStack());
-                options.pickupMode = packet.pickupMode;
+                options.pickupMode = options.pickupMode.next();
                 Util.setOptions(player.getOffHandStack(), options);
-            
+                player.sendMessage(Text.translatable("popup.bankstorage.pickupmode."
+                        + options.pickupMode.toString().toLowerCase()), true);
             }
         }
     }
 
-    public PickupMode pickupMode;
-
-    public PickupModePacketC2S(PickupMode pickupMode) {
-        this.pickupMode = pickupMode;
+    public PickupModePacketC2S() {
     }
 
     public PickupModePacketC2S(PacketByteBuf buf) {
-        this(PickupMode.from(buf.readByte()));
     }
 
     @Override
     public void write(PacketByteBuf buf) {
-        buf.writeByte(pickupMode.number);
     }
 
     @Override

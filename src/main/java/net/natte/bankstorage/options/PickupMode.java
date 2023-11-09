@@ -25,4 +25,8 @@ public enum PickupMode {
     public static PickupMode from(int n) {
         return from((byte) n);
     }
+
+    public PickupMode next(){
+        return from((number + 1) % 4);
+    }
 }

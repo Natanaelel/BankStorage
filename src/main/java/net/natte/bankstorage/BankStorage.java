@@ -108,6 +108,7 @@ public class BankStorage implements ModInitializer {
 			sender.sendPacket(new SyncedRandomPacketS2C(randomSeed));
 		});
 
+
 	}
 
 	private void registerLink() {

@@ -344,7 +344,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
             case VOID_OVERFLOW -> PickupModeOption.NO_PICKUP;
         };
         button.refreshTooltip();
-        ClientPlayNetworking.send(new PickupModePacketC2S(button.state.toPickupMode()));
+        ClientPlayNetworking.send(new PickupModePacketC2S());
     }
 
     private void onSortButtonPress(SortButtonWidget button) {

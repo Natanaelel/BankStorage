@@ -11,6 +11,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.impl.client.rendering.BlockEntityRendererRegistryImpl;
@@ -22,6 +23,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.natte.bankstorage.container.BankType;
+import net.natte.bankstorage.events.KeyBindUpdateEvents;
 import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.item.LinkItem;
 import net.natte.bankstorage.network.ItemStackBobbingAnimationPacketReceiver;
@@ -31,7 +33,6 @@ import net.natte.bankstorage.network.screensync.SyncLargeSlotInventoryS2C;
 import net.natte.bankstorage.network.screensync.SyncLargeSlotS2C;
 import net.natte.bankstorage.network.screensync.SyncLockedSlotsReceiver;
 import net.natte.bankstorage.options.BuildMode;
-import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
 import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.packet.client.SyncedRandomPacketS2C;
@@ -72,6 +73,14 @@ public class BankStorageClient implements ClientModInitializer {
 		registerRenderers();
 		registerNetworkListeners();
 		registerTickEvents();
+		registerEventListeners();
+
+	}
+
+	private void registerEventListeners() {
+		ClientPlayConnectionEvents.JOIN.register(((handler, sender, client) -> {
+			KeyBindUpdateEvents.onKeyBindChange();
+		}));
 
 	}
 
@@ -113,7 +122,7 @@ public class BankStorageClient implements ClientModInitializer {
 
 	public void registerKeyBinds() {
 		toggleBuildModeKeyBinding = KeyBindingHelper.registerKeyBinding(
-				new KeyBinding("key.bankstorage.togglebuildmode", GLFW.GLFW_KEY_I, "category.bankstorage"));
+				new KeyBinding("key.bankstorage.togglebuildmode", GLFW.GLFW_KEY_UNKNOWN, "category.bankstorage"));
 		togglePickupModeKeyBinding = KeyBindingHelper.registerKeyBinding(
 				new KeyBinding("key.bankstorage.togglepickupmode", GLFW.GLFW_KEY_P, "category.bankstorage"));
 
@@ -141,12 +150,7 @@ public class BankStorageClient implements ClientModInitializer {
 			while (togglePickupModeKeyBinding.wasPressed()) {
 				ItemStack stack = client.player.getStackInHand(client.player.getActiveHand());
 				if (Util.isBankLike(stack)) {
-					if (Util.changePickupMode(stack)) {
-						PickupMode pickupMode = Util.getOptions(stack).pickupMode;
-						client.player.sendMessage(Text.translatable("popup.bankstorage.pickupmode."
-								+ Util.getOptions(stack).pickupMode.toString().toLowerCase()), true);
-						ClientPlayNetworking.send(new PickupModePacketC2S(pickupMode));
-					}
+					ClientPlayNetworking.send(new PickupModePacketC2S());
 				}
 			}
 		});
