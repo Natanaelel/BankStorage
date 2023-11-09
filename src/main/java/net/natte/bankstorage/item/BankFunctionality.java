@@ -7,6 +7,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -17,6 +18,7 @@ import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.screen.BankScreenHandler;
+import net.natte.bankstorage.util.ServerEvents;
 import net.natte.bankstorage.util.Util;
 
 public abstract class BankFunctionality extends Item {
@@ -40,17 +42,13 @@ public abstract class BankFunctionality extends Item {
         boolean isBuildMode = Util.getOrCreateOptions(bank).buildMode != BuildMode.NONE;
 
         if (world.isClient)
-            return player.isSneaking() && (isBuildMode ? Util.isBuildModeKeyUnBound : true) ? TypedActionResult.success(bank)
+            return player.isSneaking() && (isBuildMode ? Util.isBuildModeKeyUnBound : true)
+                    ? TypedActionResult.success(bank)
                     : TypedActionResult.pass(bank);
 
         if (player.isSneaking() && Util.isBuildModeKeyUnBound) {
             if (Util.isBuildModeKeyUnBound)
-                if (Util.changeBuildMode(bank)) {
-
-                    player.sendMessage(Text.translatable("popup.bankstorage.buildmode."
-                            + Util.getOptions(bank).buildMode.toString().toLowerCase()), true);
-                }
-
+                ServerEvents.onToggleBuildMode(((ServerPlayerEntity) player));
             return TypedActionResult.success(bank);
         }
         BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, world);

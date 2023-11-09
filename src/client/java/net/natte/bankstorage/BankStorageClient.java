@@ -19,8 +19,6 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.events.KeyBindUpdateEvents;
@@ -32,7 +30,6 @@ import net.natte.bankstorage.network.SyncedRandomPacketReceiver;
 import net.natte.bankstorage.network.screensync.SyncLargeSlotInventoryS2C;
 import net.natte.bankstorage.network.screensync.SyncLargeSlotS2C;
 import net.natte.bankstorage.network.screensync.SyncLockedSlotsReceiver;
-import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
 import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.packet.client.SyncedRandomPacketS2C;
@@ -134,24 +131,11 @@ public class BankStorageClient implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 
 			while (toggleBuildModeKeyBinding.wasPressed()) {
-				ItemStack stack = client.player.getStackInHand(client.player.getActiveHand());
-				if (Util.isBankLike(stack)) {
-					if (Util.changeBuildMode(stack)) {
-						BuildMode buildMode = Util.getOptions(stack).buildMode;
-
-						client.player.sendMessage(Text.translatable("popup.bankstorage.buildmode."
-								+ Util.getOptions(stack).buildMode.toString().toLowerCase()), true);
-
-						ClientPlayNetworking.send(new BuildModePacketC2S(buildMode));
-					}
-				}
+				ClientPlayNetworking.send(new BuildModePacketC2S());
 			}
 
 			while (togglePickupModeKeyBinding.wasPressed()) {
-				ItemStack stack = client.player.getStackInHand(client.player.getActiveHand());
-				if (Util.isBankLike(stack)) {
-					ClientPlayNetworking.send(new PickupModePacketC2S());
-				}
+				ClientPlayNetworking.send(new PickupModePacketC2S());
 			}
 		});
 	}

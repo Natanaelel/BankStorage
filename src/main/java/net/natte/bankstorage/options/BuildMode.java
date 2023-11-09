@@ -23,4 +23,8 @@ public enum BuildMode {
     public static BuildMode from(int n) {
         return BuildMode.from((byte) n);
     }
+
+    public BuildMode next(){
+        return from((number + 1) % 3);
+    }
 }

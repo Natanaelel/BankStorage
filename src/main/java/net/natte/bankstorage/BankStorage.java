@@ -37,6 +37,7 @@ import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.item.LinkItem;
 import net.natte.bankstorage.packet.client.SyncedRandomPacketS2C;
 import net.natte.bankstorage.packet.server.BuildModePacketC2S;
+import net.natte.bankstorage.packet.server.KeyBindUpdatePacketC2S;
 import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
 import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
@@ -183,6 +184,7 @@ public class BankStorage implements ModInitializer {
 		ServerPlayNetworking.registerGlobalReceiver(ScrollPacketC2S.TYPE, new ScrollPacketC2S.Receiver());
 		ServerPlayNetworking.registerGlobalReceiver(SelectedSlotPacketC2S.TYPE, new SelectedSlotPacketC2S.Receiver());
 		ServerPlayNetworking.registerGlobalReceiver(LockSlotPacketC2S.TYPE, new LockSlotPacketC2S.Receiver());
+		ServerPlayNetworking.registerGlobalReceiver(KeyBindUpdatePacketC2S.TYPE, new KeyBindUpdatePacketC2S.Receiver());
 
 	}
 

@@ -29,8 +29,6 @@ import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.item.LinkItem;
 import net.natte.bankstorage.options.BankOptions;
-import net.natte.bankstorage.options.BuildMode;
-import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.options.SortMode;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.world.BankStateSaverAndLoader;
@@ -96,19 +94,6 @@ public class Util {
         itemStack.getOrCreateNbt().put(BankItem.OPTIONS_KEY, options.asNbt());
     }
 
-    public static boolean changeBuildMode(ItemStack bank) {
-        if (!isBankLike(bank))
-            return false;
-
-        BankOptions options = getOrCreateOptions(bank);
-        options.buildMode = BuildMode.from((options.buildMode.number + 1) % 3);
-        Util.setOptions(bank, options);
-        return true;
-    }
-
-    public static PickupMode nextPickupMode(ItemStack bank) {
-        return PickupMode.from((getOrCreateOptions(bank).pickupMode.number + 1) % 4);
-    }
 
     public static NbtCompound largeStackAsNbt(ItemStack itemStack) {
 
