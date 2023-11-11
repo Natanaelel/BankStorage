@@ -25,12 +25,15 @@ public class BankLinkRecipe extends ShapedRecipe {
     @Override
     public ItemStack craft(RecipeInputInventory recipeInputInventory, DynamicRegistryManager dynamicRegistryManager) {
         Optional<ItemStack> maybeBankItemStack = recipeInputInventory.getInputStacks().stream()
-                .filter(stack -> (stack.getItem() instanceof BankItem)).findFirst();
+                .filter(stack -> Util.isBank(stack)).findFirst();
 
         if (maybeBankItemStack.isEmpty()) {
             return ItemStack.EMPTY;
         }
         ItemStack bank = maybeBankItemStack.get();
+        if(!Util.hasUUID(bank)){
+            return ItemStack.EMPTY;
+        }
         ItemStack result = super.craft(recipeInputInventory, dynamicRegistryManager);
         result.setNbt(bank.getNbt());
         result.getNbt().putString(LinkItem.BANK_TYPE_KEY, ((BankItem) bank.getItem()).getType().getName());
