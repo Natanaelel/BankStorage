@@ -98,7 +98,7 @@ public class BankScreenHandler extends ScreenHandler {
 
         // hotbar
         for (int x = 0; x < 9; ++x) {
-            // cannot move opened dank
+            // cannot move opened bank
             if (playerInventory.selectedSlot == x
                     && Util.isBankLike(playerInventory.getStack(playerInventory.selectedSlot))
                     && this.context == ScreenHandlerContext.EMPTY) {
