@@ -6,9 +6,14 @@ import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.BoolArgumentType;
+
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
@@ -71,7 +76,22 @@ public class BankStorageClient implements ClientModInitializer {
 		registerNetworkListeners();
 		registerTickEvents();
 		registerEventListeners();
+		registerCommands();
 
+	}
+
+	private void registerCommands() {
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+			dispatcher.register(
+					ClientCommandManager.literal("bankstorageclient")
+							.then(
+									ClientCommandManager.literal("debug")
+											.then(ClientCommandManager.argument("debug", BoolArgumentType.bool())
+													.executes(context -> {
+														Util.isDebugMode = BoolArgumentType.getBool(context, "debug");
+														return Command.SINGLE_SUCCESS;
+													}))));
+		});
 	}
 
 	private void registerEventListeners() {

@@ -13,6 +13,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.access.SyncedRandomAccess;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.options.BankOptions;
@@ -36,10 +37,20 @@ public abstract class BankFunctionality extends Item {
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
         ItemStack bank = player.getStackInHand(hand);
 
+        if (Util.isDebugMode)
+            player.sendMessage(Text.literal("uuid: " + Util.getUUID(bank)));
+
         if (bank.getCount() != 1)
             return TypedActionResult.pass(bank);
 
         boolean isBuildMode = Util.getOrCreateOptions(bank).buildMode != BuildMode.NONE;
+
+        if (Util.isDebugMode)
+            player.sendMessage(Text.literal("buildmode: " + Util.getOrCreateOptions(bank).buildMode));
+        if (Util.isDebugMode)
+            player.sendMessage(Text.literal("sneaking: " + player.isSneaking()));
+        if (Util.isDebugMode)
+            player.sendMessage(Text.literal("key unbound: " + Util.isBuildModeKeyUnBound));
 
         if (world.isClient)
             return player.isSneaking() && (isBuildMode ? Util.isBuildModeKeyUnBound : true)
@@ -70,6 +81,16 @@ public abstract class BankFunctionality extends Item {
         ItemStack bank = player.getStackInHand(context.getHand());
 
         Random random = ((SyncedRandomAccess) player).bankstorage$getSyncedRandom();
+        System.out.println(player.isSneaking());
+        BankStorage.LOGGER.info("" + player.isSneaking());
+        if (random == null || player.isSneaking()) {
+            // weird race condition
+            player.sendMessage(
+                    Util.invalid().copy()
+                            .append(Text.of("\n§r"))
+                            .append(Text.translatable("error.bankstorage.random_is_null")));
+            return ActionResult.FAIL;
+        }
 
         if (bank.getCount() != 1)
             return ActionResult.PASS;

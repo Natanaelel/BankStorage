@@ -38,6 +38,8 @@ public class Util {
     public static Supplier<Boolean> isShiftDown = () -> false;
     public static boolean isBuildModeKeyUnBound = true;
 
+    public static boolean isDebugMode = false;
+
     public static boolean isBank(ItemStack itemStack) {
         return itemStack.getItem() instanceof BankItem;
     }
@@ -93,7 +95,6 @@ public class Util {
     public static void setOptions(ItemStack itemStack, BankOptions options) {
         itemStack.getOrCreateNbt().put(BankItem.OPTIONS_KEY, options.asNbt());
     }
-
 
     public static NbtCompound largeStackAsNbt(ItemStack itemStack) {
 
@@ -249,13 +250,17 @@ public class Util {
     public static Text invalid() {
         ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.OPEN_URL,
                 Text.translatable("github_url.bankstorage").getString());
+
         HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                 Text.translatable("open_github_url.bankstorage"));
-        return Text.translatable("invalid.bankstorage").styled(style -> style
-                .withHoverEvent(hoverEvent)
-                .withClickEvent(clickEvent)
-                .withColor(Formatting.RED)
-                .withBold(true));
+
+        return Text.translatable("invalid.bankstorage")
+                .append(Text.literal("\n§r"))
+                .append(Text.translatable("github_url.bankstorage").styled(style -> style
+                        .withHoverEvent(hoverEvent)
+                        .withClickEvent(clickEvent)
+                        .withUnderline(true)
+                        .withColor(Formatting.BLUE)));
     }
 
     public static Text invalid(String context) {
@@ -283,7 +288,8 @@ class HugeItemStack {
 
     public String getModName() {
         Identifier id = Registries.ITEM.getId(this.stack.getItem());
-        if(id == null) return "";
+        if (id == null)
+            return "";
         return id.getNamespace();
     }
 

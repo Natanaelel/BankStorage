@@ -1,4 +1,15 @@
 
+
+restore command update
+- filter by
+  - has item
+  - bank tier
+  - who created it/who used it last
+- sort by
+  - player
+  - tier
+  - last used
+
 playtest / play / test
 update description
 - add discord link

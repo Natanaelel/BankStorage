@@ -51,6 +51,7 @@
   "command.bankstorage.unknownid": "No bank with that id",
 
   "github_url.bankstorage": "https://github.com/Natanaelel/BankStorage/issues",
-  "open_github_url.bankstorage": "open github url",
-  "invalid.bankstorage": "THIS WAS NOT SUPPOSED TO HAPPEN! Please make a bug report describing what caused this message to appear."
+  "open_github_url.bankstorage": "Open github URL",
+  "invalid.bankstorage": "§c§lTHIS WAS NOT SUPPOSED TO HAPPEN!\n§rPlease make a bug report\n§rdescribing what caused this message to appear.",
+  "error.bankstorage.random_is_null": "Math.Random PlayerEntity.bankstorage$getSyncedRandom() returned null\nIf this error persists, try rejoining the server/world."
 }
