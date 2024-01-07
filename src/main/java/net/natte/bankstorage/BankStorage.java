@@ -13,12 +13,10 @@ import net.minecraft.block.Block;
 import net.minecraft.block.MapColor;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.ItemPredicateArgumentType;
 import net.minecraft.command.argument.UuidArgumentType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.message.SignedCommandArguments;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.server.MinecraftServer;
@@ -33,8 +31,7 @@ import net.minecraft.util.Identifier;
 import net.natte.bankstorage.access.SyncedRandomAccess;
 import net.natte.bankstorage.block.BankDockBlock;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
-import net.natte.bankstorage.command.FilterArgumentType;
-import net.natte.bankstorage.command.SortingModeArgumentType;
+import net.natte.bankstorage.command.RestoreBankCommands;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.BankItem;
@@ -63,8 +60,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
@@ -165,17 +160,18 @@ public class BankStorage implements ModInitializer {
 	}
 
 	public void registerCommands() {
+		RestoreBankCommands.register();
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 
 
-			LiteralArgumentBuilder<ServerCommandSource> sortModifier = literal("sort").then(argument("sortingmode", SortingModeArgumentType.sortingMode()));
-			LiteralArgumentBuilder<ServerCommandSource> filterModifier = literal("filter")
-											.then(literal("tier")
-													.then(argument("tier", IntegerArgumentType.integer(1, 7))))
-											.then(literal("player")
-													.then(argument("player", EntityArgumentType.player())))
-											.then(literal("item").then(argument("item",
-													ItemPredicateArgumentType.itemPredicate(registryAccess))));
+			// LiteralArgumentBuilder<ServerCommandSource> sortModifier = literal("sort").then(argument("sortingmode", SortingModeArgumentType.sortingMode()));
+			// LiteralArgumentBuilder<ServerCommandSource> filterModifier = literal("filter")
+			// 								.then(literal("tier")
+			// 										.then(argument("tier", IntegerArgumentType.integer(1, 7))))
+			// 								.then(literal("player")
+			// 										.then(argument("player", EntityArgumentType.player())))
+			// 								.then(literal("item").then(argument("item",
+			// 										ItemPredicateArgumentType.itemPredicate(registryAccess))));
 
 			dispatcher.register(
 					literal("bankstorage")
