@@ -2,6 +2,7 @@ package net.natte.bankstorage.world;
 
 import java.util.Map;
 import java.util.UUID;
+import java.time.LocalDateTime;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
@@ -16,18 +17,17 @@ public class BankStateSaverAndLoader extends PersistentState {
 
     private GlobalBankState state;
 
-    public BankStateSaverAndLoader(){
+    public BankStateSaverAndLoader() {
         this.state = new GlobalBankState();
     }
 
     @Override
     public NbtCompound writeNbt(NbtCompound nbtCompound) {
-        
+
         BankStorage.LOGGER.info("Saving banks to nbt");
 
         VersionStateSaverAndLoader.writeNbt(this.state, nbtCompound);
         BankStorage.LOGGER.info("Saving done");
-
 
         return nbtCompound;
     }
@@ -56,23 +56,23 @@ public class BankStateSaverAndLoader extends PersistentState {
         return state;
     }
 
-
     public BankItemStorage getOrCreate(UUID uuid, BankType type) {
         if (this.state.getBankMap().containsKey(uuid)) {
-            BankItemStorage old = this.state.getBankMap().get(uuid);//.withDisplayName(name);
+            BankItemStorage old = this.state.getBankMap().get(uuid);
             if (old.type != type) {
-                BankItemStorage ugpraded = old.asType(type);
+                BankItemStorage upgraded = old.asType(type);
 
-                this.state.getBankMap().put(uuid, ugpraded);
-                return ugpraded;
+                this.state.getBankMap().put(uuid, upgraded);
+                return upgraded;
             }
             return old;
 
         } else {
             BankStorage.LOGGER.info("creating new bank with uuid " + uuid);
             BankItemStorage bankItemStorage = new BankItemStorage(type, uuid);
+            bankItemStorage.dateCreated = LocalDateTime.now();
             this.state.getBankMap().put(uuid, bankItemStorage);
-            return bankItemStorage;//.withDisplayName(name);
+            return bankItemStorage;
         }
     }
 
@@ -80,7 +80,7 @@ public class BankStateSaverAndLoader extends PersistentState {
         return this.state.get(uuid);
     }
 
-    public Map<UUID, BankItemStorage> getBankMap(){
+    public Map<UUID, BankItemStorage> getBankMap() {
         return this.state.getBankMap();
     }
 

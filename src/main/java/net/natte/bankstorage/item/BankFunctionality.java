@@ -67,6 +67,8 @@ public abstract class BankFunctionality extends Item {
             player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
             return TypedActionResult.fail(bank);
         }
+        bankItemStorage.usedByPlayerUUID = player.getUuid();
+
         if (!(player.currentScreenHandler instanceof BankScreenHandler)
                 && (isBuildMode ? Util.isBuildModeKeyUnBound : true))
             player.openHandledScreen(bankItemStorage.withItem(bank));
@@ -114,6 +116,8 @@ public abstract class BankFunctionality extends Item {
                         player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
                     return ActionResult.FAIL;
                 }
+                bankItemStorage.usedByPlayerUUID = player.getUuid();
+
                 itemStack = bankItemStorage.chooseItemToPlace(options, random);
             }
             player.setStackInHand(context.getHand(), itemStack);

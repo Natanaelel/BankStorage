@@ -86,9 +86,7 @@ public class BankFilter {
     private boolean matchesPlayer(BankItemStorage bankItemStorage) {
         if (playerFilter.isEmpty())
             return true;
-        // TODO: store createdByPlayerUUID in bankItemStorage and in file nbt
-        // return playerFilter.contains(bankItemStorage.createdByPlayerUUID);
-        /* */ return true;
+        return playerFilter.contains(bankItemStorage.usedByPlayerUUID);
     }
 
     private boolean matchesItems(BankItemStorage bankItemStorage) {

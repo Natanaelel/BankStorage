@@ -7,8 +7,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
+import java.time.LocalDateTime;
 import org.jetbrains.annotations.Nullable;
 
+import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -42,6 +44,8 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
     private short revision = 0;
 
     private ItemStack bankLikeItem;
+    public UUID usedByPlayerUUID = FakePlayer.DEFAULT_UUID;
+    public LocalDateTime dateCreated = LocalDateTime.MIN;
 
     public BankItemStorage(BankType type, UUID uuid) {
         super(type.rows * type.cols);
@@ -50,8 +54,8 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         this.uuid = uuid;
 
         this.lockedSlots = new HashMap<>();
-    }
 
+    }
 
     public BankItemStorage withItem(ItemStack itemStack) {
         this.bankLikeItem = itemStack;
@@ -149,7 +153,6 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
 
         nbtCompound.putUuid("uuid", this.uuid);
         nbtCompound.putString("uuid_string", this.uuid.toString());
-        // nbtCompound.put("options", this.options.asNbt());
         nbtCompound.putString("type", this.type.getName());
 
         NbtList nbtList = new NbtList();
@@ -174,6 +177,10 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
             lockedSlotsNbt.add(lockedSlotNbt);
         });
         nbtCompound.put("LockedSlots", lockedSlotsNbt);
+
+        nbtCompound.putUuid("last_used_by_uuid", this.usedByPlayerUUID);
+        nbtCompound.putString("last_used_by_uuid_string", this.usedByPlayerUUID.toString());
+        nbtCompound.putString("date_created", this.dateCreated.toString());
 
         return nbtCompound;
     }
@@ -208,6 +215,10 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
             bankItemStorage.lockSlot(lockedSlotNbt.getInt("Slot"), ItemStack.fromNbt(lockedSlotNbt));
 
         }
+        if (nbtCompound.containsUuid("last_used_by_uuid"))
+            bankItemStorage.usedByPlayerUUID = nbtCompound.getUuid("last_used_by_uuid");
+        if (nbtCompound.contains("date_created", NbtElement.STRING_TYPE))
+            bankItemStorage.dateCreated = LocalDateTime.parse(nbtCompound.getString("date_created"));
 
         return bankItemStorage;
     }

@@ -5,7 +5,11 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
+import java.util.Comparator;
+
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
@@ -19,6 +23,7 @@ import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.natte.bankstorage.command.SortingModeArgumentType.SortingMode;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.world.BankStateSaverAndLoader;
 
@@ -30,7 +35,9 @@ public class RestoreBankCommands {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(literal("bankstorage")
                     .requires(context -> context.hasPermissionLevel(2))
-                    .then(literal("list").executes(RestoreBankCommands::listBankStorages))
+                    .then(literal("list").executes(RestoreBankCommands::listBankStorages).then(
+                            literal("sort").then(argument("sorting_mode", SortingModeArgumentType.sortingMode())
+                                    .executes(RestoreBankCommands::listBankStoragesSorted))))
                     .then(literal("filter")
                             .then(literal("clear")
                                     .executes(RestoreBankCommands::clearFilter)
@@ -55,17 +62,49 @@ public class RestoreBankCommands {
 
         BankFilter filter = getFilter(context);
 
-        MutableText message = Text.empty();
-        MinecraftServer server = context.getSource().getServer();
+        List<BankItemStorage> bankItemStorages = getBankItemStorages(context)
+                .stream()
+                .filter(filter::matchesBank)
+                .toList();
+
+        listBankStoragesInChat(context, bankItemStorages);
+
+        return 1;
+    }
+
+    private static int listBankStoragesSorted(CommandContext<ServerCommandSource> context) {
+
+        BankFilter filter = getFilter(context);
+        SortingMode sortingMode = SortingModeArgumentType.getSortingMode(context, "sorting_mode");
+
+    
+        Stream<BankItemStorage> bankItemStorages = getBankItemStorages(context)
+                .stream()
+                .filter(filter::matchesBank);
+
+        List<BankItemStorage> sortedBankItemStorages = switch(sortingMode){
+            case DATE -> bankItemStorages.sorted(Comparator.comparing(bank -> bank.dateCreated)).toList();
+            case TYPE -> bankItemStorages.sorted(Comparator.comparing(bank -> bank.type.getName())).toList();
+            case PLAYER -> bankItemStorages.sorted(Comparator.comparing(bank -> bank.usedByPlayerUUID)).toList(); 
+        };
+
+        listBankStoragesInChat(context, sortedBankItemStorages);
+
+        return 1;
+    }
+
+    private static int listBankStoragesInChat(CommandContext<ServerCommandSource> context,
+            List<BankItemStorage> bankItemStorages) {
+
         ServerPlayerEntity player = context.getSource().getPlayer();
 
-        Map<UUID, BankItemStorage> bankMap = BankStateSaverAndLoader.getServerStateSaverAndLoader(server).getBankMap();
+        MutableText message = Text.empty();
 
-        for (Map.Entry<UUID, BankItemStorage> entry : bankMap.entrySet()) {
-            UUID uuid = entry.getKey();
-            BankItemStorage bankItemStorage = entry.getValue();
-            if (!filter.matchesBank(bankItemStorage))
-                continue;
+        for (BankItemStorage bankItemStorage : bankItemStorages) {
+            UUID uuid = bankItemStorage.uuid;
+            // BankItemStorage bankItemStorage = entry.getValue();
+            // if (!filter.matchesBank(bankItemStorage))
+            // continue;
 
             long nonEmptyStacks = bankItemStorage.stacks.stream().filter(stack -> !stack.isEmpty()).count();
 
@@ -85,6 +124,14 @@ public class RestoreBankCommands {
         context.getSource().sendMessage(message);
 
         return 1;
+    }
+
+    private static List<BankItemStorage> getBankItemStorages(CommandContext<ServerCommandSource> context) {
+
+        MinecraftServer server = context.getSource().getServer();
+
+        return ((List<BankItemStorage>) BankStateSaverAndLoader.getServerStateSaverAndLoader(server).getBankMap()
+                .values());
     }
 
     private static BankFilter getFilter(CommandContext<ServerCommandSource> context) {
