@@ -53,5 +53,16 @@
   "github_url.bankstorage": "https://github.com/Natanaelel/BankStorage/issues",
   "open_github_url.bankstorage": "Open github URL",
   "invalid.bankstorage": "§c§lTHIS WAS NOT SUPPOSED TO HAPPEN!\n§rPlease make a bug report\n§rdescribing what caused this message to appear.",
-  "error.bankstorage.random_is_null": "Math.Random PlayerEntity.bankstorage$getSyncedRandom() returned null\nIf this error persists, try rejoining the server/world."
+  "error.bankstorage.random_is_null": "Math.Random PlayerEntity.bankstorage$getSyncedRandom() returned null\nIf this error persists, try rejoining the server/world.",
+
+  "admin_restore_bank.bankstorage.cleared_all_filters": "Cleared all filters.",
+  "admin_restore_bank.bankstorage.cleared_type_filters": "Cleared type filters.",
+  "admin_restore_bank.bankstorage.cleared_player_filters": "Cleared player filters.",
+  "admin_restore_bank.bankstorage.cleared_item_filters": "Cleared item filters.",
+
+  "admin_restore_bank.bankstorage.added_type_filter": "Added type filter.",
+  "admin_restore_bank.bankstorage.added_player_filter": "Added player filter.",
+  "admin_restore_bank.bankstorage.added_item_filter": "Added item filter.",
+
+  "admin_restore_bank.bankstorage.listed_banks_num": "(listed %d banks)"
 }

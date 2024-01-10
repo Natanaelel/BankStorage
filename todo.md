@@ -1,4 +1,6 @@
 
+scroll to select item:
+- update client-side for more responsive
 
 restore command update
 - filter by
