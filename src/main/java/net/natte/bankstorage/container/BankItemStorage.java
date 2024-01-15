@@ -41,7 +41,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
 
     private Map<Integer, ItemStack> lockedSlots;
     private short lockedSlotsRevision = 0;
-    private short revision = 0;
+    private short revision = 1; // start different from client (0) to update client cache
 
     private ItemStack bankLikeItem;
     public UUID usedByPlayerUUID = FakePlayer.DEFAULT_UUID;

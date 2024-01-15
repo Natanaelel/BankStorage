@@ -130,15 +130,17 @@ public class BuildModePreviewRenderer implements EndTick {
 
         ItemStack right = this.client.player.getMainHandStack();
         ItemStack left = this.client.player.getOffHandStack();
-
+        // if(Math.random() != 2)return;
         if (Util.isBankLike(right)) {
             if (right != this.stackInHand) {
-                clearBank();
                 this.stackInHand = right;
-                if (Util.hasUUID(this.stackInHand)) {
-                    this.setUUID(Util.getUUID(this.stackInHand));
+                if (Util.hasUUID(this.stackInHand) && !Util.getUUID(this.stackInHand).equals(this.uuid)) {
+                    clearBank();
+                    if (Util.hasUUID(this.stackInHand)) {
+                        this.setUUID(Util.getUUID(this.stackInHand));
+                    }
+                    updateBank();
                 }
-                updateBank();
                 this.hand = Hand.MAIN_HAND;
             }
         } else if (Util.isBankLike(left)) {
@@ -163,12 +165,16 @@ public class BuildModePreviewRenderer implements EndTick {
     }
 
     public void setOptions(BankOptions options) {
+        System.out.println("set options " + options.selectedItemSlot);
         this.options = options;
     }
 
     public void updateBank() {
         setBankStorage(CachedBankStorage.getBankStorage(this.stackInHand));
+        int selectedItemSlot = this.options.selectedItemSlot;
         setOptions(Util.getOrCreateOptions(this.stackInHand));
+        // this.options.selectedItemSlot = selectedItemSlot;
+        System.out.println("updating bank");
     }
 
     public void clearBank() {

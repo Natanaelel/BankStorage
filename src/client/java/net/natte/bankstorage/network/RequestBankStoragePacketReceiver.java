@@ -11,7 +11,7 @@ public class RequestBankStoragePacketReceiver implements PlayPacketHandler<Reque
 
     public void receive(RequestBankStoragePacketS2C packet, ClientPlayerEntity player,
             PacketSender responseSender) {
-
+        System.out.println("received cache update");
         CachedBankStorage bankStorage = packet.cachedBankStorage;
         CachedBankStorage.BANK_CACHE.put(bankStorage.uuid, bankStorage);
 

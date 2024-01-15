@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPacketHandler;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.packet.NetworkUtil;
 import net.natte.bankstorage.util.Util;
 
@@ -22,23 +23,30 @@ public class RequestBankStoragePacketC2S implements FabricPacket {
         @Override
         public void receive(RequestBankStoragePacketC2S packet, ServerPlayerEntity player,
                 PacketSender responseSender) {
-                    NetworkUtil.syncCachedBankS2C(packet.uuid, player);
+
+            BankItemStorage bankItemStorage = Util.getBankItemStorage(packet.uuid, player.getWorld());
+            if (packet.cachedRevision != bankItemStorage.getRevision()) {
+                NetworkUtil.syncCachedBankS2C(packet.uuid, player);
+            }
         }
     }
 
     public UUID uuid;
+    public short cachedRevision;
 
-    public RequestBankStoragePacketC2S(UUID uuid) {
+    public RequestBankStoragePacketC2S(UUID uuid, short revision) {
         this.uuid = uuid;
+        this.cachedRevision = revision;
     }
 
     public RequestBankStoragePacketC2S(PacketByteBuf buf) {
-        this(buf.readUuid());
+        this(buf.readUuid(), buf.readShort());
     }
 
     @Override
     public void write(PacketByteBuf buf) {
         buf.writeUuid(this.uuid);
+        buf.writeShort(cachedRevision);
     }
 
     @Override

@@ -1,20 +1,22 @@
+minimize cache update requests
+colored banks
 
 scroll to select item:
 - update client-side for more responsive
 
-restore command update
-- filter by
-  - has item
-  - bank tier
-  - who created it/who used it last
-- sort by
-  - player
-  - tier
-  - last used
+[x] restore command update
+- [x] filter by
+  - [x] has item
+  - [x] bank tier
+  - [x] who created it/who used it last
+- [x] sort by
+  - [x] player
+  - [x] tier
+  - [x] last used
 
 playtest / play / test
 update description
-- add discord link
+- [x] add discord link
 [x] sync settings when bank upgraded
 - [x] sync locked slots
 

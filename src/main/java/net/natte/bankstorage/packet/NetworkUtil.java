@@ -16,9 +16,8 @@ public class NetworkUtil {
 
         BankItemStorage bankItemStorage = Util.getBankItemStorage(uuid, player.getWorld());
         List<ItemStack> items = bankItemStorage.getBlockItems();
-        // bankItemStorage.options.selectedItemSlot = MathHelper.clamp(bankItemStorage.options.selectedItemSlot, 0,
-                // items.size() - 1);
+
         ServerPlayNetworking.send(player, new RequestBankStoragePacketS2C(
-                new CachedBankStorage(items, uuid)));
+                new CachedBankStorage(items, uuid, bankItemStorage.getRevision())));
     }
 }

@@ -21,7 +21,8 @@ public class ScrollPacketC2S implements FabricPacket {
 
         @Override
         public void receive(ScrollPacketC2S packet, ServerPlayerEntity player, PacketSender responseSender) {
-
+            long millis = System.currentTimeMillis();
+            while(System.currentTimeMillis() < millis + 500);
             ItemStack stack = player.getStackInHand(packet.isRight ? Hand.MAIN_HAND : Hand.OFF_HAND);
             if (Util.isBankLike(stack) && Util.hasUUID(stack)) {
                 BankItemStorage bankItemStorage = Util.getBankItemStorage(Util.getUUID(stack), player.getWorld());
@@ -29,10 +30,9 @@ public class ScrollPacketC2S implements FabricPacket {
                     return;
                 BankOptions options = Util.getOrCreateOptions(stack);
                 options.selectedItemSlot -= (int) Math.signum(packet.scroll);
-                // int size = bankItemStorage.getBlockItems().size();
+
                 int size = bankItemStorage.getBlockItems().size();
-                options.selectedItemSlot = size == 0 ? 0
-                        : Math.min(Math.max(options.selectedItemSlot, 0), size - 1);
+                options.selectedItemSlot = Math.max(Math.min(options.selectedItemSlot, size - 1), 0);
                 Util.setOptions(stack, options);
 
             }

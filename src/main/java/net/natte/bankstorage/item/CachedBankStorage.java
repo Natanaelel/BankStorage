@@ -24,18 +24,18 @@ public class CachedBankStorage {
     private static Consumer<UUID> requestCacheUpdate = uuid -> {};
 
     public List<ItemStack> items;
-
     public UUID uuid;
+    public short revision;
 
-    // public BankOptions options;
 
-
-    public CachedBankStorage(List<ItemStack> items, UUID uuid) {
+    public CachedBankStorage(List<ItemStack> items, UUID uuid, short revision) {
         this.items = items;
         this.uuid = uuid;
+        this.revision = revision;
     }
 
     public static void requestCacheUpdate(UUID uuid){
+        System.out.println("requesting cache update for " + uuid);
         requestCacheUpdate.accept(uuid);
     }
     

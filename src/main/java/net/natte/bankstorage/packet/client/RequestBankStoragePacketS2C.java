@@ -29,11 +29,12 @@ public class RequestBankStoragePacketS2C implements FabricPacket {
             items.add(Util.readLargeStack(buf));
         }
         UUID uuid = buf.readUuid();
-        // BankOptions options = BankOptions.fromNbt(buf.readNbt());
+        short revision = buf.readShort();
 
-        this.cachedBankStorage = new CachedBankStorage(items, uuid);
+        this.cachedBankStorage = new CachedBankStorage(items, uuid, revision);
 
         // never used here, just a reminder. this.randomSeed = randomSeed;
+        // no idea what ^that^ means, but I'll keep it as a reminder
     }
 
     @Override
@@ -44,7 +45,7 @@ public class RequestBankStoragePacketS2C implements FabricPacket {
             Util.writeLargeStack(buf, itemStack);
         }
         buf.writeUuid(this.cachedBankStorage.uuid);
-        // buf.writeNbt(this.cachedBankStorage.options.asNbt());
+        buf.writeShort(this.cachedBankStorage.revision);
 
     }
 
