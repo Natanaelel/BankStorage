@@ -27,7 +27,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.natte.bankstorage.BankStorage;
-import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
@@ -131,9 +130,9 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         super.markDirty();
         updateLockedSlotsRevision();
         updateRevision();
-        if (this.uuid != null) {
-            CachedBankStorage.requestCacheUpdate(this.uuid);
-        }
+        // if (this.uuid != null) {
+        // CachedBankStorage.requestCacheUpdate(this.uuid);
+        // }
     }
 
     @Override
@@ -252,7 +251,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
 
     public ItemStack getSelectedItem(int selectedItemSlot) {
         List<ItemStack> items = getBlockItems();
-        return items.isEmpty() ? ItemStack.EMPTY : items.get(selectedItemSlot);
+        return items.isEmpty() ? ItemStack.EMPTY : items.get(Math.min(selectedItemSlot, items.size() - 1));
     }
 
     public ItemStack getRandomItem(Random random) {

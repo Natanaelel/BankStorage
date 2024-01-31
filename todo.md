@@ -3,6 +3,7 @@ colored banks
 
 scroll to select item:
 - update client-side for more responsive
+random build mode icon
 
 [x] restore command update
 - [x] filter by

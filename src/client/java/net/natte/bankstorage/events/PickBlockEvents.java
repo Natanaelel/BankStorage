@@ -10,6 +10,7 @@ import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.packet.server.SelectedSlotPacketC2S;
+import net.natte.bankstorage.packet.server.UpdateBankOptionsPacketC2S;
 import net.natte.bankstorage.util.Util;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -31,9 +32,11 @@ public class PickBlockEvents {
         if (!Util.isBankLike(stack))
             return false;
 
-        BankOptions options = Util.getOrCreateOptions(stack);
-        if (options.buildMode == BuildMode.NONE)
+        // BankOptions options = Util.getOrCreateOptions(stack);
+        BankOptions options = BankStorageClient.buildModePreviewRenderer.options;
+        if (options.buildMode != BuildMode.NORMAL)
             return false;
+        System.out.println(options.buildMode);
 
         ItemStack pickedStack = getPickedStack(stack, client);
         if (pickedStack == null)
@@ -54,11 +57,16 @@ public class PickBlockEvents {
                 break;
             }
         }
-        BankStorageClient.buildModePreviewRenderer.updateBank();
 
         if (slot == -1)
             return false;
-        ClientPlayNetworking.send(new SelectedSlotPacketC2S(isRight, slot));
+        // ClientPlayNetworking.send(new SelectedSlotPacketC2S(isRight, slot));
+        // options
+        options.selectedItemSlot = slot;
+        // BankStorageClient.buildModePreviewRenderer.updateBank();
+        // BankStorageClient.buildModePreviewRenderer.set
+
+        ClientPlayNetworking.send(new UpdateBankOptionsPacketC2S(options, (short) 69)); // TODO: remove magic number
         return true;
 
     }

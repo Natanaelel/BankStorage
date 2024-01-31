@@ -86,7 +86,12 @@ public class ItemPickupHandler {
                 if (bankPickedUpAny) {
                     ServerPlayNetworking.send(((ServerPlayerEntity) playerInventory.player),
                             new ItemStackBobbingAnimationPacketS2C(index));
-                    NetworkUtil.syncCachedBankS2C(bankItemStorage.uuid, (ServerPlayerEntity) playerInventory.player);
+
+                    // only update client cache if needed; when the bank is selected and in
+                    // buildmode
+                    if (playerInventory.player.getInventory().selectedSlot == index)
+                        NetworkUtil.syncCachedBankIfBuildModeS2C(bankItemStorage.uuid,
+                                (ServerPlayerEntity) playerInventory.player, itemStack);
                 }
 
                 if (pickedUpStack.isEmpty()) {

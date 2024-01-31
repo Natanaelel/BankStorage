@@ -22,7 +22,11 @@ public class ScrollPacketC2S implements FabricPacket {
         @Override
         public void receive(ScrollPacketC2S packet, ServerPlayerEntity player, PacketSender responseSender) {
             long millis = System.currentTimeMillis();
-            while(System.currentTimeMillis() < millis + 500);
+            while(System.currentTimeMillis() < millis + 500);  // TODO: remove obv
+
+            // if(packet.buildModePreviewRevision == BankStorageClient)
+
+
             ItemStack stack = player.getStackInHand(packet.isRight ? Hand.MAIN_HAND : Hand.OFF_HAND);
             if (Util.isBankLike(stack) && Util.hasUUID(stack)) {
                 BankItemStorage bankItemStorage = Util.getBankItemStorage(Util.getUUID(stack), player.getWorld());
@@ -34,7 +38,6 @@ public class ScrollPacketC2S implements FabricPacket {
                 int size = bankItemStorage.getBlockItems().size();
                 options.selectedItemSlot = Math.max(Math.min(options.selectedItemSlot, size - 1), 0);
                 Util.setOptions(stack, options);
-
             }
 
         }
@@ -42,20 +45,23 @@ public class ScrollPacketC2S implements FabricPacket {
 
     public boolean isRight;
     public double scroll;
+    public short buildModePreviewRevision;
 
-    public ScrollPacketC2S(boolean isRight, double scroll) {
+    public ScrollPacketC2S(boolean isRight, double scroll, short buildModePreviewRevision) {
         this.isRight = isRight;
         this.scroll = scroll;
+        this.buildModePreviewRevision = buildModePreviewRevision;
     }
 
     public ScrollPacketC2S(PacketByteBuf buf) {
-        this(buf.readBoolean(), buf.readDouble());
+        this(buf.readBoolean(), buf.readDouble(), buf.readShort());
     }
 
     @Override
     public void write(PacketByteBuf buf) {
         buf.writeBoolean(isRight);
         buf.writeDouble(scroll);
+        buf.writeShort(buildModePreviewRevision);
     }
 
     @Override

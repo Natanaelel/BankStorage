@@ -1,6 +1,5 @@
 package net.natte.bankstorage;
 
-import java.util.Random;
 import java.util.UUID;
 
 import org.lwjgl.glfw.GLFW;
@@ -8,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.mojang.brigadier.context.CommandContext;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
 
@@ -16,7 +14,6 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
@@ -27,11 +24,10 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.natte.bankstorage.access.SyncedRandomAccess;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.events.KeyBindUpdateEvents;
+import net.natte.bankstorage.events.MouseEvents;
 import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.item.LinkItem;
 import net.natte.bankstorage.network.ItemStackBobbingAnimationPacketReceiver;
@@ -67,6 +63,7 @@ public class BankStorageClient implements ClientModInitializer {
 
 	static {
 		Util.isShiftDown = () -> Screen.hasShiftDown();
+		Util.onToggleBuildMode = MouseEvents::onToggleBuildMode;
 		CachedBankStorage.setCacheUpdater(uuid -> CachedBankStorage.bankRequestQueue.add(uuid));
 	}
 
@@ -94,16 +91,8 @@ public class BankStorageClient implements ClientModInitializer {
 											.executes(context -> {
 												Util.isDebugMode = BoolArgumentType.getBool(context, "debug");
 												return 1;
-											})))
-							.then(literal("random_null_crash_temp_fix").executes(this::randomCrashTempFixCommand)));
+											}))));
 		});
-	}
-
-	private int randomCrashTempFixCommand(CommandContext<FabricClientCommandSource> context) {
-		((SyncedRandomAccess) context.getSource().getPlayer()).bankstorage$setSyncedRandom(new Random(0));
-		context.getSource().sendFeedback(
-				Text.literal("Applied temporary fix. Please report this issue so it can be fixed for real."));
-		return 1;
 	}
 
 	private void registerEventListeners() {
@@ -137,7 +126,7 @@ public class BankStorageClient implements ClientModInitializer {
 				return;
 			for (UUID uuid : CachedBankStorage.bankRequestQueue) {
 				short cachedRevision = 0;
-				CachedBankStorage storage = CachedBankStorage.BANK_CACHE.get(uuid);
+				CachedBankStorage storage = CachedBankStorage.getBankStorage(uuid);
 				if (storage != null)
 					cachedRevision = storage.revision;
 				System.out.println("sending request packet");

@@ -52,16 +52,28 @@ public abstract class BankFunctionality extends Item {
         if (Util.isDebugMode)
             player.sendMessage(Text.literal("key unbound: " + Util.isBuildModeKeyUnBound));
 
-        if (world.isClient)
-            return player.isSneaking() && (isBuildMode ? Util.isBuildModeKeyUnBound : true)
-                    ? TypedActionResult.success(bank)
-                    : TypedActionResult.pass(bank);
+        // if (world.isClient)
+        // return player.isSneaking() && (isBuildMode ? Util.isBuildModeKeyUnBound :
+        // true)
+        // ? TypedActionResult.success(bank)
+        // : TypedActionResult.pass(bank);
+
+        // if (player.isSneaking() && Util.isBuildModeKeyUnBound) {
+        // if (Util.isBuildModeKeyUnBound)
+        // ServerEvents.onToggleBuildMode(((ServerPlayerEntity) player));
+        // return TypedActionResult.success(bank);
+        // }
+        // if client: return
+        // else if condition return
 
         if (player.isSneaking() && Util.isBuildModeKeyUnBound) {
-            if (Util.isBuildModeKeyUnBound)
-                ServerEvents.onToggleBuildMode(((ServerPlayerEntity) player));
+            if (world.isClient)
+                Util.onToggleBuildMode.accept(player);
             return TypedActionResult.success(bank);
         }
+        if (world.isClient)
+            return TypedActionResult.pass(bank);
+
         BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, world);
         if (bankItemStorage == null) {
             player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
@@ -82,7 +94,9 @@ public abstract class BankFunctionality extends Item {
         World world = context.getWorld();
         ItemStack bank = player.getStackInHand(context.getHand());
 
-        Random random = ((SyncedRandomAccess) player).bankstorage$getSyncedRandom();
+        Random random = world.isClient ? Util.clientSyncedRandom
+                : ((SyncedRandomAccess) player).bankstorage$getSyncedRandom();
+
         if (random == null) {
             // weird race condition
             player.sendMessage(
@@ -120,8 +134,9 @@ public abstract class BankFunctionality extends Item {
                     return ActionResult.FAIL;
                 }
                 bankItemStorage.usedByPlayerUUID = player.getUuid();
-
+                System.out.println("bank options are " + options.selectedItemSlot);
                 itemStack = bankItemStorage.chooseItemToPlace(options, random);
+                System.out.println("selected stack: " + itemStack);
             }
             player.setStackInHand(context.getHand(), itemStack);
             ActionResult useResult = itemStack

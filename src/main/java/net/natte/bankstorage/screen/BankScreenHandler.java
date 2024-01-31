@@ -50,7 +50,7 @@ public class BankScreenHandler extends ScreenHandler {
             BankScreenHandler bankScreenHandler = new BankScreenHandler(syncId, playerInventory,
                     new BankItemStorage(type, null), type,
                     ScreenHandlerContext.EMPTY);
-                    bankScreenHandler.bankLikeItem = packetByteBuf.readItemStack();
+            bankScreenHandler.bankLikeItem = packetByteBuf.readItemStack();
             return bankScreenHandler;
         };
     }
@@ -67,7 +67,8 @@ public class BankScreenHandler extends ScreenHandler {
         super(type.getScreenHandlerType(), syncId);
         this.context = context;
 
-        this.bankLikeItem = inventory instanceof BankItemStorage bankItemStorage ? bankItemStorage.getItem() : ItemStack.EMPTY;
+        this.bankLikeItem = inventory instanceof BankItemStorage bankItemStorage ? bankItemStorage.getItem()
+                : ItemStack.EMPTY;
 
         checkSize(inventory, type.size());
 
@@ -121,7 +122,7 @@ public class BankScreenHandler extends ScreenHandler {
         }, true);
     }
 
-    public ScreenHandlerContext getContext(){
+    public ScreenHandlerContext getContext() {
         return this.context;
     }
 
@@ -580,6 +581,7 @@ public class BankScreenHandler extends ScreenHandler {
 
     @Override
     public void onClosed(PlayerEntity player) {
+        System.out.println(player);
         ItemStack left = player.getOffHandStack();
         ItemStack right = player.getMainHandStack();
         if (Util.hasUUID(left)) {

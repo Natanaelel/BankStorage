@@ -6,6 +6,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.natte.bankstorage.BankStorageClient;
 import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
+import net.natte.bankstorage.util.Util;
 
 public class RequestBankStoragePacketReceiver implements PlayPacketHandler<RequestBankStoragePacketS2C> {
 
@@ -13,10 +14,14 @@ public class RequestBankStoragePacketReceiver implements PlayPacketHandler<Reque
             PacketSender responseSender) {
         System.out.println("received cache update");
         CachedBankStorage bankStorage = packet.cachedBankStorage;
-        CachedBankStorage.BANK_CACHE.put(bankStorage.uuid, bankStorage);
-
+        CachedBankStorage.setBankStorage(bankStorage.uuid, bankStorage);
+        // System.out.println("");
         if (bankStorage.uuid.equals(BankStorageClient.buildModePreviewRenderer.uuid)) {
             BankStorageClient.buildModePreviewRenderer.setBankStorage(bankStorage);
+
+            if (packet.cachedBankStorage.optionsRevision != -1) {
+                BankStorageClient.buildModePreviewRenderer.options = Util.getOptions(player.getMainHandStack());
+            }
         }
 
     }

@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.jetbrains.annotations.Nullable;
@@ -37,8 +39,10 @@ public class Util {
 
     public static Supplier<Boolean> isShiftDown = () -> false;
     public static boolean isBuildModeKeyUnBound = true;
+    public static Random clientSyncedRandom;
 
     public static boolean isDebugMode = false;
+    public static Consumer<PlayerEntity> onToggleBuildMode = e -> {};
 
     public static boolean isBank(ItemStack itemStack) {
         return itemStack.getItem() instanceof BankItem;

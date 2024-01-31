@@ -46,6 +46,7 @@ public class BankScreenSync implements ScreenHandlerSyncHandler {
 
     @Override
     public void updateSlot(ScreenHandler screenHandler, int slot, ItemStack stack) {
+        System.out.println("send syncSlot");
         BankSyncPacketHandler.sendSyncSlot(player, screenHandler.syncId, slot, stack);
         NetworkUtil.syncCachedBankS2C(Util.getUUIDFromScreenHandler(screenHandler), this.player);
     }
