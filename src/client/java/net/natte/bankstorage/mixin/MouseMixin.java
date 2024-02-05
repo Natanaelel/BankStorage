@@ -2,7 +2,7 @@ package net.natte.bankstorage.mixin;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import com.llamalad7.mixinextras.injector.WrapWithCondition;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -14,10 +14,10 @@ import net.natte.bankstorage.events.MouseEvents;
 @Mixin(Mouse.class)
 public class MouseMixin {
 
-    @Redirect(method = "onMouseScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;scrollInHotbar(D)V"))
-    public void onScroll(PlayerInventory playerInventory, double scroll) {
-        if (!MouseEvents.onScroll(playerInventory, scroll))
-            playerInventory.scrollInHotbar(scroll);
-        ;
+    @WrapWithCondition(method = "onMouseScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;scrollInHotbar(D)V"))
+
+    public boolean onScroll(PlayerInventory playerInventory, double scroll) {
+        boolean bypassesVanilla = MouseEvents.onScroll(playerInventory, scroll);
+        return !bypassesVanilla;
     }
 }
