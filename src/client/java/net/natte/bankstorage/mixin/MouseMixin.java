@@ -15,7 +15,6 @@ import net.natte.bankstorage.events.MouseEvents;
 public class MouseMixin {
 
     @WrapWithCondition(method = "onMouseScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;scrollInHotbar(D)V"))
-
     public boolean onScroll(PlayerInventory playerInventory, double scroll) {
         boolean bypassesVanilla = MouseEvents.onScroll(playerInventory, scroll);
         return !bypassesVanilla;
