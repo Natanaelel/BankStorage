@@ -573,7 +573,7 @@ public class BankScreenHandler extends ScreenHandler {
             return true;
         }
         if (stack.getCount() > stack.getMaxCount()) {
-            // return false;
+            return false;
         }
         onContentChanged(this.inventory);
         return super.handleSlotClick(player, clickType, slot, stack, cursorStack);
