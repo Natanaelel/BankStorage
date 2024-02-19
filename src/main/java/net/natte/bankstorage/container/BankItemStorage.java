@@ -44,6 +44,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
 
     private ItemStack bankLikeItem;
     public UUID usedByPlayerUUID = FakePlayer.DEFAULT_UUID;
+    public String usedByPlayerName = "World";
     public LocalDateTime dateCreated = LocalDateTime.MIN;
 
     public BankItemStorage(BankType type, UUID uuid) {
@@ -179,6 +180,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
 
         nbtCompound.putUuid("last_used_by_uuid", this.usedByPlayerUUID);
         nbtCompound.putString("last_used_by_uuid_string", this.usedByPlayerUUID.toString());
+        nbtCompound.putString("last_used_by_player", this.usedByPlayerName);
         nbtCompound.putString("date_created", this.dateCreated.toString());
 
         return nbtCompound;
@@ -216,6 +218,8 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         }
         if (nbtCompound.containsUuid("last_used_by_uuid"))
             bankItemStorage.usedByPlayerUUID = nbtCompound.getUuid("last_used_by_uuid");
+        if (nbtCompound.contains("last_used_by_name", NbtElement.STRING_TYPE))
+            bankItemStorage.usedByPlayerName = nbtCompound.getString("last_used_by_name");
         if (nbtCompound.contains("date_created", NbtElement.STRING_TYPE))
             bankItemStorage.dateCreated = LocalDateTime.parse(nbtCompound.getString("date_created"));
 
