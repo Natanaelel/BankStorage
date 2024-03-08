@@ -4,6 +4,12 @@ client only need CachedBankStorage when:
 - placing blocks
   - already in build mode
 
+when to update settings on client from server
+- idk
+
+validate received cache on client
+make sure client options make sense
+otherwise: update options clientside and send updatepacket
 
 when to check for updates from client:
   - select bank

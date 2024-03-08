@@ -16,10 +16,14 @@ import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.util.Util;
 
 /**
- * a client-side only representation of a bank storage containing:<p>
- * - {@link #items} stores all placeable items <p>
- * - {@link #uuid} uuid of the bank<p>
- * - {@link #revision} revision of the bank items<p>
+ * a client-side only representation of a bank storage containing:
+ * <p>
+ * - {@link #items} stores all placeable items
+ * <p>
+ * - {@link #uuid} uuid of the bank
+ * <p>
+ * - {@link #revision} revision of the bank items
+ * <p>
  */
 public class CachedBankStorage {
 
@@ -43,7 +47,6 @@ public class CachedBankStorage {
     }
 
     public static void requestCacheUpdate(UUID uuid) {
-        System.out.println("requesting cache update for " + uuid);
         requestCacheUpdate.accept(uuid);
     }
 
@@ -86,9 +89,8 @@ public class CachedBankStorage {
 
         CachedBankStorage bankStorage = BANK_CACHE.get(uuid);
 
-        if (bankStorage == null) {
-            bankRequestQueue.add(uuid);
-        }
+        if (bankStorage == null)
+            requestCacheUpdate(uuid);
 
         return bankStorage;
     }

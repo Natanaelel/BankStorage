@@ -21,15 +21,12 @@ import net.natte.bankstorage.util.Util;
  */
 public class UpdateBankOptionsPacketC2S implements FabricPacket {
     public static final PacketType<UpdateBankOptionsPacketC2S> TYPE = PacketType
-            .create(Util.ID("update_options"), UpdateBankOptionsPacketC2S::new);
+            .create(Util.ID("update_options_c2s"), UpdateBankOptionsPacketC2S::new);
 
     public static class Receiver implements PlayPacketHandler<UpdateBankOptionsPacketC2S> {
 
         @Override
         public void receive(UpdateBankOptionsPacketC2S packet, ServerPlayerEntity player, PacketSender responseSender) {
-
-            long millis = System.currentTimeMillis();
-            while(System.currentTimeMillis() < millis + 500);  // TODO: remove obv
 
             ItemStack bankItem;
 
@@ -55,28 +52,24 @@ public class UpdateBankOptionsPacketC2S implements FabricPacket {
 
             }
             Util.setOptions(bankItem, options);
-            System.out.println("set options asdjflkasjfkalsjdlfk " + options.selectedItemSlot);
 
         }
 
     }
 
     public BankOptions options;
-    public short revision;
 
-    public UpdateBankOptionsPacketC2S(BankOptions options, short revision) {
+    public UpdateBankOptionsPacketC2S(BankOptions options) {
         this.options = options;
-        this.revision = revision;
     }
 
     public UpdateBankOptionsPacketC2S(PacketByteBuf buf) {
-        this(BankOptions.fromNbt(buf.readNbt()), buf.readShort());
+        this(BankOptions.fromNbt(buf.readNbt()));
     }
 
     @Override
     public void write(PacketByteBuf buf) {
         buf.writeNbt(options.asNbt());
-        buf.writeShort(revision);
     }
 
     @Override

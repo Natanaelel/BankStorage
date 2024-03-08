@@ -1,9 +1,13 @@
-minimize cache update requests
 colored banks
+show content in tooltip
 
-scroll to select item:
-- update client-side for more responsive
-random build mode icon
+[x] minimize cache update requests
+[x] minimize cache update responses
+
+
+[x] scroll to select item:
+- [x] update client-side for more responsive
+random build mode icon - [x] no
 
 [x] restore command update
 - [x] filter by

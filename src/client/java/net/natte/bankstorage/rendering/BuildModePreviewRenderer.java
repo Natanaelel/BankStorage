@@ -14,7 +14,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.natte.bankstorage.item.CachedBankStorage;
@@ -38,29 +37,111 @@ public class BuildModePreviewRenderer implements EndTick {
     private int ticks = 0;
 
     public short revision = 0;
-    public short optionsRevision = 0;
 
     public BuildModePreviewRenderer() {
         this.stackInHand = ItemStack.EMPTY;
     }
 
+    public void onEndTick(MinecraftClient client) {
+        if (this.client == null)
+            this.client = client;
+
+        if (client.player == null)
+            return;
+
+        this.ticks++;
+        // request cache sync every 2 seconds if holding bank in buildmode
+        if (this.ticks % (2 * 20) == 0 && this.uuid != null && this.options.buildMode != BuildMode.NONE)
+            CachedBankStorage.requestCacheUpdate(this.uuid);
+
+        ItemStack right = this.client.player.getMainHandStack();
+        ItemStack left = this.client.player.getOffHandStack();
+
+        ItemStack bankInHand;
+        Hand hand;
+        if (Util.isBankLike(right)) {
+            bankInHand = right;
+            hand = Hand.MAIN_HAND;
+        } else if (Util.isBankLike(left)) {
+            bankInHand = left;
+            hand = Hand.OFF_HAND;
+        } else {
+            clearBank();
+            return;
+        }
+
+        if (!Util.hasUUID(bankInHand)) {
+            clearBank();
+            return;
+        }
+
+        // is holding new bank: update things
+        if (isHoldingNewBankLikeOrInNewHand(bankInHand, hand)) {
+
+            clearBank();
+            this.stackInHand = bankInHand;
+
+            this.uuid = Util.getUUID(this.stackInHand);
+            this.bankStorage = CachedBankStorage.getBankStorage(this.uuid);
+            this.options = Util.getOptions(this.stackInHand);
+
+            // make sure client has the latest revision
+            CachedBankStorage.requestCacheUpdate(this.uuid);
+
+
+            this.hand = hand;
+        }
+    }
+
+    private boolean isHoldingNewBankLikeOrInNewHand(ItemStack bankInHand, Hand hand) {
+
+        // yes, new hand
+        if (hand != this.hand)
+            return true;
+
+        // bruh, ofc it's not new
+        if (bankInHand == this.stackInHand)
+            return false;
+        // one is link, other is bank
+        if (this.stackInHand.getItem() != bankInHand.getItem())
+            return true;
+        // has different uuid
+        if (this.uuid == null || !this.uuid.equals(Util.getUUID(bankInHand)))
+            return true;
+
+        return false;
+    }
+
+    public void setBankStorage(CachedBankStorage bankStorage) {
+        this.bankStorage = bankStorage;
+    }
+
+    public void clearBank() {
+        this.uuid = null;
+        this.bankStorage = null;
+        this.stackInHand = ItemStack.EMPTY;
+    }
+
     public void render(DrawContext context, float tickDelta) {
-        // System.out.println("---");
-        // System.out.println(this.client);
-        // System.out.println(this.bankStorage);
-        // System.out.println(this.options.buildMode);
         if (this.client == null)
             return;
+
+        // definite condition
+        if (this.uuid == null)
+            return;
+
         if (this.bankStorage == null)
             return;
         switch (this.options.buildMode) {
             case NONE:
+                // renderNothingLol();
                 return;
             case NORMAL:
                 renderBlockPreview(context, tickDelta);
                 break;
             case RANDOM:
                 renderRandomPreview(context, tickDelta);
+                break;
         }
 
     }
@@ -80,13 +161,11 @@ public class BuildModePreviewRenderer implements EndTick {
         MatrixStack matrixStack = context.getMatrices();
         matrixStack.push();
 
-        int selectedSlot = this.options.selectedItemSlot;
-
         int handXOffset = this.hand == Hand.OFF_HAND ? -169 : 118;
 
         // draw slot background
         context.drawTexture(WIDGET_TEXTURE,
-                scaledWidth / 2 - 20 + handXOffset, scaledHeight - 22, 64+62, 0, 62, 22);
+                scaledWidth / 2 - 20 + handXOffset, scaledHeight - 22, 64 + 62, 0, 62, 22);
 
         // draw item
         ItemStack itemStack = items.get((ticks / 20) % items.size());
@@ -171,82 +250,6 @@ public class BuildModePreviewRenderer implements EndTick {
         drawItemCountInSlot(context, this.client.textRenderer, stack, x, y);
     }
 
-    public void onEndTick(MinecraftClient client) {
-        if (this.client == null)
-            this.client = client;
-
-        if (client.player == null)
-            return;
-
-        this.ticks = (this.ticks + 1) % (20 * 5);
-        if (this.ticks == 0 && this.uuid != null && this.options.buildMode != BuildMode.NONE)
-            CachedBankStorage.requestCacheUpdate(this.uuid);
-
-        ItemStack right = this.client.player.getMainHandStack();
-        ItemStack left = this.client.player.getOffHandStack();
-        // if(Math.random() != 2)return;
-        if (Util.isBankLike(right)) {
-            if (right != this.stackInHand) {
-                // clearBank();
-                this.stackInHand = right;
-                UUID old = this.uuid;
-                if (Util.hasUUID(this.stackInHand) && !Util.getUUID(this.stackInHand).equals(this.uuid)) {
-                    clearBank();
-                    if (Util.hasUUID(this.stackInHand)) {
-                        this.setUUID(Util.getUUID(this.stackInHand));
-                    }
-                    client.player.sendMessage(Text.of("updateBank() uuid: " + this.uuid));
-                    client.player.sendMessage(Text.of("oooooooooold uuid: " + old));
-                    updateBank();
-                }
-                this.hand = Hand.MAIN_HAND;
-            }
-        } else if (Util.isBankLike(left)) {
-            if (left != this.stackInHand) {
-                clearBank();
-                this.stackInHand = left;
-                if (Util.hasUUID(this.stackInHand)) {
-                    this.setUUID(Util.getUUID(this.stackInHand));
-                }
-                updateBank();
-                this.hand = Hand.OFF_HAND;
-            }
-        } else {
-            this.stackInHand = ItemStack.EMPTY;
-            this.bankStorage = null;
-            this.uuid = null;
-        }
-
-        // this.stackInHand
-        // if(this.stackInHand != null) setOptions(Util.getOptions(this.stackInHand));
-    }
-
-    public void setBankStorage(CachedBankStorage bankStorage) {
-        this.bankStorage = bankStorage;
-    }
-
-    public void setOptions(BankOptions options) {
-        System.out.println("set options " + options.selectedItemSlot);
-        this.options = options;
-    }
-
-    public void updateBank() {
-        setBankStorage(CachedBankStorage.getBankStorage(this.stackInHand));
-        int selectedItemSlot = this.options.selectedItemSlot;
-        setOptions(Util.getOrCreateOptions(this.stackInHand));
-        // this.options.selectedItemSlot = selectedItemSlot;
-        System.out.println("updating bank");
-    }
-
-    public void clearBank() {
-        this.uuid = null;
-        this.bankStorage = null;
-    }
-
-    public void setUUID(UUID uuid) {
-        this.uuid = uuid;
-    }
-
     public void drawItemCountInSlot(DrawContext context, TextRenderer textRenderer, ItemStack stack, int x, int y) {
         int l;
         int k;
@@ -283,9 +286,5 @@ public class BuildModePreviewRenderer implements EndTick {
 
     public short nextRevision() {
         return ++this.revision;
-    }
-
-    public short nextOptionsRevision() {
-        return ++this.optionsRevision;
     }
 }

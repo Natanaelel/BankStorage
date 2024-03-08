@@ -21,7 +21,6 @@ public class NetworkUtil {
 
         BankItemStorage bankItemStorage = Util.getBankItemStorage(uuid, player.getWorld());
         List<ItemStack> items = bankItemStorage.getBlockItems();
-        System.out.println("sync cached bank s2c");
         ServerPlayNetworking.send(player, new RequestBankStoragePacketS2C(
                 new CachedBankStorage(items, uuid, bankItemStorage.getRevision(), optionsRevision)));
     }

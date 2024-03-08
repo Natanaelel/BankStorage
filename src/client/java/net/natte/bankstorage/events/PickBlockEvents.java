@@ -9,7 +9,6 @@ import net.natte.bankstorage.BankStorageClient;
 import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
-import net.natte.bankstorage.packet.server.SelectedSlotPacketC2S;
 import net.natte.bankstorage.packet.server.UpdateBankOptionsPacketC2S;
 import net.natte.bankstorage.util.Util;
 import net.minecraft.util.hit.BlockHitResult;
@@ -36,7 +35,6 @@ public class PickBlockEvents {
         BankOptions options = BankStorageClient.buildModePreviewRenderer.options;
         if (options.buildMode != BuildMode.NORMAL)
             return false;
-        System.out.println(options.buildMode);
 
         ItemStack pickedStack = getPickedStack(stack, client);
         if (pickedStack == null)
@@ -66,7 +64,7 @@ public class PickBlockEvents {
         // BankStorageClient.buildModePreviewRenderer.updateBank();
         // BankStorageClient.buildModePreviewRenderer.set
 
-        ClientPlayNetworking.send(new UpdateBankOptionsPacketC2S(options, (short) 69)); // TODO: remove magic number
+        ClientPlayNetworking.send(new UpdateBankOptionsPacketC2S(options));
         return true;
 
     }

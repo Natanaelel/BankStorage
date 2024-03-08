@@ -110,19 +110,15 @@ public class RestoreBankCommands {
     }
 
     private static int listBankStorages(CommandContext<ServerCommandSource> context) {
-        System.out.println(1);
+
         BankFilter filter = getFilter(context);
-        System.out.println(2);
 
         List<BankItemStorage> bankItemStorages = getBankItemStorages(context)
                 .stream()
                 .filter(filter::matchesBank)
                 .toList();
 
-        System.out.println(3);
-
         listBankStoragesInChat(context, bankItemStorages);
-        System.out.println(4);
 
         return 1;
     }
@@ -165,9 +161,15 @@ public class RestoreBankCommands {
             HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                     Text.translatable("command.bankstorage.hoverinfo"));
 
+            // message.append(Text
+            // .translatable("command.bankstorage.bankinfo", bankItemStorage.type.getName(),
+            // nonEmptyStacks,
+            // bankItemStorage.uuid.toString())
+            // String playerName = bankItemStorage.usedByPlayerUUID;
             message.append(Text
-                    .translatable("command.bankstorage.bankinfo", bankItemStorage.type.getName(), nonEmptyStacks,
-                            bankItemStorage.uuid.toString())
+                    .literal(bankItemStorage.type.getName() + ", " + nonEmptyStacks + " items, uuid: "
+                            + bankItemStorage.uuid.toString() + ", " + bankItemStorage.usedByPlayerName
+                            + "\n")
                     .styled(style -> style
                             .withClickEvent(clickEvent)
                             .withHoverEvent(hoverEvent)));

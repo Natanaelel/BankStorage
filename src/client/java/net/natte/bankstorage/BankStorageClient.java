@@ -129,7 +129,6 @@ public class BankStorageClient implements ClientModInitializer {
 				CachedBankStorage storage = CachedBankStorage.getBankStorage(uuid);
 				if (storage != null)
 					cachedRevision = storage.revision;
-				System.out.println("sending request packet");
 				ClientPlayNetworking.send(new RequestBankStoragePacketC2S(uuid, cachedRevision));
 			}
 			CachedBankStorage.bankRequestQueue.clear();

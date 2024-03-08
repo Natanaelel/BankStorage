@@ -7,8 +7,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.ClickEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -19,7 +17,6 @@ import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.screen.BankScreenHandler;
-import net.natte.bankstorage.util.ServerEvents;
 import net.natte.bankstorage.util.Util;
 
 public abstract class BankFunctionality extends Item {
@@ -80,6 +77,7 @@ public abstract class BankFunctionality extends Item {
             return TypedActionResult.fail(bank);
         }
         bankItemStorage.usedByPlayerUUID = player.getUuid();
+        bankItemStorage.usedByPlayerName = player.getEntityName();
 
         if (!(player.currentScreenHandler instanceof BankScreenHandler)
                 && (isBuildMode ? Util.isBuildModeKeyUnBound : true))
@@ -98,16 +96,10 @@ public abstract class BankFunctionality extends Item {
                 : ((SyncedRandomAccess) player).bankstorage$getSyncedRandom();
 
         if (random == null) {
-            // weird race condition
             player.sendMessage(
                     Util.invalid().copy()
                             .append(Text.of("\n§r"))
                             .append(Text.translatable("error.bankstorage.random_is_null")));
-            if (world.isClient)
-                player.sendMessage(Text.literal("click here for a temporary solution")
-                        .styled(style -> style.withClickEvent(
-                                new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,
-                                        "/bankstorageclient random_null_crash_temp_fix"))));
             return ActionResult.FAIL;
         }
 
@@ -134,9 +126,9 @@ public abstract class BankFunctionality extends Item {
                     return ActionResult.FAIL;
                 }
                 bankItemStorage.usedByPlayerUUID = player.getUuid();
-                System.out.println("bank options are " + options.selectedItemSlot);
+                bankItemStorage.usedByPlayerName = player.getEntityName();
+
                 itemStack = bankItemStorage.chooseItemToPlace(options, random);
-                System.out.println("selected stack: " + itemStack);
             }
             player.setStackInHand(context.getHand(), itemStack);
             ActionResult useResult = itemStack

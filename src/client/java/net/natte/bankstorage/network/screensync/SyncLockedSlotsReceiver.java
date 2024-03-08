@@ -14,7 +14,7 @@ public class SyncLockedSlotsReceiver implements PlayPacketHandler<LockedSlotsPac
             return;
         if (!(player.currentScreenHandler instanceof BankScreenHandler bankScreenHandler))
             return;
-        if (!(bankScreenHandler.inventory instanceof BankItemStorage bankItemStorage))
+        if (!(bankScreenHandler.inventory instanceof BankItemStorage))
             return;
         bankScreenHandler.setLockedSlotsNoSync(packet.lockedSlots);
     }

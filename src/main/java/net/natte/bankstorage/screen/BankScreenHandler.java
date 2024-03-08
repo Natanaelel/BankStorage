@@ -581,7 +581,6 @@ public class BankScreenHandler extends ScreenHandler {
 
     @Override
     public void onClosed(PlayerEntity player) {
-        System.out.println(player);
         ItemStack left = player.getOffHandStack();
         ItemStack right = player.getMainHandStack();
         if (Util.hasUUID(left)) {
