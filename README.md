@@ -33,4 +33,16 @@ Adds Banks of 7 increasing sizes. A portable storage device that can store from 
 - To craft higher tiers, surround the previous tier with 8 block of. the next material
 - Materials used are Coal, Copper, Iron, Gold, Emerald, Diamond and Netherite, in that order.
 
+### Admin commands
+- Lost banks can be restored with commands.
+- `/bankstorage fromuuid <uuid> <player>` - Gives the bank with specified uuid to player.
+- `/bankstorage list` - Lists all existing storages according to filters.
+- `/bankstorage list sort "date"/"type"/"player"` - Lists all existing storages in specified order.
+- `/bankstorage filter clear [<type>]` - Removes all filters. Optionally only filters of specified type.
+- `/bankstorage filter add <filter>` - Add a filter.
+- `<filter>` may be any of:
+    - `type <bank_1 - bank_7>` - Only list banks of specified type.
+    - `player <player>` - Only list banks which were last used by specified player.
+    - `item <item>` - Only list banks which contain the specified item.
+
 **[Join the Discord!](https://discord.gg/tXJqWYMZbK)**
