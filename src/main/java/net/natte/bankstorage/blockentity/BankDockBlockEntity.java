@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.jetbrains.annotations.Nullable;
 
+import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.block.Block;
@@ -95,6 +96,8 @@ public class BankDockBlockEntity extends BlockEntity {
             if (bankItemStorage == null) {
                 return Storage.empty();
             }
+            bankItemStorage.usedByPlayerUUID = FakePlayer.DEFAULT_UUID;
+            bankItemStorage.usedByPlayerName = "World";
             this.storage = createItemStorage(bankItemStorage);
         }
         return this.storage;
