@@ -83,6 +83,10 @@ public class BankDockBlockEntity extends BlockEntity {
     }
 
     private BankItemStorage getInventory() {
+        
+        if(this.world.isClient)
+            return null;
+
         if (Util.isBankLike(this.bankItem)) {
             return Util.getBankItemStorage(this.bankItem, this.world);
         }
