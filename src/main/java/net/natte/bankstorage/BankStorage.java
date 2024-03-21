@@ -1,6 +1,7 @@
 package net.natte.bankstorage;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -84,6 +85,11 @@ public class BankStorage implements ModInitializer {
 			long randomSeed = handler.player.getRandom().nextLong();
 			((SyncedRandomAccess) handler.player).bankstorage$setSyncedRandom(new Random(randomSeed));
 			sender.sendPacket(new SyncedRandomPacketS2C(randomSeed));
+		});
+
+		ServerPlayerEvents.COPY_FROM.register((oldPlayer, newPlayer, alive) -> {
+			Random random = ((SyncedRandomAccess)oldPlayer).bankstorage$getSyncedRandom();
+			((SyncedRandomAccess)newPlayer).bankstorage$setSyncedRandom(random);
 		});
 
 	}
