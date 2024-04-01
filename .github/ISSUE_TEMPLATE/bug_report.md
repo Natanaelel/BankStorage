@@ -6,6 +6,7 @@ labels: ''
 assignees: ''
 
 ---
+
 **Mod version**
 Which version of the mod that was used.
 
