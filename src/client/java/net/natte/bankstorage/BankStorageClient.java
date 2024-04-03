@@ -20,6 +20,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.impl.client.rendering.BlockEntityRendererRegistryImpl;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
@@ -41,7 +42,6 @@ import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.packet.client.SyncedRandomPacketS2C;
 import net.natte.bankstorage.packet.screensync.BankSyncPacketHandler;
 import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
-import net.natte.bankstorage.packet.server.BuildModePacketC2S;
 import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
 import net.natte.bankstorage.rendering.BankDockBlockEntityRenderer;
@@ -62,7 +62,7 @@ public class BankStorageClient implements ClientModInitializer {
 	public static BuildModePreviewRenderer buildModePreviewRenderer = new BuildModePreviewRenderer();
 
 	static {
-		Util.isShiftDown = () -> Screen.hasShiftDown();
+		Util.isShiftDown = Screen::hasShiftDown;
 		Util.onToggleBuildMode = MouseEvents::onToggleBuildMode;
 		CachedBankStorage.setCacheUpdater(uuid -> CachedBankStorage.bankRequestQueue.add(uuid));
 	}
@@ -156,7 +156,7 @@ public class BankStorageClient implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 
 			while (toggleBuildModeKeyBinding.wasPressed()) {
-				ClientPlayNetworking.send(new BuildModePacketC2S());
+				Util.onToggleBuildMode.accept(MinecraftClient.getInstance().player);
 			}
 
 			while (togglePickupModeKeyBinding.wasPressed()) {
