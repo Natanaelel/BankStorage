@@ -71,8 +71,9 @@ public class ItemPickupHandler {
                             bankPickedUpAny = true;
                         if (addToExistingSlot(bankItemStorage, pickedUpStack))
                             bankPickedUpAny = true;
-                        if (addToAnySlot(bankItemStorage, pickedUpStack))
-                            bankPickedUpAny = true;
+                        if (mode == PickupMode.FILTERED)
+                            if (addToAnySlot(bankItemStorage, pickedUpStack))
+                                bankPickedUpAny = true;
 
                         if (mode == PickupMode.VOID) {
                             if (!pickedUpStack.isEmpty()) {
