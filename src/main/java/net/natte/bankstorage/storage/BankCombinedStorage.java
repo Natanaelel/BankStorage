@@ -45,7 +45,8 @@ public class BankCombinedStorage implements Storage<ItemVariant> {
                 if (hasSlotWithItem(resource)) {
                     amount += insertIntoLockedSlots(resource, maxAmount - amount, transaction);
                     amount += insertIntoNonEmptySlots(resource, maxAmount - amount, transaction);
-                    amount += insertIntoAnySlots(resource, maxAmount - amount, transaction);
+                    // Don't insert into new slot when voiding overflow https://github.com/Natanaelel/BankStorage/issues/20
+                    // amount += insertIntoAnySlots(resource, maxAmount - amount, transaction);
                     amount = maxAmount;
                 }
                 break;
