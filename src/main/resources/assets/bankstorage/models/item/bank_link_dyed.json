@@ -1,0 +1,6 @@
+{
+  "parent": "bankstorage:model/bank_link_dyed",
+  "textures": {
+    "1": "bankstorage:item/bank_link"
+  }
+}

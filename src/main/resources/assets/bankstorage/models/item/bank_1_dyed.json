@@ -1,0 +1,6 @@
+{
+  "parent": "bankstorage:model/bank_cube_dyed",
+  "textures": {
+    "1": "bankstorage:item/bank_1"
+  }
+}

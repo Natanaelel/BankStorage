@@ -2,5 +2,13 @@
   "parent": "bankstorage:model/bank_cube",
   "textures": {
     "1": "bankstorage:item/bank_4"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "has_color": 1
+      },
+      "model": "bankstorage:item/bank_4_dyed"
+    }
+  ]
 }
