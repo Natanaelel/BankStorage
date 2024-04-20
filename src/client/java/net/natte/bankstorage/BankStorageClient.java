@@ -24,6 +24,8 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.item.DyeableItem;
+import net.minecraft.item.ItemConvertible;
 import net.minecraft.util.Identifier;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.events.KeyBindUpdateEvents;
@@ -81,7 +83,21 @@ public class BankStorageClient implements ClientModInitializer {
 		registerTickEvents();
 		registerEventListeners();
 		registerCommands();
+		registerItemColors();
 
+	}
+
+	private void registerItemColors() {
+
+		for (BankType type : BankStorage.bankTypes) {
+			ColorProviderRegistry.ITEM.register((stack, tintIndex) -> {
+				return ((DyeableItem) stack.getItem()).getColor(stack);
+			}, new ItemConvertible[] { type.item });
+		}
+
+		ColorProviderRegistry.ITEM.register((stack, tintIndex) -> {
+			return ((DyeableItem) stack.getItem()).getColor(stack);
+		}, new ItemConvertible[] { BankStorage.LINK_ITEM });
 	}
 
 	private void registerCommands() {
@@ -108,6 +124,16 @@ public class BankStorageClient implements ClientModInitializer {
 		ModelPredicateProviderRegistry.register(BankStorage.LINK_ITEM, new Identifier("linked_bank"),
 				(itemStack, clientWorld, livingEntity, i) -> {
 					return Float.valueOf(LinkItem.getTypeName(itemStack).split("_")[1]) / 10;
+				});
+		for (BankType type : BankStorage.bankTypes) {
+			ModelPredicateProviderRegistry.register(type.item, new Identifier("has_color"),
+					(itemStack, clientWorld, livingEntity, i) -> {
+						return ((DyeableItem) type.item).hasColor(itemStack) ? 1.0f : 0.0f;
+					});
+		}
+		ModelPredicateProviderRegistry.register(BankStorage.LINK_ITEM, new Identifier("has_color"),
+				(itemStack, clientWorld, livingEntity, i) -> {
+					return ((DyeableItem) BankStorage.LINK_ITEM).hasColor(itemStack) ? 1.0f : 0.0f;
 				});
 
 	}

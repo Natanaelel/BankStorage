@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Locale;
 
 import net.minecraft.client.item.TooltipContext;
+import net.minecraft.item.DyeableItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
@@ -14,7 +15,7 @@ import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.util.Util;
 
-public class LinkItem extends BankFunctionality {
+public class LinkItem extends BankFunctionality implements DyeableItem {
 
     public static final String BANK_TYPE_KEY = "bank:link_type";
 

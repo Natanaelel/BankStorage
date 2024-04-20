@@ -3,6 +3,7 @@ package net.natte.bankstorage.container;
 import java.util.List;
 
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
+import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.item.Item.Settings;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -49,6 +50,7 @@ public class BankType {
         this.screenHandlerType = new ExtendedScreenHandlerType<>(BankScreenHandler.fromType(this));
         Registry.register(Registries.SCREEN_HANDLER, identifier, screenHandlerType);
         types.add(this);
+        CauldronBehavior.WATER_CAULDRON_BEHAVIOR.put(this.item, CauldronBehavior.CLEAN_DYEABLE_ITEM);
     }
 
     public int size() {

@@ -12,7 +12,7 @@ import net.minecraft.world.World;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.util.Util;
 
-public class BankItem extends BankFunctionality {
+public class BankItem extends BankFunctionality implements DyeableItem {
 
     public static final String UUID_KEY = "bank:uuid";
     public static final String OPTIONS_KEY = "bank:options";
