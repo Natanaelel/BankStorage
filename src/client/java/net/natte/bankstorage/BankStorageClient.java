@@ -42,6 +42,7 @@ import net.natte.bankstorage.packet.client.SyncedRandomPacketS2C;
 import net.natte.bankstorage.packet.screensync.BankSyncPacketHandler;
 import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
 import net.natte.bankstorage.packet.server.BuildModePacketC2S;
+import net.natte.bankstorage.packet.server.OpenBankFromKeyBindPacketC2S;
 import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
 import net.natte.bankstorage.rendering.BankDockBlockEntityRenderer;
@@ -58,6 +59,7 @@ public class BankStorageClient implements ClientModInitializer {
 	public static KeyBinding toggleBuildModeKeyBinding;
 	public static KeyBinding togglePickupModeKeyBinding;
 	public static KeyBinding lockSlotKeyBinding;
+	public static KeyBinding openBankFromKeyBinding;
 
 	public static BuildModePreviewRenderer buildModePreviewRenderer = new BuildModePreviewRenderer();
 
@@ -161,6 +163,10 @@ public class BankStorageClient implements ClientModInitializer {
 
 			while (togglePickupModeKeyBinding.wasPressed()) {
 				ClientPlayNetworking.send(new PickupModePacketC2S());
+			}
+
+			while (openBankFromKeyBinding.wasPressed()){
+				ClientPlayNetworking.send(new OpenBankFromKeyBindPacketC2S());
 			}
 		});
 	}

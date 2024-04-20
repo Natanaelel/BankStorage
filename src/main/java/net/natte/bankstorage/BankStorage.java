@@ -158,6 +158,8 @@ public class BankStorage implements ModInitializer {
 		ServerPlayNetworking.registerGlobalReceiver(KeyBindUpdatePacketC2S.TYPE, new KeyBindUpdatePacketC2S.Receiver());
 
 		ServerPlayNetworking.registerGlobalReceiver(UpdateBankOptionsPacketC2S.TYPE, new UpdateBankOptionsPacketC2S.Receiver());
+		ServerPlayNetworking.registerGlobalReceiver(OpenBankFromKeyBindPacketC2S.TYPE,
+				new OpenBankFromKeyBindPacketC2S.Receiver());
 
 	}
 
