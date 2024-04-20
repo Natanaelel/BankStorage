@@ -18,6 +18,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.impl.client.rendering.BlockEntityRendererRegistryImpl;
 import net.minecraft.client.gui.screen.Screen;
@@ -178,6 +179,8 @@ public class BankStorageClient implements ClientModInitializer {
 
 		lockSlotKeyBinding = KeyBindingHelper.registerKeyBinding(
 				new KeyBinding("key.bankstorage.lockslot", GLFW.GLFW_KEY_LEFT_ALT, "category.bankstorage"));
+		openBankFromKeyBinding = KeyBindingHelper.registerKeyBinding(
+				new KeyBinding("key.bankstorage.openbankfromkeybind", GLFW.GLFW_KEY_UNKNOWN, "category.bankstorage"));
 	}
 
 	public void registerKeyBindListeners() {
@@ -191,7 +194,7 @@ public class BankStorageClient implements ClientModInitializer {
 				ClientPlayNetworking.send(new PickupModePacketC2S());
 			}
 
-			while (openBankFromKeyBinding.wasPressed()){
+			while (openBankFromKeyBinding.wasPressed()) {
 				ClientPlayNetworking.send(new OpenBankFromKeyBindPacketC2S());
 			}
 		});

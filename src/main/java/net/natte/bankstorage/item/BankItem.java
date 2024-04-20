@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Locale;
 
 import net.minecraft.client.item.TooltipContext;
+import net.minecraft.item.DyeableItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;

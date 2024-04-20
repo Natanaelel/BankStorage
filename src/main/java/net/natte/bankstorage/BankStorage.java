@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityT
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.minecraft.block.Block;
 import net.minecraft.block.MapColor;
+import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroups;
@@ -28,6 +29,7 @@ import net.natte.bankstorage.packet.client.SyncedRandomPacketS2C;
 import net.natte.bankstorage.packet.server.BuildModePacketC2S;
 import net.natte.bankstorage.packet.server.KeyBindUpdatePacketC2S;
 import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
+import net.natte.bankstorage.packet.server.OpenBankFromKeyBindPacketC2S;
 import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
 import net.natte.bankstorage.packet.server.SelectedSlotPacketC2S;
@@ -107,6 +109,8 @@ public class BankStorage implements ModInitializer {
 		BANK_5.register(bankTypes);
 		BANK_6.register(bankTypes);
 		BANK_7.register(bankTypes, new FabricItemSettings().fireproof());
+
+		CauldronBehavior.WATER_CAULDRON_BEHAVIOR.put(LINK_ITEM, CauldronBehavior.CLEAN_DYEABLE_ITEM);
 
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(group -> {
 			bankTypes.forEach(type -> {
