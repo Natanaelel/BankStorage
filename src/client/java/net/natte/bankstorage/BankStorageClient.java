@@ -44,7 +44,6 @@ import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.packet.client.SyncedRandomPacketS2C;
 import net.natte.bankstorage.packet.screensync.BankSyncPacketHandler;
 import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
-import net.natte.bankstorage.packet.server.BuildModePacketC2S;
 import net.natte.bankstorage.packet.server.OpenBankFromKeyBindPacketC2S;
 import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
@@ -176,7 +175,6 @@ public class BankStorageClient implements ClientModInitializer {
 				new KeyBinding("key.bankstorage.togglebuildmode", GLFW.GLFW_KEY_UNKNOWN, "category.bankstorage"));
 		togglePickupModeKeyBinding = KeyBindingHelper.registerKeyBinding(
 				new KeyBinding("key.bankstorage.togglepickupmode", GLFW.GLFW_KEY_P, "category.bankstorage"));
-
 		lockSlotKeyBinding = KeyBindingHelper.registerKeyBinding(
 				new KeyBinding("key.bankstorage.lockslot", GLFW.GLFW_KEY_LEFT_ALT, "category.bankstorage"));
 		openBankFromKeyBinding = KeyBindingHelper.registerKeyBinding(
@@ -187,7 +185,7 @@ public class BankStorageClient implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 
 			while (toggleBuildModeKeyBinding.wasPressed()) {
-				ClientPlayNetworking.send(new BuildModePacketC2S());
+				Util.onToggleBuildMode.accept(client.player);
 			}
 
 			while (togglePickupModeKeyBinding.wasPressed()) {
