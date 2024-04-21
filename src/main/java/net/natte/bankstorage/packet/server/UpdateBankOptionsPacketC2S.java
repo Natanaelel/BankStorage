@@ -1,5 +1,7 @@
 package net.natte.bankstorage.packet.server;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.PacketType;
@@ -8,13 +10,16 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.MathHelper;
+import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.packet.NetworkUtil;
+import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 
 /**
- * Set the options of hold bank to values from client after validating
+ * Set the options of bank in dock or hands to values from client after
+ * validating
  * selectedSlot.
  * if selectedSlot didn't pass validation (bankstorage block items updated to
  * smaller size or smt): send cache update to client if buildmode
@@ -27,6 +32,25 @@ public class UpdateBankOptionsPacketC2S implements FabricPacket {
 
         @Override
         public void receive(UpdateBankOptionsPacketC2S packet, ServerPlayerEntity player, PacketSender responseSender) {
+
+            if (player.currentScreenHandler instanceof BankScreenHandler bankScreenHandler) {
+
+                AtomicBoolean hasOpenedBankDock = new AtomicBoolean(false);
+
+                bankScreenHandler.getContext().run(
+                        (world, blockPos) -> world
+                                .getBlockEntity(blockPos, BankStorage.BANK_DOCK_BLOCK_ENTITY)
+                                .ifPresent(dock -> {
+                                    if (dock.hasBank()) {
+                                        Util.setOptions(dock.getBank(), packet.options);
+                                        dock.markDirty();
+                                        hasOpenedBankDock.set(true);
+                                    }
+                                }));
+
+                if (hasOpenedBankDock.get())
+                    return;
+            }
 
             ItemStack bankItem;
 

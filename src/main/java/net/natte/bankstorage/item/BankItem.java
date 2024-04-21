@@ -20,15 +20,12 @@ public class BankItem extends BankFunctionality implements DyeableItem {
 
     private static final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance(Locale.US);
 
-
     private BankType type;
 
     public BankItem(Settings settings, BankType type) {
         super(settings);
         this.type = type;
     }
-
-    
 
     public BankType getType() {
         return this.type;

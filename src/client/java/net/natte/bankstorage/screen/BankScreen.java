@@ -348,7 +348,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
     }
 
     private void onSortButtonPress(SortButtonWidget button) {
-        if(button.timeSinceLastPressed() < 1000){
+        if (button.timeSinceLastPressed() < 1000) {
             button.sortMode = switch (button.sortMode) {
                 case COUNT -> SortMode.NAME;
                 case NAME -> SortMode.MOD;

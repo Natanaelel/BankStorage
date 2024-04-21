@@ -2,6 +2,8 @@ package net.natte.bankstorage.item;
 
 import java.util.Random;
 
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -11,12 +13,12 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.world.World;
 import net.natte.bankstorage.access.SyncedRandomAccess;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
-import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 
 public abstract class BankFunctionality extends Item {
@@ -30,117 +32,151 @@ public abstract class BankFunctionality extends Item {
         return false;
     }
 
-    @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
-        ItemStack bank = player.getStackInHand(hand);
+    // isBuildMode:B usedOnBlock:B isSneaking:B hasToggleKey:B -> shouldOpen:B
+    // 78: 0 0 0 0 -> 1
+    // 78: 0 0 0 1 -> 1
+    // 70: 0 0 1 0 -> 0 (toggle build mode) animate
+    // 78: 0 0 1 1 -> 1
+    // 0 1 0 0 -> 1 (unless clicked chest etc)
+    // 0 1 0 1 -> 1 (unless clicked chest etc)
+    // 0 1 1 0 -> 1 (:force open regardless of target)
+    // 0 1 1 1 -> 1 (:force open regardless of target)
+    // 78: 1 0 0 0 -> 1 (:open when build mode because no bound key)
+    // 78: 1 0 0 1 -> 0 (:^ but has bound key)
+    // 70: 1 0 1 0 -> 0 (toggle build mode) animate
+    // 78: 1 0 1 1 -> 0 (^ but has bound key)
+    // 1 1 0 0 -> 0 (build unless chest) animate
+    // 1 1 0 1 -> 0 (build unless chest) animate
+    // 1 1 1 0 -> 0 (build) animate
+    // 1 1 1 1 -> 0 (build) animate
 
-        if (Util.isDebugMode)
-            player.sendMessage(Text.literal("uuid: " + Util.getUUID(bank)));
+    // on .use or .useOnBlock. never returns PASS
+    private ActionResult useBank(PlayerEntity player, Hand hand, boolean usedOnBlock,
+            @Nullable BlockHitResult hitResult) {
+
+        ItemStack bank = player.getStackInHand(hand);
+        World world = player.getWorld();
+        boolean isBuildMode = Util.getOrCreateOptions(bank).buildMode != BuildMode.NONE;
+        boolean hasBoundKey = !Util.isBuildModeKeyUnBound;
 
         if (bank.getCount() != 1)
-            return TypedActionResult.pass(bank);
+            return ActionResult.FAIL;
 
-        boolean isBuildMode = Util.getOrCreateOptions(bank).buildMode != BuildMode.NONE;
+        boolean shouldToggleBuildMode = !usedOnBlock && player.isSneaking() && Util.isBuildModeKeyUnBound;
 
-        if (Util.isDebugMode)
-            player.sendMessage(Text.literal("buildmode: " + Util.getOrCreateOptions(bank).buildMode));
-        if (Util.isDebugMode)
-            player.sendMessage(Text.literal("sneaking: " + player.isSneaking()));
-        if (Util.isDebugMode)
-            player.sendMessage(Text.literal("key unbound: " + Util.isBuildModeKeyUnBound));
-
-        // if (world.isClient)
-        // return player.isSneaking() && (isBuildMode ? Util.isBuildModeKeyUnBound :
-        // true)
-        // ? TypedActionResult.success(bank)
-        // : TypedActionResult.pass(bank);
-
-        // if (player.isSneaking() && Util.isBuildModeKeyUnBound) {
-        // if (Util.isBuildModeKeyUnBound)
-        // ServerEvents.onToggleBuildMode(((ServerPlayerEntity) player));
-        // return TypedActionResult.success(bank);
-        // }
-        // if client: return
-        // else if condition return
-
-        if (player.isSneaking() && Util.isBuildModeKeyUnBound) {
+        if (shouldToggleBuildMode) { // animate
             if (world.isClient)
                 Util.onToggleBuildMode.accept(player);
-            return TypedActionResult.success(bank);
+            return ActionResult.CONSUME;
         }
-        if (world.isClient)
-            return TypedActionResult.pass(bank);
 
+        boolean tryOpenWhenUsedOnAir = !usedOnBlock;
+
+        if (tryOpenWhenUsedOnAir) {
+            if (isBuildMode && hasBoundKey)
+                return ActionResult.FAIL;
+            return tryOpenBank(world, player, bank);
+        }
+
+        boolean openWhenUsedOnBlock = usedOnBlock && !isBuildMode;
+
+        if (openWhenUsedOnBlock) {
+            return tryOpenBank(world, player, bank);
+        }
+
+        return build(new ItemUsageContext(world, player, hand, bank, hitResult));
+    }
+
+    private ActionResult tryOpenBank(World world, PlayerEntity player, ItemStack bank) {
+
+        if (world.isClient)
+            return ActionResult.CONSUME;
+
+        @Nullable
         BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, world);
+
+        // fail
         if (bankItemStorage == null) {
             player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
-            return TypedActionResult.fail(bank);
+            return ActionResult.FAIL;
         }
+
+        // success
         bankItemStorage.usedByPlayerUUID = player.getUuid();
         bankItemStorage.usedByPlayerName = player.getEntityName();
 
-        if (!(player.currentScreenHandler instanceof BankScreenHandler)
-                && (isBuildMode ? Util.isBuildModeKeyUnBound : true))
-            player.openHandledScreen(bankItemStorage.withItem(bank));
-        // return TypedActionResult.consume(bank);
-        return TypedActionResult.success(bank);
+        player.openHandledScreen(bankItemStorage.withItem(bank));
+        return ActionResult.CONSUME;
     }
 
-    @Override
-    public ActionResult useOnBlock(ItemUsageContext context) {
+    private ActionResult build(ItemUsageContext context) {
+
         PlayerEntity player = context.getPlayer();
+        ItemStack bank = context.getStack();
         World world = context.getWorld();
-        ItemStack bank = player.getStackInHand(context.getHand());
 
         Random random = world.isClient ? Util.clientSyncedRandom
                 : ((SyncedRandomAccess) player).bankstorage$getSyncedRandom();
 
-        if (random == null) {
-            player.sendMessage(
-                    Util.invalid().copy()
-                            .append(Text.of("\n§r"))
-                            .append(Text.translatable("error.bankstorage.random_is_null")));
-            return ActionResult.FAIL;
-        }
-
-        if (bank.getCount() != 1)
-            return ActionResult.PASS;
-
         BankOptions options = Util.getOrCreateOptions(bank);
 
-        if (options.buildMode == BuildMode.NORMAL || options.buildMode == BuildMode.RANDOM) {
-            ItemStack itemStack;
-            if (world.isClient) {
-                CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(bank);
-                if (cachedBankStorage == null) {
-                    if (Util.isLink(bank))
-                        player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
-                    return ActionResult.FAIL;
-                }
-                itemStack = cachedBankStorage.chooseItemToPlace(options, random);
-            } else {
-                BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, world);
-                if (bankItemStorage == null) {
-                    if (Util.isLink(bank))
-                        player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
-                    return ActionResult.FAIL;
-                }
-                bankItemStorage.usedByPlayerUUID = player.getUuid();
-                bankItemStorage.usedByPlayerName = player.getEntityName();
-
-                itemStack = bankItemStorage.chooseItemToPlace(options, random);
+        ItemStack blockToPlace;
+        if (world.isClient) {
+            @Nullable
+            CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(bank);
+            if (cachedBankStorage == null) {
+                if (Util.isLink(bank))
+                    player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
+                return ActionResult.FAIL;
             }
-            player.setStackInHand(context.getHand(), itemStack);
-            ActionResult useResult = itemStack
-                    .useOnBlock(new ItemUsageContext(world, player, context.getHand(), itemStack, context.hit));
-            player.setStackInHand(context.getHand(), bank);
-            if (world.isClient)
-                CachedBankStorage.requestCacheUpdate(Util.getUUID(bank));
-
-            return useResult;
+            blockToPlace = cachedBankStorage.chooseItemToPlace(options, random);
         } else {
-            return ActionResult.PASS;
+            @Nullable
+            BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, world);
+            if (bankItemStorage == null) {
+                if (Util.isLink(bank))
+                    player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
+                return ActionResult.FAIL;
+            }
+            bankItemStorage.usedByPlayerUUID = player.getUuid();
+            bankItemStorage.usedByPlayerName = player.getEntityName();
+
+            blockToPlace = bankItemStorage.chooseItemToPlace(options, random);
         }
+
+        // prevent ae2wtlib restock dupe by placing from stack with count 1
+        // https://github.com/Mari023/AE2WirelessTerminalLibrary/blob/9a971887fcc7dced398297a2c6cb9057633b9883/src/main/java/de/mari_023/ae2wtlib/AE2wtlibEvents.java#L35
+        int count = blockToPlace.getCount();
+        blockToPlace.setCount(1);
+        ActionResult useResult = blockToPlace
+                .useOnBlock(new ItemUsageContext(world, player, context.getHand(), blockToPlace, context.hit));
+
+        blockToPlace.setCount(blockToPlace.getCount() == 1 ? count : count - 1);
+
+        if (world.isClient)
+            CachedBankStorage.requestCacheUpdate(Util.getUUID(bank));
+
+        return useResult;
+    }
+
+    @Override
+    public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+
+        ItemStack bank = player.getStackInHand(hand);
+        ActionResult result = useBank(player, hand, false, null);
+
+        return switch (result) {
+            case CONSUME -> TypedActionResult.fail(bank);
+            case CONSUME_PARTIAL -> TypedActionResult.consume(bank);
+            case FAIL -> TypedActionResult.fail(bank);
+            case PASS -> TypedActionResult.pass(bank);
+            case SUCCESS -> TypedActionResult.success(bank);
+        };
+    }
+
+    @Override
+    public ActionResult useOnBlock(ItemUsageContext context) {
+        return useBank(context.getPlayer(), context.getHand(), true, context.hit);
     }
 
     @Override

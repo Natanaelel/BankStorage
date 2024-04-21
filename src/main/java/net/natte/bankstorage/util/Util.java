@@ -213,7 +213,10 @@ public class Util {
         return bankItemStorage;
     }
 
-    public static BankItemStorage getBankItemStorage(ItemStack bank, World world) {
+    /**
+     * @return null if unlinked {@link LinkItem} otherwise {@link BankItemStorage}
+     */
+    public static @Nullable BankItemStorage getBankItemStorage(ItemStack bank, World world) {
 
         if (Util.isLink(bank)) {
             if (!Util.hasUUID(bank))

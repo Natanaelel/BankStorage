@@ -88,8 +88,8 @@ public class BankStorage implements ModInitializer {
 		});
 
 		ServerPlayerEvents.COPY_FROM.register((oldPlayer, newPlayer, alive) -> {
-			Random random = ((SyncedRandomAccess)oldPlayer).bankstorage$getSyncedRandom();
-			((SyncedRandomAccess)newPlayer).bankstorage$setSyncedRandom(random);
+			Random random = ((SyncedRandomAccess) oldPlayer).bankstorage$getSyncedRandom();
+			((SyncedRandomAccess) newPlayer).bankstorage$setSyncedRandom(random);
 		});
 
 	}
@@ -158,7 +158,8 @@ public class BankStorage implements ModInitializer {
 		ServerPlayNetworking.registerGlobalReceiver(LockSlotPacketC2S.TYPE, new LockSlotPacketC2S.Receiver());
 		ServerPlayNetworking.registerGlobalReceiver(KeyBindUpdatePacketC2S.TYPE, new KeyBindUpdatePacketC2S.Receiver());
 
-		ServerPlayNetworking.registerGlobalReceiver(UpdateBankOptionsPacketC2S.TYPE, new UpdateBankOptionsPacketC2S.Receiver());
+		ServerPlayNetworking.registerGlobalReceiver(UpdateBankOptionsPacketC2S.TYPE,
+				new UpdateBankOptionsPacketC2S.Receiver());
 		ServerPlayNetworking.registerGlobalReceiver(OpenBankFromKeyBindPacketC2S.TYPE,
 				new OpenBankFromKeyBindPacketC2S.Receiver());
 
