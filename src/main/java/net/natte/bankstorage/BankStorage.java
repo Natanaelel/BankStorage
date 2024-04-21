@@ -18,7 +18,6 @@ import net.minecraft.item.ItemGroups;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.util.Identifier;
 import net.natte.bankstorage.access.SyncedRandomAccess;
 import net.natte.bankstorage.block.BankDockBlock;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
@@ -123,13 +122,13 @@ public class BankStorage implements ModInitializer {
 
 	private void registerDock() {
 
-		Registry.register(Registries.BLOCK, new Identifier(MOD_ID, "bank_dock"), BANK_DOCK_BLOCK);
-		Registry.register(Registries.ITEM, new Identifier(MOD_ID, "bank_dock"),
+		Registry.register(Registries.BLOCK, Util.ID("bank_dock"), BANK_DOCK_BLOCK);
+		Registry.register(Registries.ITEM, Util.ID("bank_dock"),
 				new BlockItem(BANK_DOCK_BLOCK, new FabricItemSettings()));
 
 		BANK_DOCK_BLOCK_ENTITY = Registry.register(
 				Registries.BLOCK_ENTITY_TYPE,
-				new Identifier(MOD_ID, "bank_dock_block_entity"),
+				Util.ID("bank_dock_block_entity"),
 				FabricBlockEntityTypeBuilder.create(BankDockBlockEntity::new, BANK_DOCK_BLOCK).build());
 
 		ItemStorage.SIDED.registerForBlockEntity(
@@ -138,9 +137,9 @@ public class BankStorage implements ModInitializer {
 	}
 
 	private void registerRecipes() {
-		Registry.register(Registries.RECIPE_SERIALIZER, new Identifier(MOD_ID, "bank_upgrade"),
+		Registry.register(Registries.RECIPE_SERIALIZER, Util.ID("bank_upgrade"),
 				new BankRecipe.Serializer());
-		Registry.register(Registries.RECIPE_SERIALIZER, new Identifier(MOD_ID, "bank_link"),
+		Registry.register(Registries.RECIPE_SERIALIZER, Util.ID("bank_link"),
 				new BankLinkRecipe.Serializer());
 
 	}

@@ -28,8 +28,6 @@ import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.command.SortingModeArgumentType.SortingMode;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.item.BankItem;
@@ -79,9 +77,9 @@ public class RestoreBankCommands {
     }
 
     private static void registerArgumentTypes() {
-        ArgumentTypeRegistry.registerArgumentType(new Identifier(BankStorage.MOD_ID, "sorting_mode"),
+        ArgumentTypeRegistry.registerArgumentType(Util.ID("sorting_mode"),
                 SortingModeArgumentType.class, ConstantArgumentSerializer.of(SortingModeArgumentType::sortingMode));
-        ArgumentTypeRegistry.registerArgumentType(new Identifier(BankStorage.MOD_ID, "bank_type"),
+        ArgumentTypeRegistry.registerArgumentType(Util.ID("bank_type"),
                 BankTypeArgumentType.class, ConstantArgumentSerializer.of(BankTypeArgumentType::bankType));
     }
 
