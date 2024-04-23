@@ -46,7 +46,7 @@ public class MouseEvents {
         CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(bank);
         if (cachedBankStorage == null)
             return false;
-        options.selectedItemSlot = MathHelper.clamp(selectedItemSlot, 0, cachedBankStorage.items.size() - 1);
+        options.selectedItemSlot = MathHelper.clamp(selectedItemSlot, 0, cachedBankStorage.blockItems.size() - 1);
         ClientPlayNetworking.send(new UpdateBankOptionsPacketC2S(options));
 
         return true;

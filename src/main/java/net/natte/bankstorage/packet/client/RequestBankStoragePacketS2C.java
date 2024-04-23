@@ -41,8 +41,8 @@ public class RequestBankStoragePacketS2C implements FabricPacket {
     @Override
     public void write(PacketByteBuf buf) {
 
-        buf.writeInt(this.cachedBankStorage.items.size());
-        for (ItemStack itemStack : this.cachedBankStorage.items) {
+        buf.writeInt(this.cachedBankStorage.blockItems.size());
+        for (ItemStack itemStack : this.cachedBankStorage.blockItems) {
             Util.writeLargeStack(buf, itemStack);
         }
         buf.writeUuid(this.cachedBankStorage.uuid);

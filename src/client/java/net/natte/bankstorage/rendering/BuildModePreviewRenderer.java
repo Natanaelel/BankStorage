@@ -148,10 +148,10 @@ public class BuildModePreviewRenderer implements EndTick {
 
     private void renderRandomPreview(DrawContext context, float tickDelta) {
 
-        if (this.bankStorage.items.isEmpty())
+        if (this.bankStorage.blockItems.isEmpty())
             return;
 
-        List<ItemStack> items = this.bankStorage.items;
+        List<ItemStack> items = this.bankStorage.blockItems;
 
         int scaledHeight = context.getScaledWindowHeight();
         int scaledWidth = context.getScaledWindowWidth();
@@ -182,10 +182,10 @@ public class BuildModePreviewRenderer implements EndTick {
     }
 
     private void renderBlockPreview(DrawContext context, float tickDelta) {
-        if (this.bankStorage.items.isEmpty())
+        if (this.bankStorage.blockItems.isEmpty())
             return;
 
-        List<ItemStack> items = this.bankStorage.items;
+        List<ItemStack> items = this.bankStorage.blockItems;
 
         int scaledHeight = context.getScaledWindowHeight();
         int scaledWidth = context.getScaledWindowWidth();

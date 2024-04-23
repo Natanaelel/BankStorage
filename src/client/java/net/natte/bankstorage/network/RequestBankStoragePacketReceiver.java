@@ -21,7 +21,7 @@ public class RequestBankStoragePacketReceiver implements PlayPacketHandler<Reque
             BankStorageClient.buildModePreviewRenderer.setBankStorage(bankStorage);
 
             int selectedSlot = BankStorageClient.buildModePreviewRenderer.options.selectedItemSlot;
-            int newSelectedSlot = MathHelper.clamp(selectedSlot, 0, bankStorage.items.size() - 1);
+            int newSelectedSlot = MathHelper.clamp(selectedSlot, 0, bankStorage.blockItems.size() - 1);
             if (newSelectedSlot != selectedSlot) {
                 BankOptions options = BankStorageClient.buildModePreviewRenderer.options;
                 options.selectedItemSlot = newSelectedSlot;

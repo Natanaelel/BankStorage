@@ -18,7 +18,7 @@ import net.natte.bankstorage.util.Util;
 /**
  * a client-side only representation of a bank storage containing:
  * <p>
- * - {@link #items} stores all placeable items
+ * - {@link #blockItems} stores all placeable items
  * <p>
  * - {@link #uuid} uuid of the bank
  * <p>
@@ -55,15 +55,15 @@ public class CachedBankStorage {
     }
 
     public ItemStack getSelectedItem(int selectedItemSlot) {
-        if (this.items.isEmpty())
+        if (this.blockItems.isEmpty())
             return ItemStack.EMPTY;
-        return this.items.get(selectedItemSlot % this.items.size());
+        return this.blockItems.get(selectedItemSlot % this.blockItems.size());
     }
 
     public ItemStack getRandomItem(Random random) {
-        if (this.items.isEmpty())
+        if (this.blockItems.isEmpty())
             return ItemStack.EMPTY;
-        return this.items.get(random.nextInt(this.items.size()));
+        return this.blockItems.get(random.nextInt(this.blockItems.size()));
     }
 
     public ItemStack chooseItemToPlace(BankOptions options, Random random) {

@@ -48,8 +48,8 @@ public class PickBlockEvents {
             return true;
         }
         int slot = -1;
-        for (int i = 0; i < cachedBankStorage.items.size(); ++i) {
-            ItemStack itemStack = cachedBankStorage.items.get(i);
+        for (int i = 0; i < cachedBankStorage.blockItems.size(); ++i) {
+            ItemStack itemStack = cachedBankStorage.blockItems.get(i);
             if (!itemStack.isEmpty() && ItemStack.canCombine(pickedStack, itemStack)) {
                 slot = i;
                 break;
