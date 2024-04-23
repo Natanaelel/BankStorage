@@ -244,6 +244,9 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         return super.canInsert(stack);
     }
 
+    public List<ItemStack> getItems() {
+        return this.stacks;
+    }
     public List<ItemStack> getBlockItems() {
         List<ItemStack> items = new ArrayList<>();
         for (ItemStack stack : this.stacks) {

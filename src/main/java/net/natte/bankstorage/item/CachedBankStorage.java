@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.util.Util;
@@ -35,12 +36,16 @@ public class CachedBankStorage {
     };
 
     public List<ItemStack> items;
+    public List<ItemStack> nonEmptyItems;
+    public List<ItemStack> blockItems;
     public UUID uuid;
     public short revision;
     public short optionsRevision;
 
     public CachedBankStorage(List<ItemStack> items, UUID uuid, short revision, short optionsRevision) {
         this.items = items;
+        this.nonEmptyItems = items.stream().filter(stack -> !stack.isEmpty()).toList();
+        this.blockItems = nonEmptyItems.stream().filter(stack -> stack.getItem() instanceof BlockItem).toList();
         this.uuid = uuid;
         this.revision = revision;
         this.optionsRevision = optionsRevision;

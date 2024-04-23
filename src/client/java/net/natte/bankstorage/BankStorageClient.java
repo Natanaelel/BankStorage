@@ -20,6 +20,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback;
 import net.fabricmc.fabric.impl.client.rendering.BlockEntityRendererRegistryImpl;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
@@ -33,6 +34,7 @@ import net.natte.bankstorage.events.KeyBindUpdateEvents;
 import net.natte.bankstorage.events.MouseEvents;
 import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.item.LinkItem;
+import net.natte.bankstorage.item.tooltip.BankTooltipData;
 import net.natte.bankstorage.network.ItemStackBobbingAnimationPacketReceiver;
 import net.natte.bankstorage.network.RequestBankStoragePacketReceiver;
 import net.natte.bankstorage.network.SyncedRandomPacketReceiver;
@@ -50,7 +52,7 @@ import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
 import net.natte.bankstorage.rendering.BankDockBlockEntityRenderer;
 import net.natte.bankstorage.rendering.BuildModePreviewRenderer;
 import net.natte.bankstorage.screen.BankScreen;
-
+import net.natte.bankstorage.tooltip.BankTooltipComponent;
 import net.natte.bankstorage.util.Util;
 
 @Environment(EnvType.CLIENT)
@@ -114,9 +116,17 @@ public class BankStorageClient implements ClientModInitializer {
 	}
 
 	private void registerEventListeners() {
-		ClientPlayConnectionEvents.JOIN.register(((handler, sender, client) -> {
+
+		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
 			KeyBindUpdateEvents.onKeyBindChange();
-		}));
+		});
+
+		TooltipComponentCallback.EVENT.register(data -> {
+			if (data instanceof BankTooltipData bankTooltipData) {
+				return new BankTooltipComponent(bankTooltipData.items());
+			}
+			return null;
+		});
 
 	}
 

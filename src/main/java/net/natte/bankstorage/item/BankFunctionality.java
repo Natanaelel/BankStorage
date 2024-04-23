@@ -1,9 +1,12 @@
 package net.natte.bankstorage.item;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.client.item.TooltipData;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -17,6 +20,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.world.World;
 import net.natte.bankstorage.access.SyncedRandomAccess;
 import net.natte.bankstorage.container.BankItemStorage;
+import net.natte.bankstorage.item.tooltip.BankTooltipData;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.util.Util;
@@ -120,6 +124,7 @@ public abstract class BankFunctionality extends Item {
 
         BankOptions options = Util.getOrCreateOptions(bank);
 
+        BankItemStorage bankItemStorage = null;
         ItemStack blockToPlace;
         if (world.isClient) {
             @Nullable
@@ -131,8 +136,7 @@ public abstract class BankFunctionality extends Item {
             }
             blockToPlace = cachedBankStorage.chooseItemToPlace(options, random);
         } else {
-            @Nullable
-            BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, world);
+            bankItemStorage = Util.getBankItemStorage(bank, world);
             if (bankItemStorage == null) {
                 if (Util.isLink(bank))
                     player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
@@ -155,6 +159,10 @@ public abstract class BankFunctionality extends Item {
 
         if (world.isClient)
             CachedBankStorage.requestCacheUpdate(Util.getUUID(bank));
+        
+        if(bankItemStorage != null){
+            bankItemStorage.markDirty();
+        }
 
         return useResult;
     }
@@ -183,5 +191,24 @@ public abstract class BankFunctionality extends Item {
     public boolean damage(DamageSource source) {
         // can't take any damage
         return false;
+    }
+
+    @Override
+    public Optional<TooltipData> getTooltipData(ItemStack stack) {
+
+        if (Util.isShiftDown.get())
+            return Optional.empty();
+
+        CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(stack);
+
+        if (cachedBankStorage == null)
+            return Optional.empty();
+
+        List<ItemStack> items = cachedBankStorage.nonEmptyItems;
+
+        if (items.isEmpty())
+            return Optional.empty();
+
+        return Optional.of(new BankTooltipData(cachedBankStorage.nonEmptyItems));
     }
 }
