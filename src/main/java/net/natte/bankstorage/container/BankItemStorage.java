@@ -14,14 +14,13 @@ import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -31,7 +30,7 @@ import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 
-public class BankItemStorage extends SimpleInventory implements ExtendedScreenHandlerFactory {
+public class BankItemStorage extends SimpleInventory implements ExtendedScreenHandlerFactory<ItemStack> {
 
     // public BankOptions options;
     public BankType type;
@@ -77,8 +76,8 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         BankStorage.LOGGER
                 .info("Upgrading bank from " + this.type.getName() + " to " + type.getName() + " uuid " + this.uuid);
         BankItemStorage newBankItemStorage = new BankItemStorage(type, this.uuid);
-        for (int i = 0; i < this.stacks.size(); ++i) {
-            newBankItemStorage.stacks.set(i, this.stacks.get(i));
+        for (int i = 0; i < this.heldStacks.size(); ++i) {
+            newBankItemStorage.heldStacks.set(i, this.heldStacks.get(i));
             newBankItemStorage.lockedSlots = this.lockedSlots;
         }
         return newBankItemStorage;
@@ -90,8 +89,8 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
                 ScreenHandlerContext.EMPTY);
     }
 
-    public ExtendedScreenHandlerFactory withDockPosition(BlockPos pos) {
-        return new ExtendedScreenHandlerFactory() {
+    public ExtendedScreenHandlerFactory<ItemStack> withDockPosition(BlockPos pos) {
+        return new ExtendedScreenHandlerFactory<ItemStack>() {
 
             public BankScreenHandler createMenu(int syncId, PlayerInventory playerInventory,
                     PlayerEntity playerEntity) {
@@ -107,9 +106,14 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
             }
 
             @Override
-            public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
-                BankItemStorage.this.writeScreenOpeningData(player, buf);
+            public ItemStack getScreenOpeningData(ServerPlayerEntity player) {
+                return BankItemStorage.this.getScreenOpeningData(player);
             }
+
+            // @Override
+            // public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
+            //     BankItemStorage.this.writeScreenOpeningData(player, buf);
+            // }
         };
     }
 
@@ -138,7 +142,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
 
     @Override
     public int size() {
-        return this.stacks.size();
+        return this.heldStacks.size();
     }
 
     @Override
@@ -146,7 +150,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         return this.type.stackLimit;
     }
 
-    // same format as vanilla except itemstack count and slot saved as int instead
+    // same format as vanilla except slot saved as int instead
     // of byte
     public NbtCompound saveToNbt() {
         NbtCompound nbtCompound = new NbtCompound();
@@ -156,12 +160,12 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         nbtCompound.putString("type", this.type.getName());
 
         NbtList nbtList = new NbtList();
-        for (int i = 0; i < this.stacks.size(); ++i) {
-            ItemStack itemStack = this.stacks.get(i);
+        for (int i = 0; i < this.heldStacks.size(); ++i) {
+            ItemStack itemStack = this.heldStacks.get(i);
             if (itemStack.isEmpty())
                 continue;
 
-            NbtCompound itemNbtCompound = Util.largeStackAsNbt(itemStack);
+            NbtCompound itemNbtCompound = (NbtCompound) ItemStack.CODEC.encodeStart(NbtOps.INSTANCE, itemStack).getOrThrow();
             itemNbtCompound.putInt("Slot", i);
 
             nbtList.add(itemNbtCompound);
@@ -171,9 +175,10 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         NbtList lockedSlotsNbt = new NbtList();
 
         this.lockedSlots.forEach((slot, lockedStack) -> {
-            NbtCompound lockedSlotNbt = new NbtCompound();
+            NbtCompound lockedSlotNbt = (NbtCompound) ItemStack.OPTIONAL_CODEC.encodeStart(NbtOps.INSTANCE, lockedStack).getOrThrow();
+            
             lockedSlotNbt.putInt("Slot", slot);
-            lockedStack.writeNbt(lockedSlotNbt);
+
             lockedSlotsNbt.add(lockedSlotNbt);
         });
         nbtCompound.put("LockedSlots", lockedSlotsNbt);
@@ -186,7 +191,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         return nbtCompound;
     }
 
-    // same format as vanilla except itemstack count and slot saved as int instead
+    // same format as vanilla except slot saved as int instead
     // of byte
     public static BankItemStorage createFromNbt(NbtCompound nbtCompound) {
 
@@ -195,25 +200,25 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
 
         BankItemStorage bankItemStorage = new BankItemStorage(type, uuid);
 
-        Inventories.readNbt(nbtCompound, bankItemStorage.stacks);
         NbtList nbtList = nbtCompound.getList("Items", NbtElement.COMPOUND_TYPE);
         for (int i = 0; i < nbtList.size(); ++i) {
             NbtCompound nbt = nbtList.getCompound(i);
             int j = nbt.getInt("Slot");
-            if (j < 0 || j >= bankItemStorage.stacks.size()) {
+            if (j < 0 || j >= bankItemStorage.heldStacks.size()) {
                 BankStorage.LOGGER.info("tried to insert item into slot " + j + " but storage size is only "
-                        + bankItemStorage.stacks.size());
+                        + bankItemStorage.heldStacks.size());
                 continue;
             }
 
-            ItemStack itemStack = Util.largeStackFromNbt(nbt);
-            bankItemStorage.stacks.set(j, itemStack);
+            ItemStack itemStack = ItemStack.CODEC.parse(NbtOps.INSTANCE, nbt).getOrThrow();
+            bankItemStorage.heldStacks.set(j, itemStack);
         }
 
         NbtList lockedSlotsNbt = nbtCompound.getList("LockedSlots", NbtElement.COMPOUND_TYPE);
         for (int i = 0; i < lockedSlotsNbt.size(); ++i) {
             NbtCompound lockedSlotNbt = lockedSlotsNbt.getCompound(i);
-            bankItemStorage.lockSlot(lockedSlotNbt.getInt("Slot"), ItemStack.fromNbt(lockedSlotNbt));
+            ItemStack itemStack = ItemStack.OPTIONAL_CODEC.parse(NbtOps.INSTANCE, lockedSlotNbt).getOrThrow();
+            bankItemStorage.lockSlot(lockedSlotNbt.getInt("Slot"), itemStack);
 
         }
         if (nbtCompound.containsUuid("last_used_by_uuid"))
@@ -245,11 +250,11 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
     }
 
     public List<ItemStack> getItems() {
-        return this.stacks;
+        return this.heldStacks;
     }
     public List<ItemStack> getBlockItems() {
         List<ItemStack> items = new ArrayList<>();
-        for (ItemStack stack : this.stacks) {
+        for (ItemStack stack : this.heldStacks) {
             if (!stack.isEmpty() && stack.getItem() instanceof BlockItem)
                 items.add(stack);
         }
@@ -307,9 +312,14 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         this.revision = (short) ((this.revision + 1) & Short.MAX_VALUE);
     }
 
+    // @Override
+    // public void ScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
+    //     buf.writeItemStack(bankLikeItem);
+    // }
+
     @Override
-    public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
-        buf.writeItemStack(bankLikeItem);
+    public ItemStack getScreenOpeningData(ServerPlayerEntity player) {
+        return bankLikeItem;
     }
 
 }

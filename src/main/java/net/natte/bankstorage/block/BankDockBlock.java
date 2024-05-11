@@ -30,10 +30,9 @@ public class BankDockBlock extends Block implements BlockEntityProvider {
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand,
-            BlockHitResult hit) {
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
-
+        Hand hand = player.getActiveHand();
         if (blockEntity instanceof BankDockBlockEntity bankDockBlockEntity) {
             ItemStack stackInHand = player.getStackInHand(hand);
             if (bankDockBlockEntity.hasBank()) {
@@ -90,7 +89,6 @@ public class BankDockBlock extends Block implements BlockEntityProvider {
         return ActionResult.PASS;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
         if (state.isOf(newState.getBlock())) {

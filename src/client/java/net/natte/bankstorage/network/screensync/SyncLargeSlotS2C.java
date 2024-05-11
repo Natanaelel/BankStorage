@@ -23,7 +23,7 @@ public class SyncLargeSlotS2C implements PlayPayloadHandler<SyncLargeSlotPacketS
     public void receive(SyncLargeSlotPacketS2C packet, Context context) {
         int windowId = packet.id();
         int slot = packet.slot();
-        // TODO: make sure the stack is large
+
         ItemStack stack = packet.itemStack();
         context.client().execute(() -> handle(context.player(), windowId, slot, stack));
     }

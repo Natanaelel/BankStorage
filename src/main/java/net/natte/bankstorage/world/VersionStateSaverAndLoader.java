@@ -5,6 +5,7 @@ import java.util.UUID;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.RegistryWrapper.WrapperLookup;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
 import net.natte.bankstorage.BankStorage;
@@ -40,7 +41,7 @@ public class VersionStateSaverAndLoader {
         return nbtCompound.getInt(DATA_VERSION_KEY);
     }
 
-    public static BankStateSaverAndLoader readNbt(NbtCompound nbtCompound) {
+    public static BankStateSaverAndLoader readNbt(NbtCompound nbtCompound, WrapperLookup registryLookup) {
 
         int version = getDataVersion(nbtCompound);
 

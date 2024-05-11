@@ -1,29 +1,33 @@
 package net.natte.bankstorage.screen;
 
+import java.time.Duration;
 import java.util.function.Consumer;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.gui.widget.TexturedButtonWidget;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.natte.bankstorage.options.SortMode;
 
-public class SortButtonWidget extends TexturedButtonWidget {
+public class SortButtonWidget extends ButtonWidget {
 
     public SortMode sortMode;
     private long lastPressedTime;
+    private Identifier texture;
 
     public SortButtonWidget(SortMode sortMode, int x, int y, int width, int height, Identifier texture,
             Consumer<SortButtonWidget> pressAction) {
-        super(x, y, width, height, 14, 14, texture, button -> pressAction.accept((SortButtonWidget) button));
+        super(x, y, width, height, ScreenTexts.EMPTY, button -> pressAction.accept((SortButtonWidget) button), DEFAULT_NARRATION_SUPPLIER);
         this.sortMode = sortMode;
         this.lastPressedTime = 0;
+        this.texture = texture;
 
         this.refreshTooltip();
-        this.setTooltipDelay(700);
+        this.setTooltipDelay(Duration.ofMillis(700));
     }
 
     @Override
@@ -37,9 +41,9 @@ public class SortButtonWidget extends TexturedButtonWidget {
     }
 
     public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.drawTexture(context, this.texture, this.getX(), this.getY(), uOffset(), vOffset(),
-                this.hoveredVOffset,
-                this.width, this.height, textureWidth, textureHeight);
+        context.drawGuiTexture(this.texture, this.getX(), this.getY(), uOffset(), vOffset(),
+                this.height,
+                this.width, this.height, 256, 256);
     }
 
     private int uOffset() {

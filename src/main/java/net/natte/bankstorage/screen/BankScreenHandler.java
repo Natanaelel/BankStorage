@@ -45,12 +45,12 @@ public class BankScreenHandler extends ScreenHandler {
 
     private short lockedSlotsRevision = 0;
 
-    public static ExtendedFactory<BankScreenHandler> fromType(BankType type) {
-        return (syncId, playerInventory, packetByteBuf) -> {
+    public static ExtendedFactory<BankScreenHandler, ItemStack> fromType(BankType type) {
+        return (syncId, playerInventory, bankLikeItem) -> {
             BankScreenHandler bankScreenHandler = new BankScreenHandler(syncId, playerInventory,
                     new BankItemStorage(type, null), type,
                     ScreenHandlerContext.EMPTY);
-            bankScreenHandler.bankLikeItem = packetByteBuf.readItemStack();
+            bankScreenHandler.bankLikeItem = bankLikeItem;
             return bankScreenHandler;
         };
     }
@@ -200,7 +200,7 @@ public class BankScreenHandler extends ScreenHandler {
             slot = this.slots.get(i);
             int maxStackCount = slot.getMaxItemCount(stack);
             itemStack = slot.getStack();
-            if (!itemStack.isEmpty() && ItemStack.canCombine(stack, itemStack)
+            if (!itemStack.isEmpty() && ItemStack.areItemsAndComponentsEqual(stack, itemStack)
                     && ((slot instanceof BankSlot bankSlot) ? bankSlot.canInsert(stack) : true)) {
                 int j = itemStack.getCount() + stack.getCount();
                 if (j <= maxStackCount) {
@@ -262,7 +262,7 @@ public class BankScreenHandler extends ScreenHandler {
                 slot = this.slots.get(i);
                 int maxStackCount = slot.getMaxItemCount(stack);
                 itemStack = slot.getStack();
-                if (!itemStack.isEmpty() && ItemStack.canCombine(stack, itemStack)) {
+                if (!itemStack.isEmpty() && ItemStack.areItemsAndComponentsEqual(stack, itemStack)) {
                     int j = itemStack.getCount() + stack.getCount();
                     if (j <= maxStackCount) {
                         stack.setCount(0);
@@ -456,7 +456,7 @@ public class BankScreenHandler extends ScreenHandler {
                                 slot.onTakeItem(player, (ItemStack) stack);
                             });
                         } else if (slot.canInsert(cursorStack)) {
-                            if (ItemStack.canCombine(hoveredStack, cursorStack)) {
+                            if (ItemStack.areItemsAndComponentsEqual(hoveredStack, cursorStack)) {
                                 int o = clickType == ClickType.LEFT ? cursorStack.getCount() : 1;
                                 this.setCursorStack(slot.insertStack(cursorStack, o));
                             } else if (cursorStack.getCount() <= slot.getMaxItemCount(cursorStack)) {
@@ -465,7 +465,7 @@ public class BankScreenHandler extends ScreenHandler {
                                     slot.setStack(cursorStack);
                                 }
                             }
-                        } else if (ItemStack.canCombine(hoveredStack, cursorStack)) {
+                        } else if (ItemStack.areItemsAndComponentsEqual(hoveredStack, cursorStack)) {
                             Optional<ItemStack> optional2 = slot.tryTakeStackRange(hoveredStack.getCount(),
                                     cursorStack.getMaxCount() - cursorStack.getCount(), player);
                             optional2.ifPresent(stack -> {
@@ -594,7 +594,7 @@ public class BankScreenHandler extends ScreenHandler {
 
     public static boolean canInsertItemIntoSlot(@Nullable Slot slot, ItemStack stack, boolean allowOverflow) {
         boolean bl = slot != null && slot.hasStack();
-        if (bl && ItemStack.canCombine(stack, slot.getStack())) {
+        if (bl && ItemStack.areItemsAndComponentsEqual(stack, slot.getStack())) {
             if (slot instanceof BankSlot bankSlot) {
                 return slot.getStack().getCount() + (allowOverflow ? 0 : stack.getCount()) <= bankSlot
                         .getMaxItemCount(stack);

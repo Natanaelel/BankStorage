@@ -94,7 +94,7 @@ public class BankFilter {
             return true;
 
         for (Predicate<ItemStack> predicate : itemFilter) {
-            boolean hasMatchingStack = bankItemStorage.stacks.stream().anyMatch(predicate);
+            boolean hasMatchingStack = bankItemStorage.heldStacks.stream().anyMatch(predicate);
             if (!hasMatchingStack)
                 return false;
         }

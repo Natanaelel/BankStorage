@@ -28,9 +28,9 @@ import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.command.SortingModeArgumentType.SortingMode;
 import net.natte.bankstorage.container.BankItemStorage;
-import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.util.Util;
 import net.natte.bankstorage.world.BankStateSaverAndLoader;
 
@@ -101,8 +101,7 @@ public class RestoreBankCommands {
         ItemStack stack = Registries.ITEM
                 .get(Util.ID(bank.type.getName()))
                 .getDefaultStack();
-        stack.getOrCreateNbt().putUuid(BankItem.UUID_KEY,
-                uuid);
+        stack.set(BankStorage.UUIDComponentType, uuid);
         player.getInventory().insertStack(stack);
         return 1;
     }
@@ -151,9 +150,9 @@ public class RestoreBankCommands {
         for (BankItemStorage bankItemStorage : bankItemStorages) {
             UUID uuid = bankItemStorage.uuid;
 
-            long nonEmptyStacks = bankItemStorage.stacks.stream().filter(stack -> !stack.isEmpty()).count();
+            long nonEmptyStacks = bankItemStorage.heldStacks.stream().filter(stack -> !stack.isEmpty()).count();
 
-            String command = "/bankstorage fromuuid " + uuid.toString() + " " + player.getEntityName();
+            String command = "/bankstorage fromuuid " + uuid.toString() + " " + player.getName().getString();
 
             ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command);
             HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT,

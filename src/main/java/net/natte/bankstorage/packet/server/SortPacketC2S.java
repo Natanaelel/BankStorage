@@ -65,7 +65,6 @@ public class SortPacketC2S implements CustomPayload {
 
     @Override
     public Id<? extends CustomPayload> getId() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getId'");
+        return PACKET_ID;
     }
 }

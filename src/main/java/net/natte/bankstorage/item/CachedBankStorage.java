@@ -13,6 +13,10 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.util.Uuids;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.util.Util;
 
@@ -27,6 +31,17 @@ import net.natte.bankstorage.util.Util;
  * <p>
  */
 public class CachedBankStorage {
+
+    public static final PacketCodec<RegistryByteBuf, CachedBankStorage> PACKET_CODEC = PacketCodec.tuple(
+            ItemStack.OPTIONAL_LIST_PACKET_CODEC,
+            o -> o.items,
+            Uuids.PACKET_CODEC,
+            o -> o.uuid,
+            PacketCodecs.SHORT,
+            o -> o.revision,
+            PacketCodecs.SHORT,
+            o -> o.optionsRevision,
+            CachedBankStorage::new);
 
     private static Map<UUID, CachedBankStorage> BANK_CACHE = new HashMap<>();
 

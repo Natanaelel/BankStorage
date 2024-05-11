@@ -9,7 +9,7 @@ public class KeyBindUpdateEvents {
     public static void onKeyBindChange() {
         boolean isUnbound = BankStorageClient.toggleBuildModeKeyBinding.isUnbound();
         Util.isBuildModeKeyUnBound = isUnbound;
-        if (ClientPlayNetworking.canSend(KeyBindUpdatePacketC2S.TYPE))
+        if (ClientPlayNetworking.canSend(KeyBindUpdatePacketC2S.PACKET_ID))
             ClientPlayNetworking.send(new KeyBindUpdatePacketC2S(isUnbound));
     }
 }

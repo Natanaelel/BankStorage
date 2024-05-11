@@ -7,7 +7,6 @@ import java.util.Random;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.item.TooltipData;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -107,7 +106,7 @@ public abstract class BankFunctionality extends Item {
 
         // success
         bankItemStorage.usedByPlayerUUID = player.getUuid();
-        bankItemStorage.usedByPlayerName = player.getEntityName();
+        bankItemStorage.usedByPlayerName = player.getName().getString();
 
         player.openHandledScreen(bankItemStorage.withItem(bank));
         return ActionResult.CONSUME;
@@ -143,7 +142,7 @@ public abstract class BankFunctionality extends Item {
                 return ActionResult.FAIL;
             }
             bankItemStorage.usedByPlayerUUID = player.getUuid();
-            bankItemStorage.usedByPlayerName = player.getEntityName();
+            bankItemStorage.usedByPlayerName = player.getName().getString();
 
             blockToPlace = bankItemStorage.chooseItemToPlace(options, random);
         }
@@ -179,6 +178,7 @@ public abstract class BankFunctionality extends Item {
             case FAIL -> TypedActionResult.fail(bank);
             case PASS -> TypedActionResult.pass(bank);
             case SUCCESS -> TypedActionResult.success(bank);
+            case SUCCESS_NO_ITEM_USED -> TypedActionResult.success(bank);
         };
     }
 
@@ -187,11 +187,12 @@ public abstract class BankFunctionality extends Item {
         return useBank(context.getPlayer(), context.getHand(), true, context.hit);
     }
 
-    @Override
-    public boolean damage(DamageSource source) {
-        // can't take any damage
-        return false;
-    }
+    
+    // @Override
+    // public boolean damage(DamageSource source) {
+    //     // can't take any damage
+    //     return false;
+    // }
 
     @Override
     public Optional<TooltipData> getTooltipData(ItemStack stack) {

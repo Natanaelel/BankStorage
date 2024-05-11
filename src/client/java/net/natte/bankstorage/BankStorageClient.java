@@ -36,7 +36,7 @@ import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.events.KeyBindUpdateEvents;
 import net.natte.bankstorage.events.MouseEvents;
 import net.natte.bankstorage.item.CachedBankStorage;
-import net.natte.bankstorage.item.LinkItem;
+// import net.natte.bankstorage.item.LinkItem;
 import net.natte.bankstorage.item.tooltip.BankTooltipData;
 import net.natte.bankstorage.network.ItemStackBobbingAnimationPacketReceiver;
 import net.natte.bankstorage.network.RequestBankStoragePacketReceiver;
@@ -143,10 +143,10 @@ public class BankStorageClient implements ClientModInitializer {
 	}
 
 	private void registerModelPredicates() {
-		ModelPredicateProviderRegistry.register(BankStorage.LINK_ITEM, new Identifier("linked_bank"),
-				(itemStack, clientWorld, livingEntity, i) -> {
-					return Float.valueOf(LinkItem.getTypeName(itemStack).split("_")[1]) / 10;
-				});
+		// ModelPredicateProviderRegistry.register(BankStorage.LINK_ITEM, new Identifier("linked_bank"),
+		// 		(itemStack, clientWorld, livingEntity, i) -> {
+		// 			return Float.valueOf(LinkItem.getTypeName(itemStack).split("_")[1]) / 10;
+		// 		});
 		for (BankType type : BankStorage.bankTypes) {
 			ModelPredicateProviderRegistry.register(type.item, new Identifier("has_color"),
 					(itemStack, clientWorld, livingEntity, i) -> {

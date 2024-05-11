@@ -4,13 +4,10 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
-import net.minecraft.client.item.TooltipContext;
 import net.minecraft.client.item.TooltipType;
-import net.minecraft.item.DyeableItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.world.World;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.util.Util;
 

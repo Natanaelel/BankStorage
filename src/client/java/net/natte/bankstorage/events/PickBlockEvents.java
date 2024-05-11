@@ -14,7 +14,6 @@ import net.natte.bankstorage.util.Util;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.BlockView;
 
 public class PickBlockEvents {
     public static boolean pickBlock(MinecraftClient client) {
@@ -44,13 +43,13 @@ public class PickBlockEvents {
             return false;
 
         ItemStack currentSelected = cachedBankStorage.getSelectedItem(options.selectedItemSlot);
-        if (!currentSelected.isEmpty() && ItemStack.canCombine(pickedStack, currentSelected)) {
+        if (!currentSelected.isEmpty() && ItemStack.areItemsAndComponentsEqual(pickedStack, currentSelected)) {
             return true;
         }
         int slot = -1;
         for (int i = 0; i < cachedBankStorage.blockItems.size(); ++i) {
             ItemStack itemStack = cachedBankStorage.blockItems.get(i);
-            if (!itemStack.isEmpty() && ItemStack.canCombine(pickedStack, itemStack)) {
+            if (!itemStack.isEmpty() && ItemStack.areItemsAndComponentsEqual(pickedStack, itemStack)) {
                 slot = i;
                 break;
             }
@@ -80,7 +79,7 @@ public class PickBlockEvents {
             return null;
         }
         Block block = blockState.getBlock();
-        ItemStack pickBlockStack = block.getPickStack((BlockView) client.world, blockPos, blockState);
+        ItemStack pickBlockStack = block.getPickStack(client.world, blockPos, blockState);
 
         if (pickBlockStack.isEmpty()) {
             return null;

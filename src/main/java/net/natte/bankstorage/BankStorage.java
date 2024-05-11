@@ -77,6 +77,7 @@ public class BankStorage implements ModInitializer {
 
 	public static final DataComponentType<UUID> UUIDComponentType = DataComponentType.<UUID>builder().codec(Uuids.CODEC).packetCodec(Uuids.PACKET_CODEC).build();
 	public static final DataComponentType<BankOptions> OptionsComponentType = DataComponentType.<BankOptions>builder().codec(BankOptions.CODEC).packetCodec(BankOptions.PACKET_CODEC).build();
+	public static final DataComponentType<BankType> BankTypeComponentType = DataComponentType.<BankType>builder().codec(BankType.CODEC).packetCodec(BankType.PACKET_CODEC).build();
 
 	@Override
 	public void onInitialize() {
@@ -97,6 +98,7 @@ public class BankStorage implements ModInitializer {
 	private void registerItemComponentTypes() {
 		Registry.register(Registries.DATA_COMPONENT_TYPE, Util.ID("bank:uuid"), UUIDComponentType);
 		Registry.register(Registries.DATA_COMPONENT_TYPE, Util.ID("bank:options"), OptionsComponentType);
+		Registry.register(Registries.DATA_COMPONENT_TYPE, Util.ID("bank:type"), BankTypeComponentType);
 
 	}
 

@@ -2,48 +2,54 @@ package net.natte.bankstorage.recipe;
 
 import java.util.Optional;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.MapCodec;
 
 import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.ShapedRecipe;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.util.Identifier;
+import net.minecraft.registry.RegistryWrapper.WrapperLookup;
 import net.natte.bankstorage.item.BankItem;
 
 public class BankRecipe extends ShapedRecipe {
 
     public BankRecipe(ShapedRecipe recipe) {
-        super(recipe.getId(), "bank_upgrade", recipe.getCategory(), recipe.getWidth(), recipe.getHeight(),
-                recipe.getIngredients(), recipe.getOutput(null));
+        super(recipe.getGroup(), recipe.getCategory(), recipe.raw, recipe.getResult(null));
+        // super(recipe.getId(), "bank_upgrade", recipe.getCategory(), recipe.getWidth(), recipe.getHeight(),
+        //         recipe.getIngredients(), recipe.getOutput(null));
+        // super("bank_upgrade", recipe.getCategory(), RawShapedRecipe recipe.getResult(null));
+
     }
 
     @Override
-    public ItemStack craft(RecipeInputInventory recipeInputInventory, DynamicRegistryManager dynamicRegistryManager) {
-        Optional<ItemStack> maybeBankItemStack = recipeInputInventory.getInputStacks().stream()
+    public ItemStack craft(RecipeInputInventory recipeInputInventory, WrapperLookup registryLookup) {
+        Optional<ItemStack> maybeBankItemStack = recipeInputInventory.getHeldStacks().stream()
                 .filter(stack -> (stack.getItem() instanceof BankItem)).findFirst();
 
         if (maybeBankItemStack.isEmpty()) {
             return ItemStack.EMPTY;
         }
-        ItemStack result = super.craft(recipeInputInventory, dynamicRegistryManager);
-        result.setNbt(maybeBankItemStack.get().getNbt());
+        ItemStack result = super.craft(recipeInputInventory, registryLookup);
+        // result.setNbt(maybeBankItemStack.get().getNbt());
+        result.applyChanges(maybeBankItemStack.get().getComponentChanges());
 
         return result;
     }
 
-    public static class Serializer extends ShapedRecipe.Serializer {
+     public static class Serializer implements RecipeSerializer<BankRecipe> {
+        public static final MapCodec<BankRecipe> CODEC = ShapedRecipe.Serializer.CODEC.xmap(BankRecipe::new, bankLinkRecipe -> (ShapedRecipe) bankLinkRecipe);
+        public static final PacketCodec<RegistryByteBuf, BankRecipe> PACKET_CODEC = ShapedRecipe.Serializer.PACKET_CODEC.xmap(BankRecipe::new, bankRecipe -> (ShapedRecipe) bankRecipe);
 
         @Override
-        public BankRecipe read(Identifier id, JsonObject json) {
-            return new BankRecipe(super.read(id, json));
+        public MapCodec<BankRecipe> codec() {
+            return CODEC;
         }
 
         @Override
-        public BankRecipe read(Identifier id, PacketByteBuf buf) {
-            return new BankRecipe(super.read(id, buf));
-
+        public PacketCodec<RegistryByteBuf, BankRecipe> packetCodec() {
+            return PACKET_CODEC;
         }
     }
 

@@ -13,9 +13,11 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.registry.RegistryWrapper.WrapperLookup;
 import net.minecraft.util.math.BlockPos;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
@@ -60,15 +62,14 @@ public class BankDockBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt) {
-        NbtCompound itemAsNbt = new NbtCompound();
-        this.bankItem.writeNbt(itemAsNbt);
+    protected void writeNbt(NbtCompound nbt, WrapperLookup registryLookup) {
+        NbtElement itemAsNbt = this.bankItem.encodeAllowEmpty(registryLookup);
         nbt.put("bank", itemAsNbt);
     }
 
     @Override
-    public void readNbt(NbtCompound nbt) {
-        this.bankItem = ItemStack.fromNbt(nbt.getCompound("bank"));
+    public void readNbt(NbtCompound nbt, WrapperLookup registryLookup) {
+        this.bankItem = ItemStack.fromNbtOrEmpty(registryLookup, nbt.getCompound("bank"));
     }
 
     @Nullable
@@ -78,8 +79,8 @@ public class BankDockBlockEntity extends BlockEntity {
     }
 
     @Override
-    public NbtCompound toInitialChunkDataNbt() {
-        return createNbt();
+    public NbtCompound toInitialChunkDataNbt(WrapperLookup registryLookup) {
+        return createNbt(registryLookup);
     }
 
     private BankItemStorage getInventory() {

@@ -13,8 +13,8 @@ import net.natte.bankstorage.util.Util;
 
 public record SyncContainerPacketS2C(int stateId, int containerId, List<ItemStack> stacks, ItemStack carried) implements CustomPayload {
 
-    public static CustomPayload.Id<SyncContainerPacketS2C> PACKET_ID = new CustomPayload.Id<>(Util.ID("sync_container"));
-    public static PacketCodec<RegistryByteBuf, SyncContainerPacketS2C> PACKET_CODEC = PacketCodec.tuple(
+    public static final CustomPayload.Id<SyncContainerPacketS2C> PACKET_ID = new CustomPayload.Id<>(Util.ID("sync_container"));
+    public static final PacketCodec<RegistryByteBuf, SyncContainerPacketS2C> PACKET_CODEC = PacketCodec.tuple(
         PacketCodecs.INTEGER,
         SyncContainerPacketS2C::stateId,
         PacketCodecs.INTEGER,

@@ -118,7 +118,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
                 } else {
                     if (hoveredStack.isEmpty()) {
                         lockSlot.accept(cursorStack);
-                    } else if (cursorStack.isEmpty() || ItemStack.canCombine(hoveredStack, cursorStack)) {
+                    } else if (cursorStack.isEmpty() || ItemStack.areItemsAndComponentsEqual(hoveredStack, cursorStack)) {
                         lockSlot.accept(hoveredStack);
                     }
 
@@ -150,7 +150,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context);
+        this.renderBackground(context, mouseX, mouseY, delta);
         super.render(context, mouseX, mouseY, delta);
         this.drawMouseoverTooltip(context, mouseX, mouseY);
         this.setFocused(null);
@@ -274,7 +274,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
                     return false;
             }
         }
-        if (!bl && ItemStack.canCombine(stack, slot.getStack())) {
+        if (!bl && ItemStack.areItemsAndComponentsEqual(stack, slot.getStack())) {
             return slot.getStack().getCount() + (allowOverflow ? 0 : stack.getCount()) <= slot.getMaxItemCount(stack);
         }
         return bl;

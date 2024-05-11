@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.RegistryWrapper.WrapperLookup;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
@@ -33,11 +34,11 @@ public class BankStateSaverAndLoader extends PersistentState {
         return nbtCompound;
     }
 
-    public static BankStateSaverAndLoader createFromNbt(NbtCompound nbtCompound) {
+    public static BankStateSaverAndLoader createFromNbt(NbtCompound nbtCompound, WrapperLookup registryLookup) {
 
         BankStorage.LOGGER.info("Loading banks from nbt");
 
-        BankStateSaverAndLoader stateSaverAndLoader = VersionStateSaverAndLoader.readNbt(nbtCompound);
+        BankStateSaverAndLoader stateSaverAndLoader = VersionStateSaverAndLoader.readNbt(nbtCompound, registryLookup);
 
         BankStorage.LOGGER.info("Loading done");
 
@@ -46,11 +47,20 @@ public class BankStateSaverAndLoader extends PersistentState {
 
     public static BankStateSaverAndLoader getServerStateSaverAndLoader(MinecraftServer server) {
         PersistentStateManager persistentStateManager = server.getWorld(World.OVERWORLD).getPersistentStateManager();
-
+        // ServerWorld world = (ServerWorld) (Object) this;
+		PersistentState.Type<BankStateSaverAndLoader> type = new PersistentState.Type<>(
+				() -> new BankStateSaverAndLoader(),
+				(nbt, registryLookup) -> createFromNbt(nbt, registryLookup),
+				null // Object builder API 12.1.0 and later makes this a no-op
+		);
+        // BankStateSaverAndLoader state = persistentStateManager.getOrCreate(
+        //         BankStateSaverAndLoader::createFromNbt,
+        //         BankStateSaverAndLoader::new,
+        //         BankStorage.MOD_ID);
         BankStateSaverAndLoader state = persistentStateManager.getOrCreate(
-                BankStateSaverAndLoader::createFromNbt,
-                BankStateSaverAndLoader::new,
+                type,
                 BankStorage.MOD_ID);
+        
 
         state.markDirty();
 

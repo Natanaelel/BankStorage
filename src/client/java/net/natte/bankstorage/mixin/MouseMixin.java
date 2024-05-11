@@ -2,7 +2,7 @@ package net.natte.bankstorage.mixin;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import com.llamalad7.mixinextras.injector.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

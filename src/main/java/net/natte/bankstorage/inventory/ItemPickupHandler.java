@@ -9,8 +9,8 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.World;
+import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
-import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.packet.NetworkUtil;
 import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
@@ -42,9 +42,7 @@ public class ItemPickupHandler {
             ++index;
             if (Util.isBankLike(itemStack)) {
                 boolean bankPickedUpAny = false;
-                if (!itemStack.hasNbt())
-                    continue;
-                if (!itemStack.getNbt().contains(BankItem.UUID_KEY))
+                if (!itemStack.contains(BankStorage.UUIDComponentType))
                     continue;
 
                 BankItemStorage bankItemStorage = Util.getBankItemStorage(itemStack, world);
@@ -155,7 +153,7 @@ public class ItemPickupHandler {
 
             ItemStack stackInSlot = bankItemStorage.getStack(slot);
 
-            if (ItemStack.canCombine(stackInSlot, pickedUpStack)) {
+            if (ItemStack.areItemsAndComponentsEqual(stackInSlot, pickedUpStack)) {
 
                 int spaceLeft = slotSize - stackInSlot.getCount();
                 int toMove = Math.min(pickedUpStack.getCount(), spaceLeft);
@@ -201,7 +199,7 @@ public class ItemPickupHandler {
                 if (pickedUpStack.isEmpty())
                     return pickedUpAny;
 
-            } else if (ItemStack.canCombine(stackInSlot, pickedUpStack)) {
+            } else if (ItemStack.areItemsAndComponentsEqual(stackInSlot, pickedUpStack)) {
 
                 int spaceLeft = slotSize - stackInSlot.getCount();
                 int toMove = Math.min(pickedUpStack.getCount(), spaceLeft);
@@ -222,7 +220,7 @@ public class ItemPickupHandler {
 
     public static boolean hasSlotWithItem(BankItemStorage bankItemStorage, ItemStack itemStack) {
         for (int i = 0; i < bankItemStorage.size(); ++i) {
-            if (ItemStack.canCombine(bankItemStorage.getStack(i), itemStack)) {
+            if (ItemStack.areItemsAndComponentsEqual(bankItemStorage.getStack(i), itemStack)) {
                 return true;
             }
         }

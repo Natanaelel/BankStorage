@@ -3,7 +3,6 @@ package net.natte.bankstorage.util;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -13,9 +12,6 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -131,7 +127,7 @@ public class Util {
         // and clear bank
         List<HugeItemStack> collectedItems = new ArrayList<>();
         for (int i = 0; i < bankItemStorage.size(); ++i) {
-            ItemStack itemStack = bankItemStorage.stacks.get(i);
+            ItemStack itemStack = bankItemStorage.heldStacks.get(i);
             bankItemStorage.setStack(i, ItemStack.EMPTY);
             boolean didExist = false;
             for (HugeItemStack existing : collectedItems) {

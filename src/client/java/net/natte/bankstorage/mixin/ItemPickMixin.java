@@ -3,7 +3,7 @@ package net.natte.bankstorage.mixin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-import com.llamalad7.mixinextras.injector.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 
 import net.minecraft.client.MinecraftClient;
 import net.natte.bankstorage.events.PickBlockEvents;

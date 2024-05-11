@@ -19,7 +19,7 @@ public class ScreenHandlerMixin {
             CallbackInfoReturnable<Boolean> cir) {
         if (slot instanceof BankSlot bankSlot) {
             ItemStack slotStack = slot.getStack();
-            if (!slotStack.isEmpty() && ItemStack.canCombine(stack, slotStack)) {
+            if (!slotStack.isEmpty() && ItemStack.areItemsAndComponentsEqual(stack, slotStack)) {
                 cir.setReturnValue(slotStack.getCount() + (allowOverflow ? 0 : stack.getCount()) <= bankSlot
                         .getMaxItemCount(stack));
 
