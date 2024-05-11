@@ -19,17 +19,15 @@ public class TexturedCyclingButtonWidget<T extends CycleableOption> extends Butt
     private static final int textureHeight = 256;
 
     private Identifier texture;
-    private int hoveredVOffset;
 
     @SuppressWarnings("unchecked") // cast to TexturedCyclingButtonWidget<T> line 27,
-    public TexturedCyclingButtonWidget(T state, int x, int y, int width, int height, int hoveredVOffset,
+    public TexturedCyclingButtonWidget(T state, int x, int y, int width, int height,
             Identifier texture,
             Consumer<TexturedCyclingButtonWidget<T>> pressAction) {
-        super(x, y, width, height, ScreenTexts.EMPTY, 
+        super(x, y, width, height, ScreenTexts.EMPTY,
                 button -> pressAction.accept((TexturedCyclingButtonWidget<T>) button), DEFAULT_NARRATION_SUPPLIER);
 
         this.texture = texture;
-        this.hoveredVOffset = hoveredVOffset;
 
         this.state = state;
         this.refreshTooltip();
@@ -38,8 +36,9 @@ public class TexturedCyclingButtonWidget<T extends CycleableOption> extends Butt
 
     @Override
     public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.drawGuiTexture(this.texture, this.getX(), this.getY(), this.state.uOffset(), this.state.vOffset(),
-                this.hoveredVOffset,
+        context.drawTexture(this.texture,
+                this.getX(), this.getY(), 0,
+                this.state.uOffset(), this.state.vOffset() + (this.isSelected() ? this.height : 0),
                 this.width, this.height, textureWidth, textureHeight);
     }
 

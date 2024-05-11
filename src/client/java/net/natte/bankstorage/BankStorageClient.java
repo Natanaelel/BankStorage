@@ -21,7 +21,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.impl.client.rendering.BlockEntityRendererRegistryImpl;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
@@ -50,14 +49,9 @@ import net.natte.bankstorage.packet.client.SyncedRandomPacketS2C;
 import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
 import net.natte.bankstorage.packet.screensync.SyncContainerPacketS2C;
 import net.natte.bankstorage.packet.screensync.SyncLargeSlotPacketS2C;
-import net.natte.bankstorage.packet.server.KeyBindUpdatePacketC2S;
-import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
 import net.natte.bankstorage.packet.server.OpenBankFromKeyBindPacketC2S;
 import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
-import net.natte.bankstorage.packet.server.SelectedSlotPacketC2S;
-import net.natte.bankstorage.packet.server.SortPacketC2S;
-import net.natte.bankstorage.packet.server.UpdateBankOptionsPacketC2S;
 import net.natte.bankstorage.rendering.BankDockBlockEntityRenderer;
 import net.natte.bankstorage.rendering.BuildModePreviewRenderer;
 import net.natte.bankstorage.screen.BankScreen;
@@ -223,20 +217,20 @@ public class BankStorageClient implements ClientModInitializer {
 
 	private void registerPackets() {
 		
-		PayloadTypeRegistry.playS2C().register(ItemStackBobbingAnimationPacketS2C.PACKET_ID, ItemStackBobbingAnimationPacketS2C.PACKET_CODEC);
-		PayloadTypeRegistry.playS2C().register(RequestBankStoragePacketS2C.PACKET_ID, RequestBankStoragePacketS2C.PACKET_CODEC);
-		PayloadTypeRegistry.playS2C().register(SyncedRandomPacketS2C.PACKET_ID, SyncedRandomPacketS2C.PACKET_CODEC);
-		PayloadTypeRegistry.playS2C().register(SyncLargeSlotPacketS2C.PACKET_ID, SyncLargeSlotPacketS2C.PACKET_CODEC);
-		PayloadTypeRegistry.playS2C().register(SyncContainerPacketS2C.PACKET_ID, SyncContainerPacketS2C.PACKET_CODEC);
+		// PayloadTypeRegistry.playS2C().register(ItemStackBobbingAnimationPacketS2C.PACKET_ID, ItemStackBobbingAnimationPacketS2C.PACKET_CODEC);
+		// PayloadTypeRegistry.playS2C().register(RequestBankStoragePacketS2C.PACKET_ID, RequestBankStoragePacketS2C.PACKET_CODEC);
+		// PayloadTypeRegistry.playS2C().register(SyncedRandomPacketS2C.PACKET_ID, SyncedRandomPacketS2C.PACKET_CODEC);
+		// PayloadTypeRegistry.playS2C().register(SyncLargeSlotPacketS2C.PACKET_ID, SyncLargeSlotPacketS2C.PACKET_CODEC);
+		// PayloadTypeRegistry.playS2C().register(SyncContainerPacketS2C.PACKET_ID, SyncContainerPacketS2C.PACKET_CODEC);
 
-		PayloadTypeRegistry.playC2S().register(UpdateBankOptionsPacketC2S.PACKET_ID, UpdateBankOptionsPacketC2S.PACKET_CODEC);
-		PayloadTypeRegistry.playC2S().register(OpenBankFromKeyBindPacketC2S.PACKET_ID, OpenBankFromKeyBindPacketC2S.PACKET_CODEC);
-		PayloadTypeRegistry.playC2S().register(RequestBankStoragePacketC2S.PACKET_ID, RequestBankStoragePacketC2S.PACKET_CODEC);
-		PayloadTypeRegistry.playC2S().register(SortPacketC2S.PACKET_ID, SortPacketC2S.PACKET_CODEC);
-		PayloadTypeRegistry.playC2S().register(PickupModePacketC2S.PACKET_ID, PickupModePacketC2S.PACKET_CODEC);
-		PayloadTypeRegistry.playC2S().register(SelectedSlotPacketC2S.PACKET_ID, SelectedSlotPacketC2S.PACKET_CODEC);
-		PayloadTypeRegistry.playC2S().register(LockSlotPacketC2S.PACKET_ID, LockSlotPacketC2S.PACKET_CODEC);
-		PayloadTypeRegistry.playC2S().register(KeyBindUpdatePacketC2S.PACKET_ID, KeyBindUpdatePacketC2S.PACKET_CODEC);
+		// PayloadTypeRegistry.playC2S().register(UpdateBankOptionsPacketC2S.PACKET_ID, UpdateBankOptionsPacketC2S.PACKET_CODEC);
+		// PayloadTypeRegistry.playC2S().register(OpenBankFromKeyBindPacketC2S.PACKET_ID, OpenBankFromKeyBindPacketC2S.PACKET_CODEC);
+		// PayloadTypeRegistry.playC2S().register(RequestBankStoragePacketC2S.PACKET_ID, RequestBankStoragePacketC2S.PACKET_CODEC);
+		// PayloadTypeRegistry.playC2S().register(SortPacketC2S.PACKET_ID, SortPacketC2S.PACKET_CODEC);
+		// PayloadTypeRegistry.playC2S().register(PickupModePacketC2S.PACKET_ID, PickupModePacketC2S.PACKET_CODEC);
+		// PayloadTypeRegistry.playC2S().register(SelectedSlotPacketC2S.PACKET_ID, SelectedSlotPacketC2S.PACKET_CODEC);
+		// PayloadTypeRegistry.playC2S().register(LockSlotPacketC2S.PACKET_ID, LockSlotPacketC2S.PACKET_CODEC);
+		// PayloadTypeRegistry.playC2S().register(KeyBindUpdatePacketC2S.PACKET_ID, KeyBindUpdatePacketC2S.PACKET_CODEC);
 
 	}
 

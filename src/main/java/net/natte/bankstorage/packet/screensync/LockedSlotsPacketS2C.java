@@ -12,8 +12,8 @@ import net.natte.bankstorage.util.Util;
 
 public record LockedSlotsPacketS2C(int syncId, Map<Integer, ItemStack> lockedSlots) implements CustomPayload {
 
-    public static CustomPayload.Id<LockedSlotsPacketS2C> PACKET_ID = new CustomPayload.Id<>(Util.ID("sync_locked_slots_s2c"));
-    public static PacketCodec<RegistryByteBuf, LockedSlotsPacketS2C> PACKET_CODEC = PacketCodec.tuple(
+    public static final CustomPayload.Id<LockedSlotsPacketS2C> PACKET_ID = new CustomPayload.Id<>(Util.ID("sync_locked_slots_s2c"));
+    public static final PacketCodec<RegistryByteBuf, LockedSlotsPacketS2C> PACKET_CODEC = PacketCodec.tuple(
         PacketCodecs.INTEGER,
         LockedSlotsPacketS2C::syncId,
         PacketCodecs.map(HashMap::newHashMap, PacketCodecs.INTEGER, ItemStack.OPTIONAL_PACKET_CODEC),

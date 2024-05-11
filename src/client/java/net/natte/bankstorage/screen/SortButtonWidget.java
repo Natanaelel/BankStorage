@@ -40,9 +40,10 @@ public class SortButtonWidget extends ButtonWidget {
         return Util.getMeasuringTimeMs() - this.lastPressedTime;
     }
 
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.drawGuiTexture(this.texture, this.getX(), this.getY(), uOffset(), vOffset(),
-                this.height,
+    @Override
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+        context.drawTexture(this.texture, this.getX(), this.getY(), uOffset(), vOffset() + (this.isSelected() ? this.height : 0),
+                
                 this.width, this.height, 256, 256);
     }
 

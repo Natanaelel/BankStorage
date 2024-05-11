@@ -30,6 +30,7 @@ import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
 import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.packet.client.SyncedRandomPacketS2C;
+import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
 import net.natte.bankstorage.packet.screensync.SyncContainerPacketS2C;
 import net.natte.bankstorage.packet.screensync.SyncLargeSlotPacketS2C;
 import net.natte.bankstorage.packet.server.KeyBindUpdatePacketC2S;
@@ -96,9 +97,9 @@ public class BankStorage implements ModInitializer {
 	}
 
 	private void registerItemComponentTypes() {
-		Registry.register(Registries.DATA_COMPONENT_TYPE, Util.ID("bank:uuid"), UUIDComponentType);
-		Registry.register(Registries.DATA_COMPONENT_TYPE, Util.ID("bank:options"), OptionsComponentType);
-		Registry.register(Registries.DATA_COMPONENT_TYPE, Util.ID("bank:type"), BankTypeComponentType);
+		Registry.register(Registries.DATA_COMPONENT_TYPE, Util.ID("uuid"), UUIDComponentType);
+		Registry.register(Registries.DATA_COMPONENT_TYPE, Util.ID("options"), OptionsComponentType);
+		Registry.register(Registries.DATA_COMPONENT_TYPE, Util.ID("type"), BankTypeComponentType);
 
 	}
 
@@ -177,6 +178,7 @@ public class BankStorage implements ModInitializer {
 		PayloadTypeRegistry.playS2C().register(SyncedRandomPacketS2C.PACKET_ID, SyncedRandomPacketS2C.PACKET_CODEC);
 		PayloadTypeRegistry.playS2C().register(SyncLargeSlotPacketS2C.PACKET_ID, SyncLargeSlotPacketS2C.PACKET_CODEC);
 		PayloadTypeRegistry.playS2C().register(SyncContainerPacketS2C.PACKET_ID, SyncContainerPacketS2C.PACKET_CODEC);
+		PayloadTypeRegistry.playS2C().register(LockedSlotsPacketS2C.PACKET_ID, LockedSlotsPacketS2C.PACKET_CODEC);
 
 		PayloadTypeRegistry.playC2S().register(UpdateBankOptionsPacketC2S.PACKET_ID, UpdateBankOptionsPacketC2S.PACKET_CODEC);
 		PayloadTypeRegistry.playC2S().register(OpenBankFromKeyBindPacketC2S.PACKET_ID, OpenBankFromKeyBindPacketC2S.PACKET_CODEC);

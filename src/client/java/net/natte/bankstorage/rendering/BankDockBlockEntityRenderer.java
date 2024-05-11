@@ -23,8 +23,8 @@ public class BankDockBlockEntityRenderer implements BlockEntityRenderer<BankDock
         matrixStack.push();
         matrixStack.translate(0.5f, 0.5f, 0.5f);
         matrixStack.scale(2f, 2f, 2f);
-
-        itemRenderer.renderItem(blockEntity.getBank(), ModelTransformationMode.FIXED,
+        
+                itemRenderer.renderItem(blockEntity.getBank(), ModelTransformationMode.FIXED,
                 light, overlay, matrixStack, vertexConsumers, null, overlay);
 
         matrixStack.pop();

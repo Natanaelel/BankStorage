@@ -77,8 +77,8 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         PickupModeOption initialPickupMode = PickupModeOption.from(options.pickupMode);
         this.addDrawableChild(
                 new TexturedCyclingButtonWidget<PickupModeOption>(initialPickupMode,
-                        x + titleX + this.type.guiTextureWidth - 49, y + titleY - 4, 14,
-                        14, 14, WIDGETS_TEXTURE, this::onPickupModeButtonPress));
+                        x + titleX + this.type.guiTextureWidth - 49, y + titleY - 4, 14, 14,
+                        WIDGETS_TEXTURE, this::onPickupModeButtonPress));
 
         this.addDrawableChild(
                 new SortButtonWidget(options.sortMode,
@@ -118,7 +118,8 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
                 } else {
                     if (hoveredStack.isEmpty()) {
                         lockSlot.accept(cursorStack);
-                    } else if (cursorStack.isEmpty() || ItemStack.areItemsAndComponentsEqual(hoveredStack, cursorStack)) {
+                    } else if (cursorStack.isEmpty()
+                            || ItemStack.areItemsAndComponentsEqual(hoveredStack, cursorStack)) {
                         lockSlot.accept(hoveredStack);
                     }
 
@@ -150,7 +151,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context, mouseX, mouseY, delta);
+        // this.renderBackground(context, mouseX, mouseY, delta);
         super.render(context, mouseX, mouseY, delta);
         this.drawMouseoverTooltip(context, mouseX, mouseY);
         this.setFocused(null);

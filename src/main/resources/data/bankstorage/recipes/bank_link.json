@@ -23,7 +23,7 @@
         }
 	},
 	"result": {
-		"item": "bankstorage:bank_link",
+		"id": "bankstorage:bank_link",
 		"count": 1
 	}
 }

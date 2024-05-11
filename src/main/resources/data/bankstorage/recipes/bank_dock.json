@@ -14,7 +14,7 @@
 		}
 	},
 	"result": {
-		"item": "bankstorage:bank_dock",
+		"id": "bankstorage:bank_dock",
 		"count": 1
 	}
 }

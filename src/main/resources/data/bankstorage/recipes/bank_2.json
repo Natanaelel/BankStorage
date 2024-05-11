@@ -14,7 +14,7 @@
 		}
 	},
 	"result": {
-		"item": "bankstorage:bank_2",
+		"id": "bankstorage:bank_2",
 		"count": 1
 	}
 }
