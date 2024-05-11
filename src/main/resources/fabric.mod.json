@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 1,
 	"id": "bankstorage",
-	"version": "1.2.0",
+	"version": "${version}",
 	"name": "Bank Storage",
 	"description": "A portable storage device that can store up to 1,000,000,000 items per slot.",
 	"authors": [
@@ -31,9 +31,9 @@
 	],
 	"accessWidener": "bankstorage.accesswidener",
 	"depends": {
-		"fabricloader": ">=0.14.22",
-		"minecraft": "~1.20.1",
-		"java": ">=17",
+		"fabricloader": ">=0.15.11",
+		"minecraft": "~1.20.6",
+		"java": ">=21",
 		"fabric-api": "*"
 	},
 	"suggests": {
