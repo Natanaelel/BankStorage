@@ -12,8 +12,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.collection.DefaultedList;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.packet.NetworkUtil;
-import net.natte.bankstorage.packet.screensync.BankSyncPacketHandler;
 import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
+import net.natte.bankstorage.packet.screensync.SyncContainerPacketS2C;
+import net.natte.bankstorage.packet.screensync.SyncLargeSlotPacketS2C;
 import net.natte.bankstorage.util.Util;
 
 /*
@@ -31,12 +32,13 @@ public class BankScreenSync implements ScreenHandlerSyncHandler {
     @Override
     public void updateState(ScreenHandler screenHandler, DefaultedList<ItemStack> inventory, ItemStack stack,
             int[] indices) {
-        BankSyncPacketHandler.sendSyncContainer(player, screenHandler.nextRevision(),
+        SyncContainerPacketS2C.sendSyncContainer(player, screenHandler.nextRevision(),
                 screenHandler.syncId, inventory, stack);
         Map<Integer, ItemStack> lockedSlots = ((BankItemStorage) ((BankScreenHandler) screenHandler).inventory)
                 .getlockedSlots();
 
-        BankSyncPacketHandler.sendSyncLockedSlots(player, screenHandler.syncId, lockedSlots);
+        ServerPlayNetworking.send(player, new LockedSlotsPacketS2C(screenHandler.syncId, lockedSlots));
+                
 
         for (int i = 0; i < indices.length; ++i) {
             this.sendPropertyUpdate(screenHandler, i, indices[i]);
@@ -46,7 +48,8 @@ public class BankScreenSync implements ScreenHandlerSyncHandler {
 
     @Override
     public void updateSlot(ScreenHandler screenHandler, int slot, ItemStack stack) {
-        BankSyncPacketHandler.sendSyncSlot(player, screenHandler.syncId, slot, stack);
+        // BankSyncPacketHandler.sendSyncSlot(player, screenHandler.syncId, slot, stack);
+        ServerPlayNetworking.send(player, new SyncLargeSlotPacketS2C(screenHandler.syncId, slot, stack));
         NetworkUtil.syncCachedBankS2C(Util.getUUIDFromScreenHandler(screenHandler), this.player);
     }
 

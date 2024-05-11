@@ -1,6 +1,9 @@
 package net.natte.bankstorage.options;
 
+import com.mojang.serialization.Codec;
+
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.StringIdentifiable;
 
 public class BankOptions {
     public PickupMode pickupMode = PickupMode.NONE;
@@ -8,6 +11,8 @@ public class BankOptions {
     public SortMode sortMode = SortMode.COUNT;
 
     public int selectedItemSlot = 0;
+
+    // public static final Codec<BankOptions> CODEC = NbtCompound.CODEC
 
     public NbtCompound asNbt() {
         return writeNbt(new NbtCompound());

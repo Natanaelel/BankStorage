@@ -2,29 +2,36 @@ package net.natte.bankstorage;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.MapColor;
 import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.component.DataComponentType;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.util.Uuids;
 import net.natte.bankstorage.access.SyncedRandomAccess;
 import net.natte.bankstorage.block.BankDockBlock;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.command.RestoreBankCommands;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.LinkItem;
+import net.natte.bankstorage.options.BankOptions;
+import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
+import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.packet.client.SyncedRandomPacketS2C;
+import net.natte.bankstorage.packet.screensync.SyncContainerPacketS2C;
+import net.natte.bankstorage.packet.screensync.SyncLargeSlotPacketS2C;
 import net.natte.bankstorage.packet.server.KeyBindUpdatePacketC2S;
 import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
 import net.natte.bankstorage.packet.server.OpenBankFromKeyBindPacketC2S;
@@ -40,6 +47,8 @@ import net.natte.bankstorage.util.Util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,14 +66,17 @@ public class BankStorage implements ModInitializer {
 	private static final BankType BANK_6 = new BankType("bank_6", 262_144, 9, 9, 176, 114 + 18 * 9);
 	private static final BankType BANK_7 = new BankType("bank_7", 1_000_000_000, 12, 9, 176, 114 + 18 * 12);
 
-	public static final LinkItem LINK_ITEM = new LinkItem(new FabricItemSettings().maxCount(1));
+	public static final LinkItem LINK_ITEM = new LinkItem(new Item.Settings().maxCount(1));
 
 	public static final List<BankType> bankTypes = new ArrayList<>();
 
-	public static final Block BANK_DOCK_BLOCK = new BankDockBlock(FabricBlockSettings.create().strength(5.0f, 6.0f)
+	public static final Block BANK_DOCK_BLOCK = new BankDockBlock(AbstractBlock.Settings.create().strength(5.0f, 6.0f)
 			.mapColor(MapColor.BLACK).requiresTool().sounds(BlockSoundGroup.METAL).nonOpaque());
 
 	public static BlockEntityType<BankDockBlockEntity> BANK_DOCK_BLOCK_ENTITY;
+
+	public static final DataComponentType<UUID> UUIDComponentType = DataComponentType.<UUID>builder().codec(Uuids.CODEC).packetCodec(Uuids.PACKET_CODEC).build();
+	public static final DataComponentType<BankOptions> OptionsComponentType = DataComponentType.<BankOptions>builder().codec(BankOptions.CODEC).packetCodec(BankOptions.PACKET_CODEC).build();
 
 	@Override
 	public void onInitialize() {
@@ -74,9 +86,17 @@ public class BankStorage implements ModInitializer {
 		registerLink();
 		registerRecipes();
 		registerCommands();
+		registerPackets();
 		registerNetworkListeners();
 
 		registerEventListeners();
+		registerItemComponentTypes();
+
+	}
+
+	private void registerItemComponentTypes() {
+		Registry.register(Registries.DATA_COMPONENT_TYPE, Util.ID("bank:uuid"), UUIDComponentType);
+		Registry.register(Registries.DATA_COMPONENT_TYPE, Util.ID("bank:options"), OptionsComponentType);
 
 	}
 
@@ -106,9 +126,9 @@ public class BankStorage implements ModInitializer {
 		BANK_4.register(bankTypes);
 		BANK_5.register(bankTypes);
 		BANK_6.register(bankTypes);
-		BANK_7.register(bankTypes, new FabricItemSettings().fireproof());
+		BANK_7.register(bankTypes, new Item.Settings().fireproof());
 
-		CauldronBehavior.WATER_CAULDRON_BEHAVIOR.put(LINK_ITEM, CauldronBehavior.CLEAN_DYEABLE_ITEM);
+		CauldronBehavior.WATER_CAULDRON_BEHAVIOR.map().put(LINK_ITEM, CauldronBehavior.CLEAN_DYEABLE_ITEM);
 
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(group -> {
 			bankTypes.forEach(type -> {
@@ -123,12 +143,12 @@ public class BankStorage implements ModInitializer {
 
 		Registry.register(Registries.BLOCK, Util.ID("bank_dock"), BANK_DOCK_BLOCK);
 		Registry.register(Registries.ITEM, Util.ID("bank_dock"),
-				new BlockItem(BANK_DOCK_BLOCK, new FabricItemSettings()));
+				new BlockItem(BANK_DOCK_BLOCK, new Item.Settings()));
 
 		BANK_DOCK_BLOCK_ENTITY = Registry.register(
 				Registries.BLOCK_ENTITY_TYPE,
 				Util.ID("bank_dock_block_entity"),
-				FabricBlockEntityTypeBuilder.create(BankDockBlockEntity::new, BANK_DOCK_BLOCK).build());
+				BlockEntityType.Builder.create(BankDockBlockEntity::new, BANK_DOCK_BLOCK).build());
 
 		ItemStorage.SIDED.registerForBlockEntity(
 				(bankDockBlockEntity, direction) -> bankDockBlockEntity.getItemStorage(), BANK_DOCK_BLOCK_ENTITY);
@@ -148,20 +168,42 @@ public class BankStorage implements ModInitializer {
 
 	}
 
+	private void registerPackets() {
+		
+		PayloadTypeRegistry.playS2C().register(ItemStackBobbingAnimationPacketS2C.PACKET_ID, ItemStackBobbingAnimationPacketS2C.PACKET_CODEC);
+		PayloadTypeRegistry.playS2C().register(RequestBankStoragePacketS2C.PACKET_ID, RequestBankStoragePacketS2C.PACKET_CODEC);
+		PayloadTypeRegistry.playS2C().register(SyncedRandomPacketS2C.PACKET_ID, SyncedRandomPacketS2C.PACKET_CODEC);
+		PayloadTypeRegistry.playS2C().register(SyncLargeSlotPacketS2C.PACKET_ID, SyncLargeSlotPacketS2C.PACKET_CODEC);
+		PayloadTypeRegistry.playS2C().register(SyncContainerPacketS2C.PACKET_ID, SyncContainerPacketS2C.PACKET_CODEC);
+
+		PayloadTypeRegistry.playC2S().register(UpdateBankOptionsPacketC2S.PACKET_ID, UpdateBankOptionsPacketC2S.PACKET_CODEC);
+		PayloadTypeRegistry.playC2S().register(OpenBankFromKeyBindPacketC2S.PACKET_ID, OpenBankFromKeyBindPacketC2S.PACKET_CODEC);
+		PayloadTypeRegistry.playC2S().register(RequestBankStoragePacketC2S.PACKET_ID, RequestBankStoragePacketC2S.PACKET_CODEC);
+		PayloadTypeRegistry.playC2S().register(SortPacketC2S.PACKET_ID, SortPacketC2S.PACKET_CODEC);
+		PayloadTypeRegistry.playC2S().register(PickupModePacketC2S.PACKET_ID, PickupModePacketC2S.PACKET_CODEC);
+		PayloadTypeRegistry.playC2S().register(SelectedSlotPacketC2S.PACKET_ID, SelectedSlotPacketC2S.PACKET_CODEC);
+		PayloadTypeRegistry.playC2S().register(LockSlotPacketC2S.PACKET_ID, LockSlotPacketC2S.PACKET_CODEC);
+		PayloadTypeRegistry.playC2S().register(KeyBindUpdatePacketC2S.PACKET_ID, KeyBindUpdatePacketC2S.PACKET_CODEC);
+
+	}
+
 	public void registerNetworkListeners() {
 
-		ServerPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketC2S.TYPE,
+		ServerPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketC2S.PACKET_ID,
 				new RequestBankStoragePacketC2S.Receiver());
-		ServerPlayNetworking.registerGlobalReceiver(SortPacketC2S.TYPE, new SortPacketC2S.Receiver());
-		ServerPlayNetworking.registerGlobalReceiver(PickupModePacketC2S.TYPE, new PickupModePacketC2S.Receiver());
-		ServerPlayNetworking.registerGlobalReceiver(SelectedSlotPacketC2S.TYPE, new SelectedSlotPacketC2S.Receiver());
-		ServerPlayNetworking.registerGlobalReceiver(LockSlotPacketC2S.TYPE, new LockSlotPacketC2S.Receiver());
-		ServerPlayNetworking.registerGlobalReceiver(KeyBindUpdatePacketC2S.TYPE, new KeyBindUpdatePacketC2S.Receiver());
+		ServerPlayNetworking.registerGlobalReceiver(SortPacketC2S.PACKET_ID, new SortPacketC2S.Receiver());
+		ServerPlayNetworking.registerGlobalReceiver(PickupModePacketC2S.PACKET_ID, new PickupModePacketC2S.Receiver());
+		ServerPlayNetworking.registerGlobalReceiver(SelectedSlotPacketC2S.PACKET_ID, new SelectedSlotPacketC2S.Receiver());
+		ServerPlayNetworking.registerGlobalReceiver(LockSlotPacketC2S.PACKET_ID, new LockSlotPacketC2S.Receiver());
+		ServerPlayNetworking.registerGlobalReceiver(KeyBindUpdatePacketC2S.PACKET_ID, new KeyBindUpdatePacketC2S.Receiver());
 
-		ServerPlayNetworking.registerGlobalReceiver(UpdateBankOptionsPacketC2S.TYPE,
-				new UpdateBankOptionsPacketC2S.Receiver());
-		ServerPlayNetworking.registerGlobalReceiver(OpenBankFromKeyBindPacketC2S.TYPE,
-				new OpenBankFromKeyBindPacketC2S.Receiver());
+		// ServerPlayNetworking.registerGlobalReceiver(UpdateBankOptionsPacketC2S.TYPE,
+				// new UpdateBankOptionsPacketC2S.Receiver());
+		ServerPlayNetworking.registerGlobalReceiver(UpdateBankOptionsPacketC2S.PACKET_ID, new UpdateBankOptionsPacketC2S.Receiver());
+		ServerPlayNetworking.registerGlobalReceiver(OpenBankFromKeyBindPacketC2S.PACKET_ID, new OpenBankFromKeyBindPacketC2S.Receiver());
+
+		// ServerPlayNetworking.registerGlobalReceiver(OpenBankFromKeyBindPacketC2S.TYPE,
+				// new OpenBankFromKeyBindPacketC2S.Receiver());
 
 	}
 

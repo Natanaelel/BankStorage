@@ -1,11 +1,12 @@
 package net.natte.bankstorage.packet.server;
 
-import net.fabricmc.fabric.api.networking.v1.FabricPacket;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.fabricmc.fabric.api.networking.v1.PacketType;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPacketHandler;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.Context;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPayloadHandler;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.natte.bankstorage.BankStorage;
@@ -13,17 +14,19 @@ import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 
-public class PickupModePacketC2S implements FabricPacket {
+public class PickupModePacketC2S implements CustomPayload {
 
-    public static final PacketType<PickupModePacketC2S> TYPE = PacketType
-            .create(Util.ID("pickupmode"), PickupModePacketC2S::new);
+    // public static final PacketType<PickupModePacketC2S> TYPE = PacketType
+            // .create(Util.ID("pickupmode"), PickupModePacketC2S::new);
+    public static final CustomPayload.Id<PickupModePacketC2S> PACKET_ID = new CustomPayload.Id<>(Util.ID("pickupmode"));
+    public static final PacketCodec<RegistryByteBuf, PickupModePacketC2S> PACKET_CODEC = PacketCodec.of(PickupModePacketC2S::write, PickupModePacketC2S::new);
 
     public static class Receiver implements
-            PlayPacketHandler<PickupModePacketC2S> {
+            PlayPayloadHandler<PickupModePacketC2S> {
 
         @Override
-        public void receive(PickupModePacketC2S packet, ServerPlayerEntity player,
-                PacketSender responseSender) {
+        public void receive(PickupModePacketC2S packet, Context context) {
+            ServerPlayerEntity player = context.player();
             if (player.currentScreenHandler instanceof BankScreenHandler bankScreenHandler)
                 togglePickupModeOfScreenHandler(player, bankScreenHandler);
             else
@@ -72,13 +75,18 @@ public class PickupModePacketC2S implements FabricPacket {
     public PickupModePacketC2S(PacketByteBuf buf) {
     }
 
-    @Override
+    // @Override
     public void write(PacketByteBuf buf) {
     }
 
+    // @Override
+    // public PacketType<?> getType() {
+    //     return TYPE;
+    // }
+
     @Override
-    public PacketType<?> getType() {
-        return TYPE;
+    public Id<? extends CustomPayload> getId() {
+        return PACKET_ID;
     }
 
 }

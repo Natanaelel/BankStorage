@@ -61,31 +61,23 @@ public class Util {
     }
 
     public static boolean canCombine(ItemStack left, ItemStack right) {
-        return left.getItem() == right.getItem() && Objects.equals(left.getNbt(), right.getNbt());
+        return ItemStack.areItemsAndComponentsEqual(left, right);
     }
 
     public static boolean hasUUID(ItemStack itemStack) {
-        if (!itemStack.hasNbt())
-            return false;
-        if (!itemStack.getNbt().contains(BankItem.UUID_KEY))
-            return false;
-        return true;
+        return itemStack.contains(BankStorage.UUIDComponentType);
     }
 
     public static UUID getUUID(ItemStack itemStack) {
-        return itemStack.getNbt().getUuid(BankItem.UUID_KEY);
+        return itemStack.get(BankStorage.UUIDComponentType);
     }
 
     public static boolean hasOptions(ItemStack itemStack) {
-        if (!itemStack.hasNbt())
-            return false;
-        if (!itemStack.getNbt().contains(BankItem.OPTIONS_KEY))
-            return false;
-        return true;
+        return itemStack.contains(BankStorage.OptionsComponentType);
     }
 
     public static BankOptions getOptions(ItemStack itemStack) {
-        return BankOptions.fromNbt(itemStack.getNbt().getCompound(BankItem.OPTIONS_KEY));
+        return itemStack.get(BankStorage.OptionsComponentType);
     }
 
     public static BankOptions getOrCreateOptions(ItemStack itemStack) {
@@ -97,41 +89,41 @@ public class Util {
     }
 
     public static void setOptions(ItemStack itemStack, BankOptions options) {
-        itemStack.getOrCreateNbt().put(BankItem.OPTIONS_KEY, options.asNbt());
+        itemStack.set(BankStorage.OptionsComponentType, options);
     }
 
-    public static NbtCompound largeStackAsNbt(ItemStack itemStack) {
+    // minecraft should support large stacks (int size) by default since 1.20.5
+    // private public static NbtCompound largeStackAsNbt(ItemStack itemStack) {
+    //     NbtCompound nbt = new NbtCompound();
 
-        NbtCompound nbt = new NbtCompound();
+    //     Identifier identifier = Registries.ITEM.getId(itemStack.getItem());
+    //     nbt.putString("id", identifier == null ? "minecraft:air" : identifier.toString());
+    //     nbt.putInt("Count", itemStack.getCount());
 
-        Identifier identifier = Registries.ITEM.getId(itemStack.getItem());
-        nbt.putString("id", identifier == null ? "minecraft:air" : identifier.toString());
-        nbt.putInt("Count", itemStack.getCount());
+    //     // if (itemStack.getNbt() != null)
+    //     //     nbt.put("tag", itemStack.getNbt().copy());
 
-        if (itemStack.getNbt() != null)
-            nbt.put("tag", itemStack.getNbt().copy());
+    //     return nbt;
+    // }
 
-        return nbt;
-    }
+    // public static ItemStack largeStackFromNbt(NbtCompound nbt) {
 
-    public static ItemStack largeStackFromNbt(NbtCompound nbt) {
+    //     ItemStack itemStack = Registries.ITEM.get(new Identifier(nbt.getString("id"))).getDefaultStack();
+    //     itemStack.setCount(nbt.getInt("Count"));
 
-        ItemStack itemStack = Registries.ITEM.get(new Identifier(nbt.getString("id"))).getDefaultStack();
-        itemStack.setCount(nbt.getInt("Count"));
+    //     if (nbt.contains("tag", NbtElement.COMPOUND_TYPE))
+    //         itemStack.setNbt(nbt.getCompound("tag"));
 
-        if (nbt.contains("tag", NbtElement.COMPOUND_TYPE))
-            itemStack.setNbt(nbt.getCompound("tag"));
+    //     return itemStack;
+    // }
 
-        return itemStack;
-    }
+    // public static ItemStack readLargeStack(PacketByteBuf buf) {
+    //     return Util.largeStackFromNbt(buf.readNbt());
+    // }
 
-    public static ItemStack readLargeStack(PacketByteBuf buf) {
-        return Util.largeStackFromNbt(buf.readNbt());
-    }
-
-    public static void writeLargeStack(PacketByteBuf buf, ItemStack stack) {
-        buf.writeNbt(Util.largeStackAsNbt(stack));
-    }
+    // public static void writeLargeStack(PacketByteBuf buf, ItemStack stack) {
+    //     buf.writeNbt(Util.largeStackAsNbt(stack));
+    // }
 
     public static void sortBank(BankItemStorage bankItemStorage, ServerPlayerEntity player, SortMode sortMode) {
 
@@ -143,7 +135,7 @@ public class Util {
             bankItemStorage.setStack(i, ItemStack.EMPTY);
             boolean didExist = false;
             for (HugeItemStack existing : collectedItems) {
-                if (ItemStack.canCombine(itemStack, existing.stack)) {
+                if (ItemStack.areItemsAndComponentsEqual(itemStack, existing.stack)) {
                     existing.count += itemStack.getCount();
                     didExist = true;
                     break;
@@ -230,7 +222,7 @@ public class Util {
 
         UUID uuid = hasUUID(bank) ? getUUID(bank) : UUID.randomUUID();
         if (!hasUUID(bank))
-            bank.getOrCreateNbt().putUuid(BankItem.UUID_KEY, uuid);
+            bank.set(BankStorage.UUIDComponentType, uuid);
 
         BankType type = ((BankItem) bank.getItem()).getType();
         BankStateSaverAndLoader serverState = BankStateSaverAndLoader.getServerStateSaverAndLoader(world.getServer());

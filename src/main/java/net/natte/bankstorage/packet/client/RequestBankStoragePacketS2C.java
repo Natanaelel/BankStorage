@@ -4,17 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import net.fabricmc.fabric.api.networking.v1.FabricPacket;
-import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.util.Util;
 
-public class RequestBankStoragePacketS2C implements FabricPacket {
+public class RequestBankStoragePacketS2C implements CustomPayload {
 
-    public static final PacketType<RequestBankStoragePacketS2C> TYPE = PacketType
-            .create(Util.ID("requestbank_s2c"), RequestBankStoragePacketS2C::new);
+    // public static final PacketType<RequestBankStoragePacketS2C> TYPE = PacketType
+            // .create(Util.ID("requestbank_s2c"), RequestBankStoragePacketS2C::new);
+
+    public static final CustomPayload.Id<RequestBankStoragePacketS2C> PACKET_ID = new CustomPayload.Id<>(Util.ID("requestbank_s2c"));
+    public static final PacketCodec<PacketByteBuf, RequestBankStoragePacketS2C> PACKET_CODEC = PacketCodec.of(RequestBankStoragePacketS2C::write, RequestBankStoragePacketS2C::new);
+
 
     public CachedBankStorage cachedBankStorage;
 
@@ -38,7 +42,7 @@ public class RequestBankStoragePacketS2C implements FabricPacket {
         // no idea what ^that^ means, but I'll keep it as a reminder
     }
 
-    @Override
+    // @Override
     public void write(PacketByteBuf buf) {
 
         buf.writeInt(this.cachedBankStorage.items.size());
@@ -51,8 +55,13 @@ public class RequestBankStoragePacketS2C implements FabricPacket {
 
     }
 
+    // @Override
+    // public PacketType<?> getType() {
+    //     return TYPE;
+    // }
+
     @Override
-    public PacketType<?> getType() {
-        return TYPE;
+    public Id<? extends CustomPayload> getId() {
+        return PACKET_ID;
     }
 }

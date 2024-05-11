@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.time.LocalDateTime;
 
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
@@ -22,7 +23,7 @@ public class BankStateSaverAndLoader extends PersistentState {
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound nbtCompound) {
+    public NbtCompound writeNbt(NbtCompound nbtCompound, RegistryWrapper.WrapperLookup registryLookup) {
 
         BankStorage.LOGGER.info("Saving banks to nbt");
 

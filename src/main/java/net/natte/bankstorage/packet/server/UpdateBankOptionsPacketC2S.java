@@ -2,12 +2,13 @@ package net.natte.bankstorage.packet.server;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import net.fabricmc.fabric.api.networking.v1.FabricPacket;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.fabricmc.fabric.api.networking.v1.PacketType;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPacketHandler;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.Context;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPayloadHandler;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.MathHelper;
 import net.natte.bankstorage.BankStorage;
@@ -24,15 +25,19 @@ import net.natte.bankstorage.util.Util;
  * if selectedSlot didn't pass validation (bankstorage block items updated to
  * smaller size or smt): send cache update to client if buildmode
  */
-public class UpdateBankOptionsPacketC2S implements FabricPacket {
-    public static final PacketType<UpdateBankOptionsPacketC2S> TYPE = PacketType
-            .create(Util.ID("update_options_c2s"), UpdateBankOptionsPacketC2S::new);
+public class UpdateBankOptionsPacketC2S implements CustomPayload {
+    // public static final PacketType<UpdateBankOptionsPacketC2S> TYPE = PacketType
+            // .create(Util.ID("update_options_c2s"), UpdateBankOptionsPacketC2S::new);
 
-    public static class Receiver implements PlayPacketHandler<UpdateBankOptionsPacketC2S> {
+    public static final CustomPayload.Id<UpdateBankOptionsPacketC2S> PACKET_ID = new CustomPayload.Id<>(Util.ID("update_options_c2s"));
+    public static final PacketCodec<RegistryByteBuf, UpdateBankOptionsPacketC2S> PACKET_CODEC = PacketCodec.of(UpdateBankOptionsPacketC2S::write, UpdateBankOptionsPacketC2S::new);
+
+    // public static class Receiver implements PlayPacketHandler<UpdateBankOptionsPacketC2S> {
+    public static class Receiver implements PlayPayloadHandler<UpdateBankOptionsPacketC2S> {
 
         @Override
-        public void receive(UpdateBankOptionsPacketC2S packet, ServerPlayerEntity player, PacketSender responseSender) {
-
+        public void receive(UpdateBankOptionsPacketC2S packet, Context context) {
+            ServerPlayerEntity player = context.player();
             if (player.currentScreenHandler instanceof BankScreenHandler bankScreenHandler) {
 
                 AtomicBoolean hasOpenedBankDock = new AtomicBoolean(false);
@@ -91,14 +96,19 @@ public class UpdateBankOptionsPacketC2S implements FabricPacket {
         this(BankOptions.fromNbt(buf.readNbt()));
     }
 
-    @Override
+    // @Override
     public void write(PacketByteBuf buf) {
         buf.writeNbt(options.asNbt());
     }
 
+    // @Override
+    // public PacketType<?> getType() {
+    //     return TYPE;
+    // }
+
     @Override
-    public PacketType<?> getType() {
-        return TYPE;
+    public Id<? extends CustomPayload> getId() {
+        return PACKET_ID;
     }
 
 }

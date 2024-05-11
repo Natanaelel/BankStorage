@@ -1,12 +1,13 @@
 
 package net.natte.bankstorage.packet.server;
 
-import net.fabricmc.fabric.api.networking.v1.FabricPacket;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.fabricmc.fabric.api.networking.v1.PacketType;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPacketHandler;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.Context;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPayloadHandler;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.natte.bankstorage.container.BankItemStorage;
@@ -15,15 +16,18 @@ import net.natte.bankstorage.options.SortMode;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 
-public class SortPacketC2S implements FabricPacket {
+public class SortPacketC2S implements CustomPayload {
 
-    public static final PacketType<SortPacketC2S> TYPE = PacketType
-            .create(Util.ID("sort_c2s"), SortPacketC2S::new);
+    // public static final PacketType<SortPacketC2S> TYPE = PacketType
+            // .create(Util.ID("sort_c2s"), SortPacketC2S::new);
+    public static final CustomPayload.Id<SortPacketC2S> PACKET_ID = new CustomPayload.Id<>(Util.ID("sort_c2s"));
+    public static final PacketCodec<RegistryByteBuf, SortPacketC2S> PACKET_CODEC = PacketCodec.of(SortPacketC2S::write, SortPacketC2S::new);
 
-    public static class Receiver implements PlayPacketHandler<SortPacketC2S> {
+    public static class Receiver implements PlayPayloadHandler<SortPacketC2S> {
 
         @Override
-        public void receive(SortPacketC2S packet, ServerPlayerEntity player, PacketSender responseSender) {
+        public void receive(SortPacketC2S packet, Context context) {
+            ServerPlayerEntity player = context.player();
             ScreenHandler screenHandler = player.currentScreenHandler;
             if (!(screenHandler instanceof BankScreenHandler bankScreenHandler))
                 return;
@@ -49,13 +53,19 @@ public class SortPacketC2S implements FabricPacket {
         this(SortMode.from(buf.readByte()));
     }
 
-    @Override
+    // @Override
     public void write(PacketByteBuf buf) {
         buf.writeByte(sortMode.number);
     }
 
+    // @Override
+    // public PacketType<?> getType() {
+    //     return TYPE;
+    // }
+
     @Override
-    public PacketType<?> getType() {
-        return TYPE;
+    public Id<? extends CustomPayload> getId() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getId'");
     }
 }

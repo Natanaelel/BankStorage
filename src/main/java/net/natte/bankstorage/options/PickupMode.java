@@ -1,6 +1,8 @@
 package net.natte.bankstorage.options;
 
-public enum PickupMode {
+import net.minecraft.util.StringIdentifiable;
+
+public enum PickupMode implements StringIdentifiable {
     NONE(0),
     ALL(1),
     FILTERED(2),
@@ -28,5 +30,10 @@ public enum PickupMode {
 
     public PickupMode next(){
         return from((number + 1) % 4);
+    }
+
+    @Override
+    public String asString() {
+        return this.toString();
     }
 }
