@@ -29,9 +29,8 @@ public class SyncLargeSlotInventoryS2C implements PlayPayloadHandler<SyncContain
         int containerID = packet.containerId();
         ItemStack carried = packet.carried();
 
-
         DefaultedList<ItemStack> stacks = (DefaultedList<ItemStack>) packet.stacks();
- 
+
         context.client().execute(() -> handle(context.player(), stateID, containerID, stacks, carried));
     }
 

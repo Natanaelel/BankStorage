@@ -3,9 +3,9 @@ package net.natte.bankstorage.packet.server;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.Context;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPayloadHandler;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Hand;
@@ -13,12 +13,15 @@ import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.util.Util;
 
-public class SelectedSlotPacketC2S implements CustomPayload {
+public record SelectedSlotPacketC2S(boolean isRight, int slot) implements CustomPayload {
 
-    // public static final PacketType<SelectedSlotPacketC2S> TYPE = PacketType
-            // .create(Util.ID("selected_slot"), SelectedSlotPacketC2S::new);
     public static final CustomPayload.Id<SelectedSlotPacketC2S> PACKET_ID = new CustomPayload.Id<>(Util.ID("selected_slot"));
-    public static final PacketCodec<RegistryByteBuf, SelectedSlotPacketC2S> PACKET_CODEC = PacketCodec.of(SelectedSlotPacketC2S::write, SelectedSlotPacketC2S::new);
+    public static final PacketCodec<RegistryByteBuf, SelectedSlotPacketC2S> PACKET_CODEC = PacketCodec.tuple(
+            PacketCodecs.BOOL,
+            SelectedSlotPacketC2S::isRight,
+            PacketCodecs.INTEGER,
+            SelectedSlotPacketC2S::slot,
+            SelectedSlotPacketC2S::new);
 
     public static class Receiver implements
             PlayPayloadHandler<SelectedSlotPacketC2S> {
@@ -41,29 +44,6 @@ public class SelectedSlotPacketC2S implements CustomPayload {
             }
         }
     }
-
-    public boolean isRight;
-    public int slot;
-
-    public SelectedSlotPacketC2S(boolean isRight, int slot) {
-        this.isRight = isRight;
-        this.slot = slot;
-    }
-
-    public SelectedSlotPacketC2S(PacketByteBuf buf) {
-        this(buf.readBoolean(), buf.readInt());
-    }
-
-    // @Override
-    public void write(PacketByteBuf buf) {
-        buf.writeBoolean(this.isRight);
-        buf.writeInt(this.slot);
-    }
-
-    // @Override
-    // public PacketType<?> getType() {
-    //     return TYPE;
-    // }
 
     @Override
     public Id<? extends CustomPayload> getId() {

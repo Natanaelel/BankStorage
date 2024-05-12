@@ -3,7 +3,6 @@ package net.natte.bankstorage.packet.server;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.Context;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPayloadHandler;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
@@ -14,12 +13,10 @@ import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 
-public class PickupModePacketC2S implements CustomPayload {
+public record PickupModePacketC2S() implements CustomPayload {
 
-    // public static final PacketType<PickupModePacketC2S> TYPE = PacketType
-            // .create(Util.ID("pickupmode"), PickupModePacketC2S::new);
     public static final CustomPayload.Id<PickupModePacketC2S> PACKET_ID = new CustomPayload.Id<>(Util.ID("pickupmode"));
-    public static final PacketCodec<RegistryByteBuf, PickupModePacketC2S> PACKET_CODEC = PacketCodec.of(PickupModePacketC2S::write, PickupModePacketC2S::new);
+    public static final PacketCodec<RegistryByteBuf, PickupModePacketC2S> PACKET_CODEC = PacketCodec.unit(new PickupModePacketC2S());
 
     public static class Receiver implements
             PlayPayloadHandler<PickupModePacketC2S> {
@@ -68,21 +65,6 @@ public class PickupModePacketC2S implements CustomPayload {
                     + options.pickupMode.toString().toLowerCase()), true);
         }
     }
-
-    public PickupModePacketC2S() {
-    }
-
-    public PickupModePacketC2S(PacketByteBuf buf) {
-    }
-
-    // @Override
-    public void write(PacketByteBuf buf) {
-    }
-
-    // @Override
-    // public PacketType<?> getType() {
-    //     return TYPE;
-    // }
 
     @Override
     public Id<? extends CustomPayload> getId() {

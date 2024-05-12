@@ -12,6 +12,6 @@ public class SyncedRandomPacketReceiver implements PlayPayloadHandler<SyncedRand
 
     @Override
     public void receive(SyncedRandomPacketS2C packet, Context context) {
-        Util.clientSyncedRandom = new Random(packet.randomSeed);
+        Util.clientSyncedRandom = new Random(packet.randomSeed());
     }
 }

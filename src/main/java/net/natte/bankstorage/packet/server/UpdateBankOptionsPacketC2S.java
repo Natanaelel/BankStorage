@@ -6,7 +6,6 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.Context;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPayloadHandler;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -25,14 +24,14 @@ import net.natte.bankstorage.util.Util;
  * if selectedSlot didn't pass validation (bankstorage block items updated to
  * smaller size or smt): send cache update to client if buildmode
  */
-public class UpdateBankOptionsPacketC2S implements CustomPayload {
-    // public static final PacketType<UpdateBankOptionsPacketC2S> TYPE = PacketType
-            // .create(Util.ID("update_options_c2s"), UpdateBankOptionsPacketC2S::new);
+public record UpdateBankOptionsPacketC2S(BankOptions options) implements CustomPayload {
 
     public static final CustomPayload.Id<UpdateBankOptionsPacketC2S> PACKET_ID = new CustomPayload.Id<>(Util.ID("update_options_c2s"));
-    public static final PacketCodec<RegistryByteBuf, UpdateBankOptionsPacketC2S> PACKET_CODEC = PacketCodec.of(UpdateBankOptionsPacketC2S::write, UpdateBankOptionsPacketC2S::new);
+    public static final PacketCodec<PacketByteBuf, UpdateBankOptionsPacketC2S> PACKET_CODEC = BankOptions.PACKET_CODEC
+            .xmap(
+                    UpdateBankOptionsPacketC2S::new,
+                    UpdateBankOptionsPacketC2S::options);
 
-    // public static class Receiver implements PlayPacketHandler<UpdateBankOptionsPacketC2S> {
     public static class Receiver implements PlayPayloadHandler<UpdateBankOptionsPacketC2S> {
 
         @Override
@@ -85,26 +84,6 @@ public class UpdateBankOptionsPacketC2S implements CustomPayload {
         }
 
     }
-
-    public BankOptions options;
-
-    public UpdateBankOptionsPacketC2S(BankOptions options) {
-        this.options = options;
-    }
-
-    public UpdateBankOptionsPacketC2S(PacketByteBuf buf) {
-        this(BankOptions.fromNbt(buf.readNbt()));
-    }
-
-    // @Override
-    public void write(PacketByteBuf buf) {
-        buf.writeNbt(options.asNbt());
-    }
-
-    // @Override
-    // public PacketType<?> getType() {
-    //     return TYPE;
-    // }
 
     @Override
     public Id<? extends CustomPayload> getId() {

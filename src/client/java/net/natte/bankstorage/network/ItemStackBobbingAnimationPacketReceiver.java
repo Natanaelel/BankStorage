@@ -10,7 +10,7 @@ public class ItemStackBobbingAnimationPacketReceiver implements PlayPayloadHandl
     public void receive(ItemStackBobbingAnimationPacketS2C packet, Context context) {
         context.player()
                 .getInventory()
-                .getStack(packet.index)
+                .getStack(packet.index())
                 .setBobbingAnimationTime(5);
     }
 }

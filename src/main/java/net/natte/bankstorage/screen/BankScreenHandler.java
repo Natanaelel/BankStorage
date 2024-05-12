@@ -632,25 +632,6 @@ public class BankScreenHandler extends ScreenHandler {
         ((BankItemStorage) this.inventory).unlockSlot(index);
     }
 
-    public void setLockedSlots(Map<Integer, ItemStack> lockedSlots) {
-        BankItemStorage bankItemStorage = (BankItemStorage) this.inventory;
-
-        for (int i = 0; i < this.slots.size(); ++i) {
-            Slot slot = this.slots.get(i);
-            if (!(slot instanceof BankSlot bankSlot))
-                continue;
-            ItemStack stack = lockedSlots.get(i);
-            if (stack == null) {
-                bankItemStorage.lockSlot(i, stack);
-                bankSlot.unlock();
-            } else {
-                bankItemStorage.unlockSlot(i);
-                bankSlot.lock(stack);
-            }
-        }
-        this.lockedSlotsMarkDirty();
-    }
-
     public void setLockedSlotsNoSync(Map<Integer, ItemStack> lockedSlots) {
         BankItemStorage bankItemStorage = (BankItemStorage) this.inventory;
 

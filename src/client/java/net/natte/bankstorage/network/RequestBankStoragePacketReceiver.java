@@ -13,7 +13,7 @@ public class RequestBankStoragePacketReceiver implements PlayPayloadHandler<Requ
 
     public void receive(RequestBankStoragePacketS2C packet, Context context) {
 
-        CachedBankStorage bankStorage = packet.cachedBankStorage;
+        CachedBankStorage bankStorage = packet.cachedBankStorage();
         CachedBankStorage.setBankStorage(bankStorage.uuid, bankStorage);
 
         if (bankStorage.uuid.equals(BankStorageClient.buildModePreviewRenderer.uuid)) {
