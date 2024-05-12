@@ -150,6 +150,11 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         return this.type.stackLimit;
     }
 
+    @Override
+    public int getMaxCount(ItemStack stack) {
+        return getMaxCountPerStack();
+    }
+
     // same format as vanilla except slot saved as int instead
     // of byte
     public NbtCompound saveToNbt() {

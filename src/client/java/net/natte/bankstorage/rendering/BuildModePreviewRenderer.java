@@ -83,11 +83,7 @@ public class BuildModePreviewRenderer implements EndTick {
 
             this.uuid = Util.getUUID(this.stackInHand);
             this.bankStorage = CachedBankStorage.getBankStorage(this.uuid);
-            this.options = Util.getOptions(this.stackInHand);
-            if(this.options == null){
-                this.options = new BankOptions();
-                System.out.println("options == null???");
-            }
+            this.options = Util.getOrCreateOptions(this.stackInHand);
 
             // make sure client has the latest revision
             CachedBankStorage.requestCacheUpdate(this.uuid);

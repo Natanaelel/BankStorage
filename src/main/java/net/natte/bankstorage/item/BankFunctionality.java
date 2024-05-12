@@ -35,6 +35,12 @@ public abstract class BankFunctionality extends Item {
         return false;
     }
 
+    @Override
+    public boolean allowComponentsUpdateAnimation(PlayerEntity player, Hand hand, ItemStack oldStack,
+            ItemStack newStack) {
+        return false;
+    }
+
     // isBuildMode:B usedOnBlock:B isSneaking:B hasToggleKey:B -> shouldOpen:B
     // 78: 0 0 0 0 -> 1
     // 78: 0 0 0 1 -> 1

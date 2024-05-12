@@ -77,11 +77,13 @@ public class Util {
     }
 
     public static BankOptions getOrCreateOptions(ItemStack itemStack) {
-        if (hasOptions(itemStack)) {
-            return getOptions(itemStack);
-        } else {
-            return new BankOptions();
+        BankOptions options = getOptions(itemStack);
+        if(options == null){
+            options = new BankOptions();
+            setOptions(itemStack, options);
         }
+        return options;
+        
     }
 
     public static void setOptions(ItemStack itemStack, BankOptions options) {
@@ -163,7 +165,7 @@ public class Util {
                     .keySet()
                     .stream()
                     .filter(index -> Util.canCombine(collectedItem.stack, bankItemStorage.getLockedStack(index)))
-                    .sorted()
+                    .sorted()                       // SETSTACK
                     .forEach(index -> bankItemStorage.setStack(index, collectedItem.split(slotSize)));
         }
 
@@ -177,6 +179,7 @@ public class Util {
                     continue;
                 ItemStack existingStack = bankItemStorage.getStack(i);
                 if (existingStack.isEmpty()) {
+                    // SETSTACK
                     bankItemStorage.setStack(i, collectedItem.split(slotSize));
                 }
             }
