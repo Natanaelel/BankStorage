@@ -11,6 +11,7 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.natte.bankstorage.util.Util;
 
+// TODO: is this needed anymore?
 public record SyncContainerPacketS2C(int stateId, int containerId, List<ItemStack> stacks, ItemStack carried)
         implements CustomPayload {
 

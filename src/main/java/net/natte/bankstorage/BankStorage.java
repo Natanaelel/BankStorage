@@ -193,21 +193,14 @@ public class BankStorage implements ModInitializer {
 
 	public void registerNetworkListeners() {
 
-		ServerPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketC2S.PACKET_ID,
-				new RequestBankStoragePacketC2S.Receiver());
+		ServerPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketC2S.PACKET_ID, new RequestBankStoragePacketC2S.Receiver());
 		ServerPlayNetworking.registerGlobalReceiver(SortPacketC2S.PACKET_ID, new SortPacketC2S.Receiver());
 		ServerPlayNetworking.registerGlobalReceiver(PickupModePacketC2S.PACKET_ID, new PickupModePacketC2S.Receiver());
 		ServerPlayNetworking.registerGlobalReceiver(SelectedSlotPacketC2S.PACKET_ID, new SelectedSlotPacketC2S.Receiver());
 		ServerPlayNetworking.registerGlobalReceiver(LockSlotPacketC2S.PACKET_ID, new LockSlotPacketC2S.Receiver());
 		ServerPlayNetworking.registerGlobalReceiver(KeyBindUpdatePacketC2S.PACKET_ID, new KeyBindUpdatePacketC2S.Receiver());
-
-		// ServerPlayNetworking.registerGlobalReceiver(UpdateBankOptionsPacketC2S.TYPE,
-				// new UpdateBankOptionsPacketC2S.Receiver());
 		ServerPlayNetworking.registerGlobalReceiver(UpdateBankOptionsPacketC2S.PACKET_ID, new UpdateBankOptionsPacketC2S.Receiver());
 		ServerPlayNetworking.registerGlobalReceiver(OpenBankFromKeyBindPacketC2S.PACKET_ID, new OpenBankFromKeyBindPacketC2S.Receiver());
-
-		// ServerPlayNetworking.registerGlobalReceiver(OpenBankFromKeyBindPacketC2S.TYPE,
-				// new OpenBankFromKeyBindPacketC2S.Receiver());
 
 	}
 

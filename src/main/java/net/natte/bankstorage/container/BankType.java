@@ -3,13 +3,12 @@ package net.natte.bankstorage.container;
 import java.util.List;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Item.Settings;
-import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.registry.Registries;
@@ -22,13 +21,8 @@ import net.natte.bankstorage.util.Util;
 
 public class BankType {
 
-    public static final Codec<BankType> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.STRING.fieldOf("name").forGetter(o -> o.getName()))
-            .apply(instance, BankItemStorage::getBankTypeFromName));
-    public static final PacketCodec<? super RegistryByteBuf, BankType> PACKET_CODEC = PacketCodec.tuple(
-            PacketCodecs.STRING,
-            o -> o.getName(),
-            BankItemStorage::getBankTypeFromName);
+    public static final Codec<BankType> CODEC = Codec.STRING.xmap(BankItemStorage::getBankTypeFromName, BankType::getName);
+    public static final PacketCodec<ByteBuf, BankType> PACKET_CODEC = PacketCodecs.STRING.xmap(BankItemStorage::getBankTypeFromName, BankType::getName);
 
     private String name;
     public int rows;

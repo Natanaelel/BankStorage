@@ -69,16 +69,8 @@ public class Util {
         return itemStack.get(BankStorage.UUIDComponentType);
     }
 
-    public static boolean hasOptions(ItemStack itemStack) {
-        return itemStack.contains(BankStorage.OptionsComponentType);
-    }
-
-    public static BankOptions getOptions(ItemStack itemStack) {
-        return itemStack.get(BankStorage.OptionsComponentType);
-    }
-
     public static BankOptions getOrCreateOptions(ItemStack itemStack) {
-        BankOptions options = getOptions(itemStack);
+        BankOptions options = itemStack.get(BankStorage.OptionsComponentType);
         if(options == null){
             options = new BankOptions();
             setOptions(itemStack, options);
@@ -90,39 +82,6 @@ public class Util {
     public static void setOptions(ItemStack itemStack, BankOptions options) {
         itemStack.set(BankStorage.OptionsComponentType, options);
     }
-
-    // minecraft should support large stacks (int size) by default since 1.20.5
-    // private public static NbtCompound largeStackAsNbt(ItemStack itemStack) {
-    //     NbtCompound nbt = new NbtCompound();
-
-    //     Identifier identifier = Registries.ITEM.getId(itemStack.getItem());
-    //     nbt.putString("id", identifier == null ? "minecraft:air" : identifier.toString());
-    //     nbt.putInt("Count", itemStack.getCount());
-
-    //     // if (itemStack.getNbt() != null)
-    //     //     nbt.put("tag", itemStack.getNbt().copy());
-
-    //     return nbt;
-    // }
-
-    // public static ItemStack largeStackFromNbt(NbtCompound nbt) {
-
-    //     ItemStack itemStack = Registries.ITEM.get(new Identifier(nbt.getString("id"))).getDefaultStack();
-    //     itemStack.setCount(nbt.getInt("Count"));
-
-    //     if (nbt.contains("tag", NbtElement.COMPOUND_TYPE))
-    //         itemStack.setNbt(nbt.getCompound("tag"));
-
-    //     return itemStack;
-    // }
-
-    // public static ItemStack readLargeStack(PacketByteBuf buf) {
-    //     return Util.largeStackFromNbt(buf.readNbt());
-    // }
-
-    // public static void writeLargeStack(PacketByteBuf buf, ItemStack stack) {
-    //     buf.writeNbt(Util.largeStackAsNbt(stack));
-    // }
 
     public static void sortBank(BankItemStorage bankItemStorage, ServerPlayerEntity player, SortMode sortMode) {
 
@@ -215,7 +174,7 @@ public class Util {
                 return null;
             BankItemStorage bankItemStorage = getBankItemStorage(Util.getUUID(bank), world);
             if (bankItemStorage.type != LinkItem.getType(bank)) {
-                LinkItem.setTypeName(bank, bankItemStorage.type.getName());
+                LinkItem.setType(bank, bankItemStorage.type);
             }
             return bankItemStorage;
         }

@@ -21,6 +21,7 @@ import net.natte.bankstorage.util.Util;
  * Credit Tfarcenim
  * https://github.com/Tfarcenim/DankStorageFabric/blob/1.19.x/src/main/java/tfar/dankstorage/container/CustomSync.java#L12 
  */
+// TODO: is this needed anymore?
 public class BankScreenSync implements ScreenHandlerSyncHandler {
 
     private ServerPlayerEntity player;

@@ -10,6 +10,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.screen.BankScreenSync;
 
+// TODO: is this needed anymore?
 @Mixin(ServerPlayerEntity.class)
 public class ServerPlayerEntityMixin {
 

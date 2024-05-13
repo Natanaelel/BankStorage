@@ -8,7 +8,7 @@ import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.natte.bankstorage.util.Util;
-
+// TODO: is this needed anymore?
 public record SyncLargeSlotPacketS2C(int id, int slot, ItemStack itemStack) implements CustomPayload {
 
     public static final CustomPayload.Id<SyncLargeSlotPacketS2C> PACKET_ID = new CustomPayload.Id<>(Util.ID("sync_slot"));

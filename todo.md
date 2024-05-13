@@ -1,5 +1,7 @@
-colored banks
-show content in tooltip
+font size that always look good?
+
+[x] colored banks
+[x] show content in tooltip
 
 [x] minimize cache update requests
 [x] minimize cache update responses

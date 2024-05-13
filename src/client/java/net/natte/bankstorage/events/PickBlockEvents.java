@@ -57,11 +57,8 @@ public class PickBlockEvents {
 
         if (slot == -1)
             return false;
-        // ClientPlayNetworking.send(new SelectedSlotPacketC2S(isRight, slot));
-        // options
+
         options.selectedItemSlot = slot;
-        // BankStorageClient.buildModePreviewRenderer.updateBank();
-        // BankStorageClient.buildModePreviewRenderer.set
 
         ClientPlayNetworking.send(new UpdateBankOptionsPacketC2S(options));
         return true;

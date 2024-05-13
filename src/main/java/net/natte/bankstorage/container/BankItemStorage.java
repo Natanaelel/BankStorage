@@ -17,9 +17,6 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -149,50 +146,6 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         return getMaxCountPerStack();
     }
 
-    // same format as vanilla except slot saved as int instead
-    // of byte
-    public NbtCompound saveToNbt() {
-        NbtCompound nbtCompound = new NbtCompound();
-
-        nbtCompound.putUuid("uuid", this.uuid);
-        nbtCompound.putString("uuid_string", this.uuid.toString());
-        nbtCompound.putString("type", this.type.getName());
-
-        NbtList nbtList = new NbtList();
-        for (int i = 0; i < this.heldStacks.size(); ++i) {
-            ItemStack itemStack = this.heldStacks.get(i);
-            if (itemStack.isEmpty())
-                continue;
-
-            NbtCompound itemNbtCompound = (NbtCompound) ItemStack.CODEC.encodeStart(NbtOps.INSTANCE, itemStack)
-                    .getOrThrow();
-            itemNbtCompound.putInt("Slot", i);
-
-            nbtList.add(itemNbtCompound);
-        }
-        nbtCompound.put("Items", nbtList);
-
-        NbtList lockedSlotsNbt = new NbtList();
-
-        this.lockedSlots.forEach((slot, lockedStack) -> {
-            NbtCompound lockedSlotNbt = (NbtCompound) ItemStack.OPTIONAL_CODEC.encodeStart(NbtOps.INSTANCE, lockedStack)
-                    .getOrThrow();
-
-            lockedSlotNbt.putInt("Slot", slot);
-
-            lockedSlotsNbt.add(lockedSlotNbt);
-        });
-        nbtCompound.put("LockedSlots", lockedSlotsNbt);
-
-        nbtCompound.putUuid("last_used_by_uuid", this.usedByPlayerUUID);
-        nbtCompound.putString("last_used_by_uuid_string", this.usedByPlayerUUID.toString());
-        nbtCompound.putString("last_used_by_player", this.usedByPlayerName);
-        nbtCompound.putString("date_created", this.dateCreated.toString());
-
-        return nbtCompound;
-    }
-
-
     public static BankType getBankTypeFromName(String name) {
         for (BankType bankType : BankStorage.bankTypes) {
             if (bankType.getName().equals(name)) {
@@ -208,7 +161,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         if (!Util.isAllowedInBank(stack))
             return false;
 
-        return super.canInsert(stack);
+        return super.canInsert(stack); // TODO: test that you can actually insert
     }
 
     public List<ItemStack> getItems() {

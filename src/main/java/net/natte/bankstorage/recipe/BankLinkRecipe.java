@@ -35,9 +35,7 @@ public class BankLinkRecipe extends ShapedRecipe {
             return ItemStack.EMPTY;
         }
         ItemStack result = super.craft(recipeInputInventory, registryLookup);
-        // result.setNbt(bank.getNbt());
         result.applyChanges(bank.getComponentChanges());
-        // result.getNbt().putString(LinkItem.BANK_TYPE_KEY, ((BankItem) bank.getItem()).getType().getName());
         result.set(BankStorage.BankTypeComponentType, ((BankItem) bank.getItem()).getType());
         return result;
     }
@@ -54,8 +52,8 @@ public class BankLinkRecipe extends ShapedRecipe {
     }
 
     public static class Serializer implements RecipeSerializer<BankLinkRecipe> {
-        public static final MapCodec<BankLinkRecipe> CODEC = ShapedRecipe.Serializer.CODEC.xmap(BankLinkRecipe::new, bankLinkRecipe -> (ShapedRecipe) bankLinkRecipe);
-        public static final PacketCodec<RegistryByteBuf, BankLinkRecipe> PACKET_CODEC = ShapedRecipe.Serializer.PACKET_CODEC.xmap(BankLinkRecipe::new, bankLinkRecipe -> (ShapedRecipe) bankLinkRecipe);
+        public static final MapCodec<BankLinkRecipe> CODEC = ShapedRecipe.Serializer.CODEC.xmap(BankLinkRecipe::new, ShapedRecipe.class::cast);
+        public static final PacketCodec<RegistryByteBuf, BankLinkRecipe> PACKET_CODEC = ShapedRecipe.Serializer.PACKET_CODEC.xmap(BankLinkRecipe::new, ShapedRecipe.class::cast);
 
         @Override
         public MapCodec<BankLinkRecipe> codec() {
