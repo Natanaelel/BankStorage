@@ -21,7 +21,6 @@ import net.minecraft.command.argument.UuidArgumentType;
 import net.minecraft.command.argument.serialize.ConstantArgumentSerializer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.ClickEvent;
@@ -31,8 +30,8 @@ import net.minecraft.text.Text;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.command.SortingModeArgumentType.SortingMode;
 import net.natte.bankstorage.container.BankItemStorage;
+import net.natte.bankstorage.state.BankStateManager;
 import net.natte.bankstorage.util.Util;
-import net.natte.bankstorage.world.BankStateSaverAndLoader;
 
 public class RestoreBankCommands {
 
@@ -110,7 +109,10 @@ public class RestoreBankCommands {
 
         BankFilter filter = getFilter(context);
 
-        List<BankItemStorage> bankItemStorages = getBankItemStorages(context)
+        // List<BankItemStorage> bankItemStorages = getBankItemStorages(context)
+        List<BankItemStorage> bankItemStorages = BankStateManager
+                .getState(context.getSource().getServer())
+                .getBankItemStorages()
                 .stream()
                 .filter(filter::matchesBank)
                 .toList();
@@ -125,7 +127,9 @@ public class RestoreBankCommands {
         BankFilter filter = getFilter(context);
         SortingMode sortingMode = SortingModeArgumentType.getSortingMode(context, "sorting_mode");
 
-        Stream<BankItemStorage> bankItemStorages = getBankItemStorages(context)
+        Stream<BankItemStorage> bankItemStorages = BankStateManager
+                .getState(context.getSource().getServer())
+                .getBankItemStorages()
                 .stream()
                 .filter(filter::matchesBank);
 
@@ -176,12 +180,6 @@ public class RestoreBankCommands {
                 Text.translatable("admin_restore_bank.bankstorage.listed_banks_num", bankItemStorages.size()));
 
         return 1;
-    }
-
-    private static List<BankItemStorage> getBankItemStorages(CommandContext<ServerCommandSource> context) {
-
-        MinecraftServer server = context.getSource().getServer();
-        return List.copyOf(BankStateSaverAndLoader.getServerStateSaverAndLoader(server).getBankMap().values());
     }
 
     private static BankFilter getFilter(CommandContext<ServerCommandSource> context) {

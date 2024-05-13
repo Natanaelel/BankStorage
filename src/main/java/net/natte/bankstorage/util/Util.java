@@ -29,7 +29,8 @@ import net.natte.bankstorage.item.LinkItem;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.SortMode;
 import net.natte.bankstorage.screen.BankScreenHandler;
-import net.natte.bankstorage.world.BankStateSaverAndLoader;
+import net.natte.bankstorage.state.BankPersistentState;
+import net.natte.bankstorage.state.BankStateManager;
 
 public class Util {
 
@@ -198,7 +199,7 @@ public class Util {
 
     public static BankItemStorage getBankItemStorage(UUID uuid, World world) {
 
-        BankStateSaverAndLoader serverState = BankStateSaverAndLoader.getServerStateSaverAndLoader(world.getServer());
+        BankPersistentState serverState = BankStateManager.getState(world.getServer());
         BankItemStorage bankItemStorage = serverState.get(uuid);
 
         return bankItemStorage;
@@ -224,7 +225,7 @@ public class Util {
             bank.set(BankStorage.UUIDComponentType, uuid);
 
         BankType type = ((BankItem) bank.getItem()).getType();
-        BankStateSaverAndLoader serverState = BankStateSaverAndLoader.getServerStateSaverAndLoader(world.getServer());
+        BankPersistentState serverState = BankStateManager.getState(world.getServer());
         BankItemStorage bankItemStorage = serverState.getOrCreate(uuid, type);
         return bankItemStorage;
     }
