@@ -31,8 +31,8 @@ import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
 import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.packet.client.SyncedRandomPacketS2C;
 import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
-import net.natte.bankstorage.packet.screensync.SyncContainerPacketS2C;
-import net.natte.bankstorage.packet.screensync.SyncLargeSlotPacketS2C;
+// import net.natte.bankstorage.packet.screensync.SyncContainerPacketS2C;
+// import net.natte.bankstorage.packet.screensync.SyncLargeSlotPacketS2C;
 import net.natte.bankstorage.packet.server.KeyBindUpdatePacketC2S;
 import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
 import net.natte.bankstorage.packet.server.OpenBankFromKeyBindPacketC2S;
@@ -176,8 +176,8 @@ public class BankStorage implements ModInitializer {
 		PayloadTypeRegistry.playS2C().register(ItemStackBobbingAnimationPacketS2C.PACKET_ID, ItemStackBobbingAnimationPacketS2C.PACKET_CODEC);
 		PayloadTypeRegistry.playS2C().register(RequestBankStoragePacketS2C.PACKET_ID, RequestBankStoragePacketS2C.PACKET_CODEC);
 		PayloadTypeRegistry.playS2C().register(SyncedRandomPacketS2C.PACKET_ID, SyncedRandomPacketS2C.PACKET_CODEC);
-		PayloadTypeRegistry.playS2C().register(SyncLargeSlotPacketS2C.PACKET_ID, SyncLargeSlotPacketS2C.PACKET_CODEC);
-		PayloadTypeRegistry.playS2C().register(SyncContainerPacketS2C.PACKET_ID, SyncContainerPacketS2C.PACKET_CODEC);
+		// PayloadTypeRegistry.playS2C().register(SyncLargeSlotPacketS2C.PACKET_ID, SyncLargeSlotPacketS2C.PACKET_CODEC);
+		// PayloadTypeRegistry.playS2C().register(SyncContainerPacketS2C.PACKET_ID, SyncContainerPacketS2C.PACKET_CODEC);
 		PayloadTypeRegistry.playS2C().register(LockedSlotsPacketS2C.PACKET_ID, LockedSlotsPacketS2C.PACKET_CODEC);
 
 		PayloadTypeRegistry.playC2S().register(UpdateBankOptionsPacketC2S.PACKET_ID, UpdateBankOptionsPacketC2S.PACKET_CODEC);

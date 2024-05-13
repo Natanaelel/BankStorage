@@ -19,7 +19,7 @@ import net.natte.bankstorage.container.BankType;
 public class BankPersistentState extends PersistentState {
 
     private static final String BANK_DATA_KEY = "bank_data";
-	private final Map<UUID, BankItemStorage> BANK_MAP;
+    private final Map<UUID, BankItemStorage> BANK_MAP;
 
     public BankPersistentState() {
         BANK_MAP = new HashMap<>();
@@ -52,7 +52,9 @@ public class BankPersistentState extends PersistentState {
         BankStorage.LOGGER.debug("Saving banks to nbt");
 
         NbtElement bankNbt = BankSerializer.CODEC
-                .encodeStart(registryLookup.getOps(NbtOps.INSTANCE), getBankItemStorages()).getOrThrow();
+                .encodeStart(registryLookup.getOps(NbtOps.INSTANCE), getBankItemStorages())
+                .resultOrPartial(BankStorage.LOGGER::error)
+                .orElse(new NbtCompound());
 
         nbtCompound.put(BANK_DATA_KEY, bankNbt);
         BankStorage.LOGGER.debug("Saving done");

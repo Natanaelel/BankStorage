@@ -23,7 +23,8 @@ public class BankSerializer {
             ItemStack.OPTIONAL_CODEC.listOf()
                     .fieldOf("items")
                     .forGetter(b -> b.getItems()),
-            Codec.unboundedMap(Codec.INT, ItemStack.OPTIONAL_CODEC)
+            // maps must have string keys
+            Codec.unboundedMap(Codec.STRING.xmap(Integer::valueOf, String::valueOf), ItemStack.OPTIONAL_CODEC)
                     .fieldOf("locked_slots")
                     .forGetter(b -> b.getlockedSlots()),
             Codec.STRING

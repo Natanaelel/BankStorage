@@ -38,15 +38,15 @@ import net.natte.bankstorage.item.tooltip.BankTooltipData;
 import net.natte.bankstorage.network.ItemStackBobbingAnimationPacketReceiver;
 import net.natte.bankstorage.network.RequestBankStoragePacketReceiver;
 import net.natte.bankstorage.network.SyncedRandomPacketReceiver;
-import net.natte.bankstorage.network.screensync.SyncLargeSlotInventoryS2C;
-import net.natte.bankstorage.network.screensync.SyncLargeSlotS2C;
+// import net.natte.bankstorage.network.screensync.SyncLargeSlotInventoryS2C;
+// import net.natte.bankstorage.network.screensync.SyncLargeSlotS2C;
 import net.natte.bankstorage.network.screensync.SyncLockedSlotsReceiver;
 import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
 import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.packet.client.SyncedRandomPacketS2C;
 import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
-import net.natte.bankstorage.packet.screensync.SyncContainerPacketS2C;
-import net.natte.bankstorage.packet.screensync.SyncLargeSlotPacketS2C;
+// import net.natte.bankstorage.packet.screensync.SyncContainerPacketS2C;
+// import net.natte.bankstorage.packet.screensync.SyncLargeSlotPacketS2C;
 import net.natte.bankstorage.packet.server.OpenBankFromKeyBindPacketC2S;
 import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
@@ -214,9 +214,9 @@ public class BankStorageClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(SyncedRandomPacketS2C.PACKET_ID,
                 new SyncedRandomPacketReceiver());
 
-        ClientPlayNetworking.registerGlobalReceiver(SyncLargeSlotPacketS2C.PACKET_ID, new SyncLargeSlotS2C());
-        ClientPlayNetworking.registerGlobalReceiver(SyncContainerPacketS2C.PACKET_ID,
-                new SyncLargeSlotInventoryS2C());
+        // ClientPlayNetworking.registerGlobalReceiver(SyncLargeSlotPacketS2C.PACKET_ID, new SyncLargeSlotS2C());
+        // ClientPlayNetworking.registerGlobalReceiver(SyncContainerPacketS2C.PACKET_ID,
+                // new SyncLargeSlotInventoryS2C());
         ClientPlayNetworking.registerGlobalReceiver(LockedSlotsPacketS2C.PACKET_ID, new SyncLockedSlotsReceiver());
     }
 }

@@ -35,7 +35,7 @@ public class BankScreenHandler extends ScreenHandler {
 
     private final ScreenHandlerContext context;
 
-    private BankScreenSync bankScreenSync;
+    public BankScreenHandlerSyncHandler bankScreenSync;
 
     private ItemStack bankLikeItem;
 
@@ -617,8 +617,7 @@ public class BankScreenHandler extends ScreenHandler {
         }
     }
 
-    public void setBankScreenSync(BankScreenSync bankScreenSync) {
-        this.updateSyncHandler(bankScreenSync);
+    public void setBankScreenSync(BankScreenHandlerSyncHandler bankScreenSync) {
         this.bankScreenSync = bankScreenSync;
     }
 

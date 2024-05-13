@@ -161,7 +161,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         if (!Util.isAllowedInBank(stack))
             return false;
 
-        return super.canInsert(stack); // TODO: test that you can actually insert
+        return super.canInsert(stack);
     }
 
     public List<ItemStack> getItems() {
