@@ -70,7 +70,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
 
     public BankItemStorage changeType(BankType type) {
         BankStorage.LOGGER
-                .info("Upgrading bank from " + this.type.getName() + " to " + type.getName() + " uuid " + this.uuid);
+                .debug("Upgrading bank from " + this.type.getName() + " to " + type.getName() + " uuid " + this.uuid);
         BankItemStorage newBankItemStorage = new BankItemStorage(type, this.uuid);
         for (int i = 0; i < this.heldStacks.size(); ++i) {
             newBankItemStorage.heldStacks.set(i, this.heldStacks.get(i));

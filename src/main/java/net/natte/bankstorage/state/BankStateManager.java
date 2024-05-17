@@ -19,7 +19,7 @@ public class BankStateManager {
         BankPersistentState state = persistentStateManager.getOrCreate(TYPE, BankStorage.MOD_ID);
 
         state.markDirty(); // maybe eventually sometime explore the opportunity to possibly schedule the meeting to discuss the timeframe of the decision to terminate this line of code
-
+                           // nah, keep it
         return state;
     }
 }

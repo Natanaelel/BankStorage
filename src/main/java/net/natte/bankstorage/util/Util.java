@@ -152,6 +152,10 @@ public class Util {
         }
     }
 
+    /**
+     * Doesn't Upgrade {@link BankType}.
+     * Assumes {@link BankItemStorage} with this uuid already exists.
+     */
     public static BankItemStorage getBankItemStorage(UUID uuid, World world) {
 
         BankPersistentState serverState = BankStateManager.getState(world.getServer());
@@ -161,7 +165,9 @@ public class Util {
     }
 
     /**
-     * @return null if unlinked {@link LinkItem} otherwise {@link BankItemStorage}
+     * Returns null if unlinked {@link LinkItem} otherwise {@link BankItemStorage}.
+     * Creates new {@link BankItemStorage} if stack has no uuid.
+     * Upgrades {@link BankType} if needed
      */
     public static @Nullable BankItemStorage getBankItemStorage(ItemStack bank, World world) {
 

@@ -74,6 +74,10 @@ public class BankPersistentState extends PersistentState {
             bank = new BankItemStorage(type, uuid);
             set(uuid, bank);
         }
+        if (bank.type != type) {
+            bank = bank.asType(type);
+            set(uuid, bank);
+        }
         return bank;
     }
 

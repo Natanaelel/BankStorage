@@ -74,7 +74,7 @@ public record UpdateBankOptionsPacketC2S(BankOptions options) implements CustomP
 
             BankOptions options = packet.options;
             if (clampedSelectedItemSlot != packet.options.selectedItemSlot) {
-                options = BankOptions.fromNbt(packet.options.asNbt()); // copy to not modify packet.options
+                options = packet.options.copy(); // copy to not modify packet.options
                 options.selectedItemSlot = clampedSelectedItemSlot;
                 NetworkUtil.syncCachedBankIfBuildModeS2C(bankItemStorage.uuid, player, bankItem);
 

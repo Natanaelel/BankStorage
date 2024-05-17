@@ -13,26 +13,18 @@ import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.util.Util;
 
 public class NetworkUtil {
-    public static void syncCachedBankS2C(UUID uuid, ServerPlayerEntity player) {
-        syncCachedBankS2C(uuid, player, (short) -1);
-    }
 
-    public static void syncCachedBankS2C(UUID uuid, ServerPlayerEntity player, short optionsRevision) {
+    public static void syncCachedBankS2C(UUID uuid, ServerPlayerEntity player) {
 
         BankItemStorage bankItemStorage = Util.getBankItemStorage(uuid, player.getWorld());
         List<ItemStack> items = bankItemStorage.getItems();
         ServerPlayNetworking.send(player, new RequestBankStoragePacketS2C(
-                new CachedBankStorage(items, uuid, bankItemStorage.getRevision(), optionsRevision)));
+                new CachedBankStorage(items, uuid, bankItemStorage.getRevision())));
     }
 
     public static void syncCachedBankIfBuildModeS2C(UUID uuid, ServerPlayerEntity player, ItemStack bankItem) {
-        syncCachedBankIfBuildModeS2C(uuid, player, bankItem, (short) -1);
-    }
-
-    public static void syncCachedBankIfBuildModeS2C(UUID uuid, ServerPlayerEntity player, ItemStack bankItem,
-            short optionsRevision) {
         if (Util.getOrCreateOptions(bankItem).buildMode == BuildMode.NONE)
             return;
-        syncCachedBankS2C(uuid, player, optionsRevision);
+        syncCachedBankS2C(uuid, player);
     }
 }

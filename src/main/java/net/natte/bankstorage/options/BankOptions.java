@@ -3,9 +3,9 @@ package net.natte.bankstorage.options;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
 
 public class BankOptions {
     public PickupMode pickupMode = PickupMode.NONE;
@@ -14,8 +14,17 @@ public class BankOptions {
 
     public int selectedItemSlot = 0;
 
-    public static final PacketCodec<PacketByteBuf, BankOptions> PACKET_CODEC = PacketCodec
-            .of((opt, buf) -> buf.writeNbt(opt.asNbt()), buf -> BankOptions.fromNbt(buf.readNbt()));
+    public static final PacketCodec<PacketByteBuf, BankOptions> PACKET_CODEC = PacketCodec.tuple(
+            PacketCodecs.BYTE,
+            o -> o.pickupMode.number,
+            PacketCodecs.BYTE,
+            o -> o.buildMode.number,
+            PacketCodecs.BYTE,
+            o -> o.sortMode.number,
+            PacketCodecs.INTEGER,
+            o -> o.selectedItemSlot,
+            BankOptions::of);
+
     public static final Codec<BankOptions> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.BYTE.fieldOf("pickup").forGetter(o -> o.pickupMode.number),
             Codec.BYTE.fieldOf("build").forGetter(o -> o.buildMode.number),
@@ -32,27 +41,12 @@ public class BankOptions {
         return options;
     }
 
-    public NbtCompound asNbt() {
-        return writeNbt(new NbtCompound());
-    }
-
-    private NbtCompound writeNbt(NbtCompound nbt) {
-        nbt.putByte("pickup", pickupMode.number);
-        nbt.putByte("build", buildMode.number);
-        nbt.putByte("sort", sortMode.number);
-        nbt.putInt("slot", selectedItemSlot);
-
-        return nbt;
-    }
-
-    public static BankOptions fromNbt(NbtCompound nbt) {
-        BankOptions options = new BankOptions();
-
-        options.pickupMode = PickupMode.from(nbt.getByte("pickup"));
-        options.buildMode = BuildMode.from(nbt.getByte("build"));
-        options.sortMode = SortMode.from(nbt.getByte("sort"));
-        options.selectedItemSlot = nbt.getInt("slot");
-
-        return options;
+    public BankOptions copy() {
+        BankOptions copy = new BankOptions();
+        copy.pickupMode = pickupMode;
+        copy.buildMode = buildMode;
+        copy.sortMode = sortMode;
+        copy.selectedItemSlot = selectedItemSlot;
+        return copy;
     }
 }

@@ -15,7 +15,7 @@ import net.natte.bankstorage.container.BankType;
 
 public class BankSerializer {
 
-    private static Codec<BankItemStorage> BANK_CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    private static final Codec<BankItemStorage> BANK_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Uuids.STRING_CODEC
                     .fieldOf("uuid")
                     .forGetter(b -> b.uuid),
