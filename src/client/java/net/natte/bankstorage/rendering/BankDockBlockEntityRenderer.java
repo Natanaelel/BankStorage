@@ -29,5 +29,4 @@ public class BankDockBlockEntityRenderer implements BlockEntityRenderer<BankDock
 
         matrixStack.pop();
     }
-
 }

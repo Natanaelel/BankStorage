@@ -67,12 +67,12 @@ public class Util {
 
     public static BankOptions getOrCreateOptions(ItemStack itemStack) {
         BankOptions options = itemStack.get(BankStorage.OptionsComponentType);
-        if(options == null){
+        if (options == null) {
             options = new BankOptions();
             setOptions(itemStack, options);
         }
         return options;
-        
+
     }
 
     public static void setOptions(ItemStack itemStack, BankOptions options) {

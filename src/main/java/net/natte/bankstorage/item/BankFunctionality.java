@@ -165,8 +165,8 @@ public abstract class BankFunctionality extends Item {
 
         if (world.isClient)
             CachedBankStorage.requestCacheUpdate(Util.getUUID(bank));
-        
-        if(bankItemStorage != null){
+
+        if (bankItemStorage != null) {
             bankItemStorage.markDirty();
         }
 
@@ -193,13 +193,6 @@ public abstract class BankFunctionality extends Item {
     public ActionResult useOnBlock(ItemUsageContext context) {
         return useBank(context.getPlayer(), context.getHand(), true, context.hit);
     }
-
-    
-    // @Override
-    // public boolean damage(DamageSource source) {
-    //     // can't take any damage
-    //     return false;
-    // }
 
     @Override
     public Optional<TooltipData> getTooltipData(ItemStack stack) {

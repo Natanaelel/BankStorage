@@ -28,7 +28,7 @@ public enum PickupMode implements StringIdentifiable {
         return from((byte) n);
     }
 
-    public PickupMode next(){
+    public PickupMode next() {
         return from((number + 1) % 4);
     }
 

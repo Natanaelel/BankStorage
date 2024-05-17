@@ -19,5 +19,4 @@ public enum SortMode {
             default -> COUNT;
         };
     }
-
 }

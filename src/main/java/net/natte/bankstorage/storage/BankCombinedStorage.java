@@ -139,5 +139,4 @@ public class BankCombinedStorage implements Storage<ItemVariant> {
         }
         return false;
     }
-
 }

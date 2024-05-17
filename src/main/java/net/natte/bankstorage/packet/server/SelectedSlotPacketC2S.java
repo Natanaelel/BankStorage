@@ -49,5 +49,4 @@ public record SelectedSlotPacketC2S(boolean isRight, int slot) implements Custom
     public Id<? extends CustomPayload> getId() {
         return PACKET_ID;
     }
-
 }

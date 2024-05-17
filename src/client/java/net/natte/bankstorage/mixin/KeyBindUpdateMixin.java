@@ -13,7 +13,7 @@ import net.natte.bankstorage.events.KeyBindUpdateEvents;
 @Mixin(GameOptions.class)
 public abstract class KeyBindUpdateMixin {
     @Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/option/GameOptions;setKeyCode(Lnet/minecraft/client/option/KeyBinding;Lnet/minecraft/client/util/InputUtil$Key;)V")
-    public void onKeyBindChange(KeyBinding keyBinding, Key key, CallbackInfo ci){
+    public void onKeyBindChange(KeyBinding keyBinding, Key key, CallbackInfo ci) {
         KeyBindUpdateEvents.onKeyBindChange();
     }
 }

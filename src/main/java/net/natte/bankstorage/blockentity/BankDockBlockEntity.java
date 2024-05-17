@@ -84,8 +84,8 @@ public class BankDockBlockEntity extends BlockEntity {
     }
 
     private BankItemStorage getInventory() {
-        
-        if(this.world.isClient)
+
+        if (this.world.isClient)
             return null;
 
         if (Util.isBankLike(this.bankItem)) {
@@ -121,5 +121,4 @@ public class BankDockBlockEntity extends BlockEntity {
 
         return new BankCombinedStorage(storages, Util.getOrCreateOptions(this.bankItem).pickupMode);
     }
-
 }

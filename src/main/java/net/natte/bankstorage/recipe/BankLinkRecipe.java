@@ -31,7 +31,7 @@ public class BankLinkRecipe extends ShapedRecipe {
             return ItemStack.EMPTY;
         }
         ItemStack bank = maybeBankItemStack.get();
-        if(!Util.hasUUID(bank)){
+        if (!Util.hasUUID(bank)) {
             return ItemStack.EMPTY;
         }
         ItemStack result = super.craft(recipeInputInventory, registryLookup);
@@ -65,5 +65,4 @@ public class BankLinkRecipe extends ShapedRecipe {
             return PACKET_CODEC;
         }
     }
-
 }

@@ -17,10 +17,6 @@ public class BankRecipe extends ShapedRecipe {
 
     public BankRecipe(ShapedRecipe recipe) {
         super(recipe.getGroup(), recipe.getCategory(), recipe.raw, recipe.getResult(null));
-        // super(recipe.getId(), "bank_upgrade", recipe.getCategory(), recipe.getWidth(), recipe.getHeight(),
-        //         recipe.getIngredients(), recipe.getOutput(null));
-        // super("bank_upgrade", recipe.getCategory(), RawShapedRecipe recipe.getResult(null));
-
     }
 
     @Override
@@ -37,7 +33,7 @@ public class BankRecipe extends ShapedRecipe {
         return result;
     }
 
-     public static class Serializer implements RecipeSerializer<BankRecipe> {
+    public static class Serializer implements RecipeSerializer<BankRecipe> {
         public static final MapCodec<BankRecipe> CODEC = ShapedRecipe.Serializer.CODEC.xmap(BankRecipe::new, ShapedRecipe.class::cast);
         public static final PacketCodec<RegistryByteBuf, BankRecipe> PACKET_CODEC = ShapedRecipe.Serializer.PACKET_CODEC.xmap(BankRecipe::new, ShapedRecipe.class::cast);
 
@@ -51,5 +47,4 @@ public class BankRecipe extends ShapedRecipe {
             return PACKET_CODEC;
         }
     }
-
 }

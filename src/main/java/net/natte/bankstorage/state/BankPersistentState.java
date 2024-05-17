@@ -84,5 +84,4 @@ public class BankPersistentState extends PersistentState {
     public List<BankItemStorage> getBankItemStorages() {
         return List.copyOf(BANK_MAP.values());
     }
-
 }

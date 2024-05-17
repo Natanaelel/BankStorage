@@ -29,5 +29,4 @@ public record KeyBindUpdatePacketC2S(boolean isUnbound) implements CustomPayload
     public Id<? extends CustomPayload> getId() {
         return PACKET_ID;
     }
-
 }

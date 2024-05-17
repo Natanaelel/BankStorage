@@ -21,7 +21,8 @@ public class SortButtonWidget extends ButtonWidget {
 
     public SortButtonWidget(SortMode sortMode, int x, int y, int width, int height, Identifier texture,
             Consumer<SortButtonWidget> pressAction) {
-        super(x, y, width, height, ScreenTexts.EMPTY, button -> pressAction.accept((SortButtonWidget) button), DEFAULT_NARRATION_SUPPLIER);
+        super(x, y, width, height, ScreenTexts.EMPTY, button -> pressAction.accept((SortButtonWidget) button),
+                DEFAULT_NARRATION_SUPPLIER);
         this.sortMode = sortMode;
         this.lastPressedTime = 0;
         this.texture = texture;
@@ -42,8 +43,8 @@ public class SortButtonWidget extends ButtonWidget {
 
     @Override
     public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.drawTexture(this.texture, this.getX(), this.getY(), uOffset(), vOffset() + (this.isSelected() ? this.height : 0),
-                
+        context.drawTexture(this.texture, this.getX(), this.getY(),
+                uOffset(), vOffset() + (this.isSelected() ? this.height : 0),
                 this.width, this.height, 256, 256);
     }
 
@@ -65,5 +66,4 @@ public class SortButtonWidget extends ButtonWidget {
                         Text.translatable("tooltip.bankstorage.sortmode." + sortMode.name().toLowerCase())
                                 .formatted(Formatting.DARK_GRAY)))));
     }
-
 }

@@ -45,8 +45,7 @@ public class CachedBankStorage {
 
     public static Set<UUID> bankRequestQueue = new HashSet<>();
 
-    private static Consumer<UUID> requestCacheUpdate = uuid -> {
-    };
+    private static Consumer<UUID> requestCacheUpdate = uuid -> {};
 
     private List<ItemStack> items;
     public List<ItemStack> nonEmptyItems;

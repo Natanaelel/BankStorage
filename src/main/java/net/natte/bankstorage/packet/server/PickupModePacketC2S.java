@@ -70,5 +70,4 @@ public record PickupModePacketC2S() implements CustomPayload {
     public Id<? extends CustomPayload> getId() {
         return PACKET_ID;
     }
-
 }

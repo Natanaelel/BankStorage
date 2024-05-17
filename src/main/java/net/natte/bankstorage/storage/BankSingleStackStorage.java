@@ -45,5 +45,4 @@ public class BankSingleStackStorage extends SingleStackStorage {
     public boolean isLocked() {
         return this.storage.getLockedStack(this.slot) != null;
     }
-
 }

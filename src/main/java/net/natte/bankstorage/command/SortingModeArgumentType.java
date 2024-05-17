@@ -20,6 +20,7 @@ public class SortingModeArgumentType extends EnumArgumentType<SortingModeArgumen
         DATE("date"),
         TYPE("type"),
         PLAYER("player");
+
         private String name;
         public static final com.mojang.serialization.Codec<SortingMode> CODEC = StringIdentifiable
                 .createCodec(SortingMode::values);

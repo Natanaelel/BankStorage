@@ -228,11 +228,6 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         this.revision = (short) ((this.revision + 1) & Short.MAX_VALUE);
     }
 
-    // @Override
-    // public void ScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
-    // buf.writeItemStack(bankLikeItem);
-    // }
-
     @Override
     public ItemStack getScreenOpeningData(ServerPlayerEntity player) {
         return bankLikeItem;
@@ -264,5 +259,4 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
 
         return bankItemStorage;
     }
-
 }

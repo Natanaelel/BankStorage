@@ -39,6 +39,5 @@ public class BankSerializer {
 
     ).apply(instance, BankItemStorage::createFromCodec));
 
-    public static Codec<List<BankItemStorage>> CODEC = BANK_CODEC.listOf();
-
+    public static final Codec<List<BankItemStorage>> CODEC = BANK_CODEC.listOf();
 }

@@ -428,5 +428,4 @@ enum PickupModeOption implements CycleableOption {
     public int vOffset() {
         return this.vOffset;
     }
-
 }

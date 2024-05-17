@@ -45,5 +45,4 @@ public class TexturedCyclingButtonWidget<T extends CycleableOption> extends Butt
     public void refreshTooltip() {
         this.setTooltip(state.getTooltip());
     }
-
 }

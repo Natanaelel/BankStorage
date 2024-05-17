@@ -22,5 +22,4 @@ public abstract class PlayerEntityMixin implements SyncedRandomAccess {
     public void bankstorage$setSyncedRandom(Random random) {
         this.random = random;
     }
-
 }
