@@ -64,7 +64,8 @@ public class BankTooltipComponent implements TooltipComponent {
     private void drawBackground(DrawContext context, int x, int y) {
         int row = 0;
         int col = 0;
-        for (@SuppressWarnings("unused") ItemStack stack : items) {
+        for (@SuppressWarnings("unused")
+        ItemStack stack : items) {
             context.drawTexture(TEXTURE, x + col * 18, y + row * 18, 20, 128, 20, 20);
             ++col;
             if (col == 9) {
@@ -106,13 +107,28 @@ public class BankTooltipComponent implements TooltipComponent {
             String count = ItemCountUtils.toConsiseString(stack.getCount());
             String string = count;
             matrices.translate(0.0f, 0.0f, 200.0f);
-            float scale = ItemCountUtils.scale(string);
+            if (Util.isDebugMode) {
+                float scale = ItemCountUtils.scale(string);
 
-            matrices.translate(x * (1 - scale), y * (1 - scale) + (1 - scale) * 16, 0);
-            matrices.scale(scale, scale, 1);
+                matrices.translate(x * (1 - scale), y * (1 - scale) + (1 - scale) * 16, 0);
+                matrices.scale(scale, scale, 1);
 
-            int textWidth = (int) (textRenderer.getWidth(string) * scale);
-            context.drawText(textRenderer, count, x + 19 - 2 - textWidth, y + 6 + 3, 0xFFFFFF, true);
+                int textWidth = (int) (textRenderer.getWidth(string) * scale);
+                context.drawText(textRenderer, count, x + 19 - 2 - textWidth, y + 6 + 3, 0xFFFFFF, true);
+            } else {
+                float scale = ItemCountUtils.scale(string);
+
+                int textWidth = (int) (textRenderer.getWidth(string));
+
+                int xOffset = x + 18 - 2;
+                int yOffset = y + 18 - 2;
+                matrices.push();
+                matrices.translate(xOffset, yOffset, 0);
+                matrices.scale(scale, scale, 1);
+                matrices.translate(-xOffset, -yOffset, 0);
+                context.drawText(textRenderer, string, x + 18 - 1 - textWidth, y + 9, 0xFFFFFF, true);
+                matrices.pop();
+            }
         }
         f = (clientPlayerEntity = this.client.player) == null ? 0.0f
                 : clientPlayerEntity.getItemCooldownManager().getCooldownProgress(stack.getItem(),

@@ -88,7 +88,6 @@ public class BuildModePreviewRenderer implements EndTick {
             // make sure client has the latest revision
             CachedBankStorage.requestCacheUpdate(this.uuid);
 
-
             this.hand = hand;
         }
     }
@@ -272,13 +271,29 @@ public class BuildModePreviewRenderer implements EndTick {
             String count = ItemCountUtils.toConsiseString(stack.getCount());
             String string = count;
             matrices.translate(0.0f, 0.0f, 200.0f);
-            float scale = ItemCountUtils.scale(string);
 
-            matrices.translate(x * (1 - scale), y * (1 - scale) + (1 - scale) * 16, 0);
-            matrices.scale(scale, scale, 1);
+            if (Util.isDebugMode) {
+                float scale = ItemCountUtils.scale(string);
 
-            int textWidth = (int) (textRenderer.getWidth(string) * scale);
-            context.drawText(textRenderer, string, x + 19 - 2 - textWidth, y + 6 + 3, 0xFFFFFF, true);
+                matrices.translate(x * (1 - scale), y * (1 - scale) + (1 - scale) * 16, 0);
+                matrices.scale(scale, scale, 1);
+
+                int textWidth = (int) (textRenderer.getWidth(string) * scale);
+                context.drawText(textRenderer, string, x + 19 - 2 - textWidth, y + 6 + 3, 0xFFFFFF, true);
+            } else {
+                float scale = ItemCountUtils.scale(string);
+
+                int textWidth = (int) (textRenderer.getWidth(string));
+
+                int xOffset = x + 18 - 2;
+                int yOffset = y + 18 - 2;
+                matrices.push();
+                matrices.translate(xOffset, yOffset, 0);
+                matrices.scale(scale, scale, 1);
+                matrices.translate(-xOffset, -yOffset, 0);
+                context.drawText(textRenderer, string, x + 18 - 1 - textWidth, y + 9, 0xFFFFFF, true);
+                matrices.pop();
+            }
         }
 
         matrices.pop();
