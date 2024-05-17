@@ -116,7 +116,7 @@ public class ItemPickupHandler {
                 .sorted()
                 .toList();
         for (int index : sortedKeys) {
-            if (Util.canCombine(bankItemStorage.getLockedStack(index), pickedUpStack)) {
+            if (ItemStack.areItemsAndComponentsEqual(bankItemStorage.getLockedStack(index), pickedUpStack)) {
                 ItemStack stackInSlot = bankItemStorage.getStack(index);
                 int spaceLeft = slotSize - stackInSlot.getCount();
                 int toMove = Math.min(pickedUpStack.getCount(), spaceLeft);
@@ -187,7 +187,7 @@ public class ItemPickupHandler {
             ItemStack stackInSlot = bankItemStorage.getStack(slot);
             ItemStack lockedStack = bankItemStorage.getLockedStack(slot);
 
-            if (lockedStack != null && !Util.canCombine(pickedUpStack, lockedStack))
+            if (lockedStack != null && !ItemStack.areItemsAndComponentsEqual(pickedUpStack, lockedStack))
                 continue;
 
             if (stackInSlot.isEmpty()) {
@@ -225,7 +225,7 @@ public class ItemPickupHandler {
             }
         }
         for (int i : bankItemStorage.getlockedSlots().keySet()) {
-            if (Util.canCombine(bankItemStorage.getLockedStack(i), itemStack)) {
+            if (ItemStack.areItemsAndComponentsEqual(bankItemStorage.getLockedStack(i), itemStack)) {
                 return true;
             }
         }

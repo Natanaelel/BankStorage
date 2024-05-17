@@ -271,7 +271,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         boolean bl = !slot.hasStack();
         if (slot instanceof BankSlot bankSlot) {
             if (bankSlot.isLocked()) {
-                if (!Util.canCombine(stack, bankSlot.getLockedStack()))
+                if (!ItemStack.areItemsAndComponentsEqual(stack, bankSlot.getLockedStack()))
                     return false;
             }
         }

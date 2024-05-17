@@ -57,10 +57,6 @@ public class Util {
         return !isBankLike(itemStack) && itemStack.getItem().canBeNested();
     }
 
-    public static boolean canCombine(ItemStack left, ItemStack right) {
-        return ItemStack.areItemsAndComponentsEqual(left, right);
-    }
-
     public static boolean hasUUID(ItemStack itemStack) {
         return itemStack.contains(BankStorage.UUIDComponentType);
     }
@@ -124,7 +120,7 @@ public class Util {
                     .getlockedSlots()
                     .keySet()
                     .stream()
-                    .filter(index -> Util.canCombine(collectedItem.stack, bankItemStorage.getLockedStack(index)))
+                    .filter(index -> ItemStack.areItemsAndComponentsEqual(collectedItem.stack, bankItemStorage.getLockedStack(index)))
                     .sorted()                       // SETSTACK
                     .forEach(index -> bankItemStorage.setStack(index, collectedItem.split(slotSize)));
         }

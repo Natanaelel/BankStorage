@@ -47,7 +47,7 @@ public class BankSlot extends Slot {
 
     @Override
     public boolean canInsert(ItemStack stack) {
-        if (this.lockedStack != null && !Util.canCombine(stack, this.lockedStack))
+        if (this.lockedStack != null && !ItemStack.areItemsAndComponentsEqual(stack, this.lockedStack))
             return false;
         if (!Util.isAllowedInBank(stack))
             return false;
