@@ -15,14 +15,15 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
+import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 
 public class BankType {
 
-    public static final Codec<BankType> CODEC = Codec.STRING.xmap(BankItemStorage::getBankTypeFromName, BankType::getName);
-    public static final PacketCodec<ByteBuf, BankType> PACKET_CODEC = PacketCodecs.STRING.xmap(BankItemStorage::getBankTypeFromName, BankType::getName);
+    public static final Codec<BankType> CODEC = Codec.STRING.xmap(BankType::getBankTypeFromName, BankType::getName);
+    public static final PacketCodec<ByteBuf, BankType> PACKET_CODEC = PacketCodecs.STRING.xmap(BankType::getBankTypeFromName, BankType::getName);
 
     private String name;
     public int rows;
@@ -76,5 +77,15 @@ public class BankType {
 
     public Identifier getGuiTexture() {
         return Util.ID("textures/gui/" + this.cols + "x" + this.rows + ".png");
+    }
+
+    public static BankType getBankTypeFromName(String name) {
+        for (BankType bankType : BankStorage.bankTypes) {
+            if (bankType.getName().equals(name)) {
+                return bankType;
+            }
+        }
+
+        throw new Error("Cannot get BankType of name '" + name + "'");
     }
 }

@@ -9,7 +9,9 @@ import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Uuids;
 import net.minecraft.util.dynamic.Codecs;
+
 import net.natte.bankstorage.container.BankItemStorage;
+import net.natte.bankstorage.container.BankType;
 
 public class BankSerializer {
 
@@ -17,9 +19,9 @@ public class BankSerializer {
             Uuids.STRING_CODEC
                     .fieldOf("uuid")
                     .forGetter(b -> b.uuid),
-            Codec.STRING
+            BankType.CODEC
                     .fieldOf("type")
-                    .forGetter(b -> b.type.getName()),
+                    .forGetter(b -> b.type),
             ItemStack.OPTIONAL_CODEC.listOf()
                     .fieldOf("items")
                     .forGetter(b -> b.getItems()),

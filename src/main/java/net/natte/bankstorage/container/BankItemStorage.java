@@ -146,16 +146,6 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         return getMaxCountPerStack();
     }
 
-    public static BankType getBankTypeFromName(String name) {
-        for (BankType bankType : BankStorage.bankTypes) {
-            if (bankType.getName().equals(name)) {
-                return bankType;
-            }
-        }
-
-        throw new Error("Cannot get BankType of name '" + name + "'");
-    }
-
     @Override
     public boolean canInsert(ItemStack stack) {
         if (!Util.isAllowedInBank(stack))
@@ -235,14 +225,13 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
 
     public static BankItemStorage createFromCodec(
             UUID uuid,
-            String typeName,
+            BankType type,
             List<ItemStack> items,
             Map<Integer, ItemStack> lockedSlots,
             String dateCreated,
             UUID lastUsedByPlayerUuid,
             String lastUsedByPlayerName) {
 
-        BankType type = BankItemStorage.getBankTypeFromName(typeName);
         BankItemStorage bankItemStorage = new BankItemStorage(type, uuid);
 
         for (int i = 0; i < items.size(); ++i) {
