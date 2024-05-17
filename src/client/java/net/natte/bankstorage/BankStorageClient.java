@@ -33,7 +33,7 @@ import net.minecraft.util.Identifier;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.events.KeyBindUpdateEvents;
 import net.natte.bankstorage.events.MouseEvents;
-import net.natte.bankstorage.item.CachedBankStorage;
+import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.item.tooltip.BankTooltipData;
 import net.natte.bankstorage.network.ItemStackBobbingAnimationPacketReceiver;
 import net.natte.bankstorage.network.RequestBankStoragePacketReceiver;

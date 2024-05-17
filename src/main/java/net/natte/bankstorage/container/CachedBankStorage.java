@@ -1,4 +1,4 @@
-package net.natte.bankstorage.item;
+package net.natte.bankstorage.container;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,8 +39,6 @@ public class CachedBankStorage {
             o -> o.uuid,
             PacketCodecs.SHORT,
             o -> o.revision,
-            PacketCodecs.SHORT,
-            o -> o.optionsRevision,
             CachedBankStorage::new);
 
     private static Map<UUID, CachedBankStorage> BANK_CACHE = new HashMap<>();
@@ -50,20 +48,18 @@ public class CachedBankStorage {
     private static Consumer<UUID> requestCacheUpdate = uuid -> {
     };
 
-    public List<ItemStack> items;
+    private List<ItemStack> items;
     public List<ItemStack> nonEmptyItems;
     public List<ItemStack> blockItems;
     public UUID uuid;
     public short revision;
-    public short optionsRevision;
 
-    public CachedBankStorage(List<ItemStack> items, UUID uuid, short revision, short optionsRevision) {
+    public CachedBankStorage(List<ItemStack> items, UUID uuid, short revision) {
         this.items = items;
         this.nonEmptyItems = items.stream().filter(stack -> !stack.isEmpty()).toList();
         this.blockItems = nonEmptyItems.stream().filter(stack -> stack.getItem() instanceof BlockItem).toList();
         this.uuid = uuid;
         this.revision = revision;
-        this.optionsRevision = optionsRevision;
     }
 
     public static void requestCacheUpdate(UUID uuid) {

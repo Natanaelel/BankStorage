@@ -23,7 +23,7 @@ import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.inventory.LockedSlot;
-import net.natte.bankstorage.item.CachedBankStorage;
+import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.packet.NetworkUtil;
 import net.natte.bankstorage.util.Util;
 

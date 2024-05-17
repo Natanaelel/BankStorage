@@ -4,7 +4,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.Context
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.PlayPayloadHandler;
 import net.minecraft.util.math.MathHelper;
 import net.natte.bankstorage.BankStorageClient;
-import net.natte.bankstorage.item.CachedBankStorage;
+import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.packet.server.UpdateBankOptionsPacketC2S;

@@ -7,7 +7,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.natte.bankstorage.container.BankItemStorage;
-import net.natte.bankstorage.item.CachedBankStorage;
+import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.util.Util;

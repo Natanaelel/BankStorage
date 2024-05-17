@@ -3,7 +3,7 @@ package net.natte.bankstorage.packet.client;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
-import net.natte.bankstorage.item.CachedBankStorage;
+import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.util.Util;
 
 public record RequestBankStoragePacketS2C(CachedBankStorage cachedBankStorage) implements CustomPayload {
