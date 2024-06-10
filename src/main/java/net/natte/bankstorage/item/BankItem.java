@@ -8,6 +8,7 @@ import net.minecraft.client.item.TooltipType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.world.item.Item;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.util.Util;
 
@@ -20,7 +21,7 @@ public class BankItem extends BankFunctionality {
 
     private BankType type;
 
-    public BankItem(Settings settings, BankType type) {
+    public BankItem(Item.Properties settings, BankType type) {
         super(settings);
         this.type = type;
     }

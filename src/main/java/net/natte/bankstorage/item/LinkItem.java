@@ -4,11 +4,10 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
-import net.minecraft.client.item.TooltipType;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.util.Util;
@@ -22,21 +21,22 @@ public class LinkItem extends BankFunctionality {
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType tooltipType) {
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
         if (Util.isShiftDown.get()) {
             if (Util.hasUUID(stack))
-                tooltip.add(Text.literal(Util.getUUID(stack).toString()).formatted(Formatting.DARK_AQUA));
+                tooltip.add(Component.literal(Util.getUUID(stack).toString()).withStyle(ChatFormatting.DARK_AQUA));
         }
 
         BankType type = getType(stack);
-        Text formattedStackLimit = Text.literal(NUMBER_FORMAT.format(type.stackLimit));
-        tooltip.add(Text.translatable("tooptip.bankstorage.stacklimit", formattedStackLimit));
-        tooltip.add(Text.translatable("tooptip.bankstorage.numslots", Text.literal(String.valueOf(type.size()))));
-        super.appendTooltip(stack, context, tooltip, tooltipType);
+        Component formattedStackLimit = Component.literal(NUMBER_FORMAT.format(type.stackLimit));
+        tooltip.add(Component.translatable("tooltip.bankstorage.stacklimit", formattedStackLimit));
+        tooltip.add(Component.translatable("tooltip.bankstorage.numslots", Component.literal(String.valueOf(type.size()))));
+        super.appendHoverText(stack, context, tooltip,
+                tooltipFlag);
     }
 
     public static BankType getType(ItemStack stack) {
-        return stack.getOrDefault(BankStorage.BankTypeComponentType, BankStorage.bankTypes.get(0));
+        return stack.getOrDefault(BankStorage.BankTypeComponentType, BankStorage.BANK_TYPES[0]);
     }
 
     public static void setType(ItemStack itemStack, BankType type) {

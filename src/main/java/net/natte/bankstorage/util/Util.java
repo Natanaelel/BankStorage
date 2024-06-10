@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,7 +21,7 @@ import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.World;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
@@ -192,8 +193,8 @@ public class Util {
         return bankItemStorage;
     }
 
-    public static Identifier ID(String path) {
-        return new Identifier(BankStorage.MOD_ID, path);
+    public static ResourceLocation ID(String path) {
+        return new ResourceLocation(BankStorage.MOD_ID, path);
     }
 
     public static @Nullable UUID getUUIDFromScreenHandler(ScreenHandler screenHandler) {
@@ -208,7 +209,7 @@ public class Util {
         playerEntity.sendMessage(invalid());
     }
 
-    public static Text invalid() {
+    public static Component invalid() {
         ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.OPEN_URL,
                 Text.translatable("github_url.bankstorage").getString());
 
@@ -224,8 +225,8 @@ public class Util {
                         .withColor(Formatting.BLUE)));
     }
 
-    public static Text invalid(String context) {
-        return invalid().copy().append(Text.literal(" context: " + context));
+    public static Component invalid(String context) {
+        return invalid().copy().append(Component.literal(" context: " + context));
     }
 }
 
@@ -248,7 +249,7 @@ class HugeItemStack {
     }
 
     public String getModName() {
-        Identifier id = Registries.ITEM.getId(this.stack.getItem());
+        ResourceLocation id = Registries.ITEM.getId(this.stack.getItem());
         if (id == null)
             return "";
         return id.getNamespace();

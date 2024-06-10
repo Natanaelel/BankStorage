@@ -1,29 +1,24 @@
 package net.natte.bankstorage.container;
 
-import java.util.List;
-
 import com.mojang.serialization.Codec;
-
 import io.netty.buffer.ByteBuf;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
-import net.minecraft.block.cauldron.CauldronBehavior;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Item.Settings;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.cauldron.CauldronInteraction;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Item;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.screen.BankScreenHandler;
+import net.natte.bankstorage.screen.BankScreenHandlerFactory;
 import net.natte.bankstorage.util.Util;
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 
 public class BankType {
 
     public static final Codec<BankType> CODEC = Codec.STRING.xmap(BankType::getBankTypeFromName, BankType::getName);
-    public static final PacketCodec<ByteBuf, BankType> PACKET_CODEC = PacketCodecs.STRING.xmap(BankType::getBankTypeFromName, BankType::getName);
+    public static final StreamCodec<ByteBuf, BankType> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(BankType::getBankTypeFromName, BankType::getName);
 
     private String name;
     public int rows;
@@ -31,7 +26,7 @@ public class BankType {
     public int guiTextureWidth;
     public int guiTextureHeight;
 
-    private ScreenHandlerType<BankScreenHandler> screenHandlerType;
+    private MenuType<BankScreenHandler> screenHandlerType;
 
     public int stackLimit;
     public BankItem item;
@@ -49,18 +44,21 @@ public class BankType {
 
     }
 
-    public void register(List<BankType> types) {
-        register(types, new Settings());
+    public void register() {
+        register(new Item.Properties());
     }
 
-    public void register(List<BankType> types, Settings settings) {
-        this.item = new BankItem(settings.maxCount(1), this);
-        Identifier identifier = Util.ID(this.name);
-        Registry.register(Registries.ITEM, identifier, this.item);
-        this.screenHandlerType = new ExtendedScreenHandlerType<BankScreenHandler, ItemStack>(BankScreenHandler.fromType(this), ItemStack.PACKET_CODEC);
-        Registry.register(Registries.SCREEN_HANDLER, identifier, screenHandlerType);
-        types.add(this);
-        CauldronBehavior.WATER_CAULDRON_BEHAVIOR.map().put(this.item, CauldronBehavior.CLEAN_DYEABLE_ITEM);
+    public void register(Item.Properties settings) {
+        this.item = new BankItem(settings.stacksTo(1), this);
+        ResourceLocation identifier = Util.ID(this.name);
+        BankStorage.ITEMS.register(this.name, id -> this.item);
+
+//        this.screenHandlerType = IMenuTypeExtension.create(BankScreenHandler.fromType(this));
+        this.screenHandlerType = IMenuTypeExtension.create(new BankScreenHandlerFactory(this));
+//        Registry.register(Registries.MENU, identifier, screenHandlerType);
+        BankStorage.SCREEN_HANDLERS.register(this.name, id -> screenHandlerType);
+
+        CauldronInteraction.WATER.map().put(this.item, CauldronInteraction.DYED_ITEM);
     }
 
     public int size() {
@@ -71,16 +69,16 @@ public class BankType {
         return this.name;
     }
 
-    public ScreenHandlerType<BankScreenHandler> getScreenHandlerType() {
+    public MenuType<BankScreenHandler> getScreenHandlerType() {
         return this.screenHandlerType;
     }
 
-    public Identifier getGuiTexture() {
+    public ResourceLocation getGuiTexture() {
         return Util.ID("textures/gui/" + this.cols + "x" + this.rows + ".png");
     }
 
     public static BankType getBankTypeFromName(String name) {
-        for (BankType bankType : BankStorage.bankTypes) {
+        for (BankType bankType : BankStorage.BANK_TYPES) {
             if (bankType.getName().equals(name)) {
                 return bankType;
             }

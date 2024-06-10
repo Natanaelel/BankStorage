@@ -8,6 +8,11 @@ import java.util.Random;
 import java.util.UUID;
 
 import java.time.LocalDateTime;
+
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.network.IContainerFactory;
 import org.jetbrains.annotations.Nullable;
 
 import net.fabricmc.fabric.api.entity.FakePlayer;
@@ -26,7 +31,7 @@ import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 
-public class BankItemStorage extends SimpleInventory implements ExtendedScreenHandlerFactory<ItemStack> {
+public class BankItemStorage extends SimpleContainer implements IContainerFactory<ItemStack> {
 
     // public BankOptions options;
     public BankType type;
@@ -38,7 +43,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
     private short revision = 1; // start different from client (0) to update client cache
 
     private ItemStack bankLikeItem;
-    public UUID usedByPlayerUUID = FakePlayer.DEFAULT_UUID;
+    public UUID usedByPlayerUUID = BankStorage.FAKE_PLAYER_UUID;
     public String usedByPlayerName = "World";
     public LocalDateTime dateCreated = LocalDateTime.MIN;
 

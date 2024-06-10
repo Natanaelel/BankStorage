@@ -14,14 +14,24 @@ import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.component.DataComponentType;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.MapColor;
 import net.natte.bankstorage.access.SyncedRandomAccess;
 import net.natte.bankstorage.block.BankDockBlock;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
@@ -47,12 +57,15 @@ import net.natte.bankstorage.recipe.BankLinkRecipe;
 import net.natte.bankstorage.recipe.BankRecipe;
 import net.natte.bankstorage.util.Util;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +76,9 @@ public class BankStorage {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    private static final BankType BANK_1 = new BankType("bank_1", 256, 1, 9, 176, 114 + 18 * 1);
+    public static final UUID FAKE_PLAYER_UUID = UUID.fromString("41C82C87-7AfB-4024-BA57-13D2C99CAE77");
+
+    private static final BankType BANK_1 = new BankType("bank_1", 256, 1, 9, 176, 114 + 18);
     private static final BankType BANK_2 = new BankType("bank_2", 1024, 2, 9, 176, 114 + 18 * 2);
     private static final BankType BANK_3 = new BankType("bank_3", 4096, 3, 9, 176, 114 + 18 * 3);
     private static final BankType BANK_4 = new BankType("bank_4", 16_384, 4, 9, 176, 114 + 18 * 4);
@@ -71,21 +86,27 @@ public class BankStorage {
     private static final BankType BANK_6 = new BankType("bank_6", 262_144, 9, 9, 176, 114 + 18 * 9);
     private static final BankType BANK_7 = new BankType("bank_7", 1_000_000_000, 12, 9, 176, 114 + 18 * 12);
 
-    public static final LinkItem LINK_ITEM = new LinkItem(new Item.Properties().stacksTo(1));
+    public static final BankType[] BANK_TYPES = {BANK_1, BANK_2, BANK_3, BANK_4, BANK_5, BANK_6, BANK_7};
 
-    public static final List<BankType> bankTypes = new ArrayList<>();
+    public static final LinkItem BANK_LINK = new LinkItem(new Item.Properties().stacksTo(1));
 
-    public static final Block BANK_DOCK_BLOCK = new BankDockBlock(AbstractBlock.Settings.create().strength(5.0f, 6.0f)
-            .mapColor(MapColor.BLACK).requiresTool().sounds(BlockSoundGroup.METAL).nonOpaque());
+    public static final Block BANK_DOCK_BLOCK = new BankDockBlock(BlockBehaviour.Properties.of().strength(5.0f, 6.0f)
+            .mapColor(MapColor.COLOR_BLACK).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
 
-    public static BlockEntityType<BankDockBlockEntity> BANK_DOCK_BLOCK_ENTITY;
+    public static final BlockEntityType<BankDockBlockEntity> BANK_DOCK_BLOCK_ENTITY = BlockEntityType.Builder.of(BankDockBlockEntity::new, BANK_DOCK_BLOCK).build(null);
 
     public static final DataComponentType<UUID> UUIDComponentType = DataComponentType.<UUID>builder().persistent(UUIDUtil.CODEC).networkSynchronized(UUIDUtil.STREAM_CODEC).build();
     public static final DataComponentType<BankOptions> OptionsComponentType = DataComponentType.<BankOptions>builder().persistent(BankOptions.CODEC).networkSynchronized(BankOptions.STREAM_CODEC).build();
-    public static final DataComponentType<BankType> BankTypeComponentType = DataComponentType.<BankType>builder().persistent(BankType.CODEC).networkSynchronized(BankType.PACKET_CODEC).build();
+    public static final DataComponentType<BankType> BankTypeComponentType = DataComponentType.<BankType>builder().persistent(BankType.CODEC).networkSynchronized(BankType.STREAM_CODEC).build();
 
-    @Override
-    public void onInitialize() {
+
+    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MOD_ID);
+    public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(MOD_ID);
+    private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
+    public static final DeferredRegister<MenuType<?>> SCREEN_HANDLERS = DeferredRegister.create(Registries.MENU, MOD_ID);
+
+    public BankStorage(IEventBus modBus) {
 
         registerBanks();
         registerDock();
@@ -98,14 +119,22 @@ public class BankStorage {
         registerEventListeners();
         registerItemComponentTypes();
 
+        ITEMS.register(modBus);
+        DATA_COMPONENTS.register(modBus);
+        BLOCKS.register(modBus);
+        BLOCK_ENTITIES.register(modBus);
+        SCREEN_HANDLERS.register(modBus);
+
+        modBus.addListener(this::addItemsToCreativeTab);
+
     }
 
     private void registerItemComponentTypes() {
-        Registry.register(Registries.DATA_COMPONENT_TYPE, Util.ID("uuid"), UUIDComponentType);
-        Registry.register(Registries.DATA_COMPONENT_TYPE, Util.ID("options"), OptionsComponentType);
-        Registry.register(Registries.DATA_COMPONENT_TYPE, Util.ID("type"), BankTypeComponentType);
-
+        DATA_COMPONENTS.register("uuid", id -> UUIDComponentType);
+        DATA_COMPONENTS.register("options", id -> OptionsComponentType);
+        DATA_COMPONENTS.register("type", id -> BankTypeComponentType);
     }
+
 
     private void registerEventListeners() {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
@@ -122,40 +151,42 @@ public class BankStorage {
     }
 
     private void registerLink() {
-        Registry.register(Registries.ITEM, Util.ID("bank_link"), LINK_ITEM);
+        BankStorage.ITEMS.register("bank_link", id -> BANK_LINK);
+        CauldronInteraction.WATER.map().put(BANK_LINK, CauldronInteraction.DYED_ITEM);
     }
 
     private void registerBanks() {
 
-        BANK_1.register(bankTypes);
-        BANK_2.register(bankTypes);
-        BANK_3.register(bankTypes);
-        BANK_4.register(bankTypes);
-        BANK_5.register(bankTypes);
-        BANK_6.register(bankTypes);
-        BANK_7.register(bankTypes, new Item.Settings().fireproof());
+        BANK_1.register();
+        BANK_2.register();
+        BANK_3.register();
+        BANK_4.register();
+        BANK_5.register();
+        BANK_6.register();
+        BANK_7.register(new Item.Properties().fireResistant());
+    }
 
-        CauldronBehavior.WATER_CAULDRON_BEHAVIOR.map().put(LINK_ITEM, CauldronBehavior.CLEAN_DYEABLE_ITEM);
+    private void addItemsToCreativeTab(BuildCreativeModeTabContentsEvent event) {
+        if (event.getTabKey() != CreativeModeTabs.FUNCTIONAL_BLOCKS)
+            return;
 
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(group -> {
-            bankTypes.forEach(type -> {
-                group.add(type.item);
-            });
-            group.add(LINK_ITEM);
-            group.add(BANK_DOCK_BLOCK);
-        });
+        event.accept(BANK_1.item);
+        event.accept(BANK_2.item);
+        event.accept(BANK_3.item);
+        event.accept(BANK_4.item);
+        event.accept(BANK_5.item);
+        event.accept(BANK_6.item);
+        event.accept(BANK_7.item);
+        event.accept(BANK_LINK);
+        event.accept(BANK_DOCK_BLOCK);
+
     }
 
     private void registerDock() {
+        BLOCKS.register("bank_dock", id -> BANK_DOCK_BLOCK);
+        ITEMS.register("bank_dock", id -> new BlockItem(BANK_DOCK_BLOCK, new Item.Properties()));
 
-        Registry.register(Registries.BLOCK, Util.ID("bank_dock"), BANK_DOCK_BLOCK);
-        Registry.register(Registries.ITEM, Util.ID("bank_dock"),
-                new BlockItem(BANK_DOCK_BLOCK, new Item.Settings()));
-
-        BANK_DOCK_BLOCK_ENTITY = Registry.register(
-                Registries.BLOCK_ENTITY_TYPE,
-                Util.ID("bank_dock_block_entity"),
-                BlockEntityType.Builder.create(BankDockBlockEntity::new, BANK_DOCK_BLOCK).build());
+        BLOCK_ENTITIES.register("bank_dock_block_entity", id -> BANK_DOCK_BLOCK_ENTITY);
 
         ItemStorage.SIDED.registerForBlockEntity(
                 (bankDockBlockEntity, direction) -> bankDockBlockEntity.getItemStorage(), BANK_DOCK_BLOCK_ENTITY);
@@ -175,9 +206,11 @@ public class BankStorage {
 
     }
 
-    private void registerPackets() {
+    private void registerPackets(RegisterPayloadHandlersEvent event) {
+        PayloadRegistrar registrar = event.registrar("1");
+        registrar.playToClient(ItemStackBobbingAnimationPacketS2C.PACKET_ID, ItemStackBobbingAnimationPacketS2C.STREAM_CODEC, ItemStackBobbingAnimationPacketS2C::handle);
+        registrar.playToClient(RequestBankStoragePacketS2C.PACKET_ID, RequestBankStoragePacketS2C.STREAM_CODEC, RequestBankStoragePacketS2C::handle);
 
-        PayloadTypeRegistry.playS2C().register(ItemStackBobbingAnimationPacketS2C.PACKET_ID, ItemStackBobbingAnimationPacketS2C.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(RequestBankStoragePacketS2C.PACKET_ID, RequestBankStoragePacketS2C.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(SyncedRandomPacketS2C.PACKET_ID, SyncedRandomPacketS2C.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(LockedSlotsPacketS2C.PACKET_ID, LockedSlotsPacketS2C.PACKET_CODEC);

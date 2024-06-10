@@ -2,12 +2,16 @@ package net.natte.bankstorage.packet.server;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.Context;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPayloadHandler;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.packet.CustomPacketPayload;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.MathHelper;
 import net.natte.bankstorage.BankStorage;
@@ -16,6 +20,8 @@ import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.packet.NetworkUtil;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.neoforged.neoforge.network.handling.IPayloadHandler;
 
 /**
  * Set the options of bank in dock or hands to values from client after
@@ -24,20 +30,20 @@ import net.natte.bankstorage.util.Util;
  * if selectedSlot didn't pass validation (bankstorage block items updated to
  * smaller size or smt): send cache update to client if buildmode
  */
-public record UpdateBankOptionsPacketC2S(BankOptions options) implements CustomPayload {
+public record UpdateBankOptionsPacketC2S(BankOptions options) implements CustomPacketPayload {
 
-    public static final CustomPayload.Id<UpdateBankOptionsPacketC2S> PACKET_ID = new CustomPayload.Id<>(Util.ID("update_options_c2s"));
-    public static final PacketCodec<PacketByteBuf, UpdateBankOptionsPacketC2S> PACKET_CODEC = BankOptions.STREAM_CODEC
-            .xmap(
+    public static final CustomPacketPayload.Type<UpdateBankOptionsPacketC2S> PACKET_ID = new CustomPacketPayload.Type<>(Util.ID("update_options_c2s"));
+    public static final StreamCodec<ByteBuf, UpdateBankOptionsPacketC2S> PACKET_CODEC = BankOptions.STREAM_CODEC
+            .map(
                     UpdateBankOptionsPacketC2S::new,
                     UpdateBankOptionsPacketC2S::options);
 
-    public static class Receiver implements PlayPayloadHandler<UpdateBankOptionsPacketC2S> {
+    public static class Receiver implements IPayloadHandler<UpdateBankOptionsPacketC2S> {
 
         @Override
-        public void receive(UpdateBankOptionsPacketC2S packet, Context context) {
-            ServerPlayerEntity player = context.player();
-            if (player.currentScreenHandler instanceof BankScreenHandler bankScreenHandler) {
+        public void handle(UpdateBankOptionsPacketC2S packet, IPayloadContext context) {
+            ServerPlayer player = (ServerPlayer) context.player();
+            if (player.containerMenu instanceof BankScreenHandler bankScreenHandler) {
 
                 AtomicBoolean hasOpenedBankDock = new AtomicBoolean(false);
 
@@ -81,12 +87,13 @@ public record UpdateBankOptionsPacketC2S(BankOptions options) implements CustomP
             }
             Util.setOptions(bankItem, options);
 
-        }
 
+
+        }
     }
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return PACKET_ID;
     }
 

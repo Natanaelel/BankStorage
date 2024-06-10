@@ -1,5 +1,7 @@
 package net.natte.bankstorage.packet.server;
 
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.Context;
@@ -22,14 +24,14 @@ public record OpenBankFromKeyBindPacketC2S() implements CustomPayload {
 
         @Override
         public void receive(OpenBankFromKeyBindPacketC2S packet, Context context) {
-            ServerPlayerEntity player = context.player();
+            ServerPlayer player = context.player();
             ItemStack bank = findBank(player);
             if (bank == null)
                 return;
             BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, player.getWorld());
             if (bankItemStorage == null)
                 return;
-            player.openHandledScreen(bankItemStorage.withItem(bank));
+            player.openMenu(bankItemStorage.withItem(bank));
         }
 
         private @Nullable ItemStack findBank(ServerPlayerEntity player) {

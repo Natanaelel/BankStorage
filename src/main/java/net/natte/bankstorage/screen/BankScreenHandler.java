@@ -4,6 +4,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.network.IContainerFactory;
 import org.jetbrains.annotations.Nullable;
 
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType.ExtendedFactory;
@@ -27,13 +34,13 @@ import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.packet.NetworkUtil;
 import net.natte.bankstorage.util.Util;
 
-public class BankScreenHandler extends ScreenHandler {
+public class BankScreenHandler extends AbstractContainerMenu {
 
-    public Inventory inventory;
+    public Container inventory;
 
     private BankType type;
 
-    private final ScreenHandlerContext context;
+    private final ContainerLevelAccess context;
 
     public BankScreenHandlerSyncHandler bankScreenSync;
 
@@ -45,11 +52,11 @@ public class BankScreenHandler extends ScreenHandler {
 
     private short lockedSlotsRevision = 0;
 
-    public static ExtendedFactory<BankScreenHandler, ItemStack> fromType(BankType type) {
+    public static IContainerFactory<BankScreenHandler, ItemStack> fromType(BankType type) {
         return (syncId, playerInventory, bankLikeItem) -> {
             BankScreenHandler bankScreenHandler = new BankScreenHandler(syncId, playerInventory,
                     new BankItemStorage(type, null), type,
-                    ScreenHandlerContext.EMPTY);
+                    ContainerLevelAccess.NULL);
             bankScreenHandler.bankLikeItem = bankLikeItem;
             return bankScreenHandler;
         };
@@ -61,21 +68,21 @@ public class BankScreenHandler extends ScreenHandler {
     // and can therefore directly provide it as an argument. This inventory will
     // then be synced to the client.
 
-    public BankScreenHandler(int syncId, PlayerInventory playerInventory,
-            Inventory inventory, BankType type,
-            ScreenHandlerContext context) {
+    public BankScreenHandler(int syncId, Inventory playerInventory,
+            Container inventory, BankType type,
+            ContainerLevelAccess context) {
         super(type.getScreenHandlerType(), syncId);
         this.context = context;
 
         this.bankLikeItem = inventory instanceof BankItemStorage bankItemStorage ? bankItemStorage.getItem()
                 : ItemStack.EMPTY;
 
-        checkSize(inventory, type.size());
+        checkContainerSize(inventory, type.size());
 
         this.type = type;
         this.inventory = inventory;
 
-        inventory.onOpen(playerInventory.player);
+        inventory.startOpen(playerInventory.player);
         int rows = this.type.rows;
         int cols = this.type.cols;
 
@@ -100,9 +107,9 @@ public class BankScreenHandler extends ScreenHandler {
         // hotbar
         for (int x = 0; x < 9; ++x) {
             // cannot move opened bank
-            if (playerInventory.selectedSlot == x
-                    && Util.isBankLike(playerInventory.getStack(playerInventory.selectedSlot))
-                    && this.context == ScreenHandlerContext.EMPTY) {
+            if (playerInventory.selected == x
+                    && Util.isBankLike(playerInventory.getItem(playerInventory.selected))
+                    && this.context == ContainerLevelAccess.NULL) {
                 this.addSlot(new LockedSlot(playerInventory, x, 8 + x * 18, inventoryY + 58));
             } else {
                 this.addSlot(new Slot(playerInventory, x, 8 + x * 18, inventoryY + 58));
@@ -122,7 +129,7 @@ public class BankScreenHandler extends ScreenHandler {
         }, true);
     }
 
-    public ScreenHandlerContext getContext() {
+    public ContainerLevelAccess getContext() {
         return this.context;
     }
 

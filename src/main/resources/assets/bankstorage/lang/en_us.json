@@ -44,8 +44,8 @@
   "title.bankstorage.sortmode.mod": "Sort",
   "tooltip.bankstorage.sortmode.mod": "Sort by mod",
 
-  "tooptip.bankstorage.stacklimit": "§7Stack limit: %s",
-  "tooptip.bankstorage.numslots": "§7Number of slots: %s",
+  "tooltip.bankstorage.stacklimit": "§7Stack limit: %s",
+  "tooltip.bankstorage.numslots": "§7Number of slots: %s",
 
   "command.bankstorage.hoverinfo": "Click for give command",
   "command.bankstorage.bankinfo": "%s %d items %s\n",

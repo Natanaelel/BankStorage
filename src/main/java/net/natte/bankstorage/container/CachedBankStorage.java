@@ -9,6 +9,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,12 +37,12 @@ import net.natte.bankstorage.util.Util;
  */
 public class CachedBankStorage {
 
-    public static final PacketCodec<RegistryByteBuf, CachedBankStorage> PACKET_CODEC = PacketCodec.tuple(
-            ItemStack.OPTIONAL_LIST_PACKET_CODEC,
+    public static final StreamCodec<RegistryFriendlyByteBuf, CachedBankStorage> STREAM_CODEC = StreamCodec.composite(
+            ItemStack.OPTIONAL_LIST_STREAM_CODEC,
             o -> o.items,
-            Uuids.PACKET_CODEC,
+            UUIDUtil.STREAM_CODEC,
             o -> o.uuid,
-            PacketCodecs.SHORT,
+            ByteBufCodecs.SHORT,
             o -> o.revision,
             CachedBankStorage::new);
 

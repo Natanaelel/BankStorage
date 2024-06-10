@@ -1,26 +1,25 @@
 package net.natte.bankstorage.inventory;
 
-import java.util.Optional;
-
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.natte.bankstorage.util.Util;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.slot.Slot;
-import net.natte.bankstorage.util.Util;
+import java.util.Optional;
 
 public class BankSlot extends Slot {
 
     public int stackLimit;
     private @Nullable ItemStack lockedStack = null;
 
-    public BankSlot(Inventory inventory, int index, int x, int y, int stackLimit) {
+    public BankSlot(Container inventory, int index, int x, int y, int stackLimit) {
         super(inventory, index, x, y);
         this.stackLimit = stackLimit;
     }
 
-    public BankSlot(Inventory inventory, int index, int x, int y, int stackLimit,
+    public BankSlot(Container inventory, int index, int x, int y, int stackLimit,
             @Nullable ItemStack lockedStack) {
         this(inventory, index, x, y, stackLimit);
         if (lockedStack != null) {
@@ -45,52 +44,53 @@ public class BankSlot extends Slot {
         return this.lockedStack;
     }
 
+
     @Override
-    public boolean canInsert(ItemStack stack) {
-        if (this.lockedStack != null && !ItemStack.areItemsAndComponentsEqual(stack, this.lockedStack))
+    public boolean mayPlace(ItemStack stack) {
+        if (this.lockedStack != null && !ItemStack.isSameItemSameComponents(stack, this.lockedStack))
             return false;
         if (!Util.isAllowedInBank(stack))
             return false;
 
-        return super.canInsert(stack);
+        return super.mayPlace(stack);
     }
 
     @Override
-    public int getMaxItemCount() {
+    public int getMaxStackSize() {
         // I think unused
-        return this.stackLimit;
-    }
 
+        return stackLimit;
+    }
     @Override
-    public int getMaxItemCount(ItemStack stack) {
+    public int getMaxStackSize(ItemStack stack) {
         // return stack.getMaxCount() * this.stackLimit;
         return this.stackLimit;
     }
 
     @Override
-    public void setStack(ItemStack stack) {
-        this.inventory.setStack(this.getIndex(), stack);
+    public void setByPlayer(ItemStack stack) {
+        this.container.setItem(this.getSlotIndex(), stack);
     }
 
     // limit items picked up to stack size, prevent cursorstack to be larger than
     // normally possible
     @Override
-    public Optional<ItemStack> tryTakeStackRange(int min, int max, PlayerEntity player) {
-        if (!this.canTakeItems(player)) {
+    public Optional<ItemStack> tryRemove(int min, int max, Player player) {
+        if (!this.mayPickup(player)) {
             return Optional.empty();
         }
-        if (!this.canTakePartial(player) && max < this.getStack().getCount()) {
+        if (!this.allowModification(player) && max < this.getItem().getCount()) {
             return Optional.empty();
         }
 
-        int stackMaxCount = this.getStack().getMaxCount();
-        ItemStack itemStack = this.takeStack(Math.min(Math.min(min, max), stackMaxCount));
+        int stackMaxCount = this.getItem().getMaxStackSize();
+        ItemStack itemStack = this.remove(Math.min(Math.min(min, max), stackMaxCount));
 
         if (itemStack.isEmpty()) {
             return Optional.empty();
         }
-        if (this.getStack().isEmpty()) {
-            this.setStack(ItemStack.EMPTY);
+        if (this.getItem().isEmpty()) {
+            this.setByPlayer(ItemStack.EMPTY);
         }
         return Optional.of(itemStack);
     }
