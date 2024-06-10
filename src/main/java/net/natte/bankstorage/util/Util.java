@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.player.PlayerEntity;
@@ -58,7 +59,7 @@ public class Util {
     }
 
     public static boolean hasUUID(ItemStack itemStack) {
-        return itemStack.contains(BankStorage.UUIDComponentType);
+        return itemStack.has(BankStorage.UUIDComponentType);
     }
 
     public static UUID getUUID(ItemStack itemStack) {

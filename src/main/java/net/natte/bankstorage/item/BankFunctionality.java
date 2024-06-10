@@ -4,6 +4,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.item.TooltipData;
@@ -12,9 +21,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
+import net.minecraft.util.InteractionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.InteractionResultHolder;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.world.World;
 import net.natte.bankstorage.access.SyncedRandomAccess;
@@ -27,20 +36,21 @@ import net.natte.bankstorage.util.Util;
 
 public abstract class BankFunctionality extends Item {
 
-    public BankFunctionality(Settings settings) {
+    public BankFunctionality(Item.Properties settings) {
         super(settings);
     }
 
     @Override
-    public boolean canBeNested() {
+    public boolean canFitInsideContainerItems() {
         return false;
     }
 
-    @Override
-    public boolean allowComponentsUpdateAnimation(PlayerEntity player, Hand hand, ItemStack oldStack,
-            ItemStack newStack) {
-        return false;
-    }
+
+//    @Override
+//    public boolean allowComponentsUpdateAnimation(PlayerEntity player, Hand hand, ItemStack oldStack,
+//            ItemStack newStack) {
+//        return false;
+//    }
 
     // isBuildMode:B usedOnBlock:B isSneaking:B hasToggleKey:B -> shouldOpen:B
     // 78: 0 0 0 0 -> 1
@@ -61,7 +71,7 @@ public abstract class BankFunctionality extends Item {
     // 1 1 1 1 -> 0 (build) animate
 
     // on .use or .useOnBlock. never returns PASS
-    private ActionResult useBank(PlayerEntity player, Hand hand, boolean usedOnBlock,
+    private InteractionResult useBank(PlayerEntity player, Hand hand, boolean usedOnBlock,
             @Nullable BlockHitResult hitResult) {
 
         ItemStack bank = player.getStackInHand(hand);
@@ -70,21 +80,21 @@ public abstract class BankFunctionality extends Item {
         boolean hasBoundKey = !Util.isBuildModeKeyUnBound;
 
         if (bank.getCount() != 1)
-            return ActionResult.FAIL;
+            return InteractionResult.FAIL;
 
         boolean shouldToggleBuildMode = !usedOnBlock && player.isSneaking() && Util.isBuildModeKeyUnBound;
 
         if (shouldToggleBuildMode) { // animate
             if (world.isClient)
                 Util.onToggleBuildMode.accept(player);
-            return ActionResult.CONSUME;
+            return InteractionResult.CONSUME;
         }
 
         boolean tryOpenWhenUsedOnAir = !usedOnBlock;
 
         if (tryOpenWhenUsedOnAir) {
             if (isBuildMode && hasBoundKey)
-                return ActionResult.FAIL;
+                return InteractionResult.FAIL;
             return tryOpenBank(world, player, bank);
         }
 
@@ -97,10 +107,10 @@ public abstract class BankFunctionality extends Item {
         return build(new ItemUsageContext(world, player, hand, bank, hitResult));
     }
 
-    private ActionResult tryOpenBank(World world, PlayerEntity player, ItemStack bank) {
+    private InteractionResult tryOpenBank(World world, PlayerEntity player, ItemStack bank) {
 
         if (world.isClient)
-            return ActionResult.CONSUME;
+            return InteractionResult.CONSUME;
 
         @Nullable
         BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, world);
@@ -108,7 +118,7 @@ public abstract class BankFunctionality extends Item {
         // fail
         if (bankItemStorage == null) {
             player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
-            return ActionResult.FAIL;
+            return InteractionResult.FAIL;
         }
 
         // success
@@ -116,10 +126,10 @@ public abstract class BankFunctionality extends Item {
         bankItemStorage.usedByPlayerName = player.getName().getString();
 
         player.openHandledScreen(bankItemStorage.withItem(bank));
-        return ActionResult.CONSUME;
+        return InteractionResult.CONSUME;
     }
 
-    private ActionResult build(ItemUsageContext context) {
+    private InteractionResult build(ItemUsageContext context) {
 
         PlayerEntity player = context.getPlayer();
         ItemStack bank = context.getStack();
@@ -138,7 +148,7 @@ public abstract class BankFunctionality extends Item {
             if (cachedBankStorage == null) {
                 if (Util.isLink(bank))
                     player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
-                return ActionResult.FAIL;
+                return InteractionResult.FAIL;
             }
             blockToPlace = cachedBankStorage.chooseItemToPlace(options, random);
         } else {
@@ -146,7 +156,7 @@ public abstract class BankFunctionality extends Item {
             if (bankItemStorage == null) {
                 if (Util.isLink(bank))
                     player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
-                return ActionResult.FAIL;
+                return InteractionResult.FAIL;
             }
             bankItemStorage.usedByPlayerUUID = player.getUuid();
             bankItemStorage.usedByPlayerName = player.getName().getString();
@@ -158,7 +168,7 @@ public abstract class BankFunctionality extends Item {
         // https://github.com/Mari023/AE2WirelessTerminalLibrary/blob/9a971887fcc7dced398297a2c6cb9057633b9883/src/main/java/de/mari_023/ae2wtlib/AE2wtlibEvents.java#L35
         int count = blockToPlace.getCount();
         blockToPlace.setCount(1);
-        ActionResult useResult = blockToPlace
+        InteractionResult useResult = blockToPlace
                 .useOnBlock(new ItemUsageContext(world, player, context.getHand(), blockToPlace, context.hit));
 
         blockToPlace.setCount(blockToPlace.getCount() == 1 ? count : count - 1);
@@ -174,28 +184,28 @@ public abstract class BankFunctionality extends Item {
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+    public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
 
-        ItemStack bank = player.getStackInHand(hand);
-        ActionResult result = useBank(player, hand, false, null);
+        ItemStack bank = player.getItemInHand(hand);
+        InteractionResult result = useBank(player, hand, false, null);
 
         return switch (result) {
-            case CONSUME -> TypedActionResult.fail(bank);
-            case CONSUME_PARTIAL -> TypedActionResult.consume(bank);
-            case FAIL -> TypedActionResult.fail(bank);
-            case PASS -> TypedActionResult.pass(bank);
-            case SUCCESS -> TypedActionResult.success(bank);
-            case SUCCESS_NO_ITEM_USED -> TypedActionResult.success(bank);
+            case CONSUME -> InteractionResultHolder.fail(bank);
+            case CONSUME_PARTIAL -> InteractionResultHolder.consume(bank);
+            case FAIL -> InteractionResultHolder.fail(bank);
+            case PASS -> InteractionResultHolder.pass(bank);
+            case SUCCESS -> InteractionResultHolder.success(bank);
+            case SUCCESS_NO_ITEM_USED -> InteractionResultHolder.success(bank);
         };
     }
 
     @Override
-    public ActionResult useOnBlock(ItemUsageContext context) {
+    public InteractionResult useOn(UseOnContext context) {
         return useBank(context.getPlayer(), context.getHand(), true, context.hit);
     }
 
     @Override
-    public Optional<TooltipData> getTooltipData(ItemStack stack) {
+    public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {
 
         if (Util.isShiftDown.get())
             return Optional.empty();

@@ -27,7 +27,7 @@ import net.natte.bankstorage.util.Util;
 public record UpdateBankOptionsPacketC2S(BankOptions options) implements CustomPayload {
 
     public static final CustomPayload.Id<UpdateBankOptionsPacketC2S> PACKET_ID = new CustomPayload.Id<>(Util.ID("update_options_c2s"));
-    public static final PacketCodec<PacketByteBuf, UpdateBankOptionsPacketC2S> PACKET_CODEC = BankOptions.PACKET_CODEC
+    public static final PacketCodec<PacketByteBuf, UpdateBankOptionsPacketC2S> PACKET_CODEC = BankOptions.STREAM_CODEC
             .xmap(
                     UpdateBankOptionsPacketC2S::new,
                     UpdateBankOptionsPacketC2S::options);

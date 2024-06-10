@@ -3,9 +3,12 @@ package net.natte.bankstorage.options;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
 public class BankOptions {
     public PickupMode pickupMode = PickupMode.NONE;
@@ -14,14 +17,14 @@ public class BankOptions {
 
     public int selectedItemSlot = 0;
 
-    public static final PacketCodec<PacketByteBuf, BankOptions> PACKET_CODEC = PacketCodec.tuple(
-            PacketCodecs.BYTE,
+    public static final StreamCodec<ByteBuf, BankOptions> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.BYTE,
             o -> o.pickupMode.number,
-            PacketCodecs.BYTE,
+            ByteBufCodecs.BYTE,
             o -> o.buildMode.number,
-            PacketCodecs.BYTE,
+            ByteBufCodecs.BYTE,
             o -> o.sortMode.number,
-            PacketCodecs.INTEGER,
+            ByteBufCodecs.INT,
             o -> o.selectedItemSlot,
             BankOptions::of);
 

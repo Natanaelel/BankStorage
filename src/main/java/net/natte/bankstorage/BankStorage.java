@@ -13,13 +13,15 @@ import net.minecraft.block.MapColor;
 import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.component.DataComponentType;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.util.Uuids;
+import net.minecraft.world.item.Item;
 import net.natte.bankstorage.access.SyncedRandomAccess;
 import net.natte.bankstorage.block.BankDockBlock;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
@@ -50,10 +52,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
+import net.neoforged.fml.common.Mod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BankStorage implements ModInitializer {
+@Mod(BankStorage.MOD_ID)
+public class BankStorage {
 
     public static final String MOD_ID = "bankstorage";
 
@@ -67,7 +71,7 @@ public class BankStorage implements ModInitializer {
     private static final BankType BANK_6 = new BankType("bank_6", 262_144, 9, 9, 176, 114 + 18 * 9);
     private static final BankType BANK_7 = new BankType("bank_7", 1_000_000_000, 12, 9, 176, 114 + 18 * 12);
 
-    public static final LinkItem LINK_ITEM = new LinkItem(new Item.Settings().maxCount(1));
+    public static final LinkItem LINK_ITEM = new LinkItem(new Item.Properties().stacksTo(1));
 
     public static final List<BankType> bankTypes = new ArrayList<>();
 
@@ -76,9 +80,9 @@ public class BankStorage implements ModInitializer {
 
     public static BlockEntityType<BankDockBlockEntity> BANK_DOCK_BLOCK_ENTITY;
 
-    public static final DataComponentType<UUID> UUIDComponentType = DataComponentType.<UUID>builder().codec(Uuids.CODEC).packetCodec(Uuids.PACKET_CODEC).build();
-    public static final DataComponentType<BankOptions> OptionsComponentType = DataComponentType.<BankOptions>builder().codec(BankOptions.CODEC).packetCodec(BankOptions.PACKET_CODEC).build();
-    public static final DataComponentType<BankType> BankTypeComponentType = DataComponentType.<BankType>builder().codec(BankType.CODEC).packetCodec(BankType.PACKET_CODEC).build();
+    public static final DataComponentType<UUID> UUIDComponentType = DataComponentType.<UUID>builder().persistent(UUIDUtil.CODEC).networkSynchronized(UUIDUtil.STREAM_CODEC).build();
+    public static final DataComponentType<BankOptions> OptionsComponentType = DataComponentType.<BankOptions>builder().persistent(BankOptions.CODEC).networkSynchronized(BankOptions.STREAM_CODEC).build();
+    public static final DataComponentType<BankType> BankTypeComponentType = DataComponentType.<BankType>builder().persistent(BankType.CODEC).networkSynchronized(BankType.PACKET_CODEC).build();
 
     @Override
     public void onInitialize() {

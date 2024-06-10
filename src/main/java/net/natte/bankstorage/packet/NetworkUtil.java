@@ -6,6 +6,7 @@ import java.util.UUID;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.options.BuildMode;

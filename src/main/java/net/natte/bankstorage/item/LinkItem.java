@@ -8,6 +8,7 @@ import net.minecraft.client.item.TooltipType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.world.item.Item;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.util.Util;
@@ -16,7 +17,7 @@ public class LinkItem extends BankFunctionality {
 
     private static final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance(Locale.US);
 
-    public LinkItem(Settings settings) {
+    public LinkItem(Item.Properties settings) {
         super(settings);
     }
 
