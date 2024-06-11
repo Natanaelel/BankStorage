@@ -4,7 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -59,41 +67,43 @@ public class BankDockBlockEntity extends BlockEntity {
     }
 
     @Override
-    public void markDirty() {
-        world.updateListeners(pos, getCachedState(), getCachedState(), Block.NOTIFY_LISTENERS);
+    public void setChanged() {
+        level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         this.storage = null;
-        super.markDirty();
+        super.setChanged();
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt, WrapperLookup registryLookup) {
-        NbtElement itemAsNbt = this.bankItem.encodeAllowEmpty(registryLookup);
+    protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registryLookup) {
+        super.saveAdditional(nbt, registryLookup);
+        Tag itemAsNbt = this.bankItem.saveOptional(registryLookup);
         nbt.put("bank", itemAsNbt);
     }
 
     @Override
-    public void readNbt(NbtCompound nbt, WrapperLookup registryLookup) {
-        this.bankItem = ItemStack.fromNbtOrEmpty(registryLookup, nbt.getCompound("bank"));
+    protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registryLookup) {
+        super.loadAdditional(nbt, registryLookup);
+        this.bankItem = ItemStack.parseOptional(registryLookup, nbt.getCompound("bank"));
     }
 
     @Nullable
     @Override
-    public Packet<ClientPlayPacketListener> toUpdatePacket() {
-        return BlockEntityUpdateS2CPacket.create(this);
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
-    public NbtCompound toInitialChunkDataNbt(WrapperLookup registryLookup) {
-        return createNbt(registryLookup);
+    public CompoundTag getUpdateTag(HolderLookup.Provider registryLookup) {
+        return saveWithoutMetadata(registryLookup);
     }
 
     private BankItemStorage getInventory() {
 
-        if (this.world.isClient)
+        if (this.level.isClientSide)
             return null;
 
         if (Util.isBankLike(this.bankItem)) {
-            return Util.getBankItemStorage(this.bankItem, this.world);
+            return Util.getBankItemStorage(this.bankItem, this.level);
         }
         return null;
     }

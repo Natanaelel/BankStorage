@@ -12,6 +12,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.MapColor;
 import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.client.Minecraft;
 import net.minecraft.component.DataComponentType;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.cauldron.CauldronInteraction;
@@ -23,6 +24,7 @@ import net.minecraft.item.ItemGroups;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.util.datafix.fixes.ChunkPalettedStorageFix;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -60,12 +62,19 @@ import net.natte.bankstorage.util.Util;
 import java.util.Random;
 import java.util.UUID;
 
+import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.capabilities.BlockCapability;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,6 +115,7 @@ public class BankStorage {
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
     public static final DeferredRegister<MenuType<?>> SCREEN_HANDLERS = DeferredRegister.create(Registries.MENU, MOD_ID);
 
+
     public BankStorage(IEventBus modBus) {
 
         registerBanks();
@@ -126,7 +136,7 @@ public class BankStorage {
         SCREEN_HANDLERS.register(modBus);
 
         modBus.addListener(this::addItemsToCreativeTab);
-
+        modBus.addListener(this::registerCapabilities);
     }
 
     private void registerItemComponentTypes() {
@@ -191,6 +201,10 @@ public class BankStorage {
         ItemStorage.SIDED.registerForBlockEntity(
                 (bankDockBlockEntity, direction) -> bankDockBlockEntity.getItemStorage(), BANK_DOCK_BLOCK_ENTITY);
 
+    }
+
+    private void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BANK_DOCK_BLOCK_ENTITY, (dock, side) -> new InvWrapper(dock.getItemStorage()));
     }
 
     private void registerRecipes() {
