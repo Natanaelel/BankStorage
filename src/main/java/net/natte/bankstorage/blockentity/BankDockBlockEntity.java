@@ -15,6 +15,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import org.jetbrains.annotations.Nullable;
 
 import net.fabricmc.fabric.api.entity.FakePlayer;
@@ -57,18 +59,19 @@ public class BankDockBlockEntity extends BlockEntity {
     public ItemStack pickUpBank() {
         ItemStack bank = this.bankItem;
         this.bankItem = ItemStack.EMPTY;
-        this.markDirty();
+        this.setChanged();
         return bank;
     }
 
     public void putBank(ItemStack bank) {
         this.bankItem = bank.copy();
-        this.markDirty();
+        this.setChanged();
     }
 
     @Override
     public void setChanged() {
         level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+        level.invalidateCapabilities(worldPosition);
         this.storage = null;
         super.setChanged();
     }
@@ -108,14 +111,14 @@ public class BankDockBlockEntity extends BlockEntity {
         return null;
     }
 
-    public Storage<ItemVariant> getItemStorage() {
+    public IItemHandler getItemStorage() {
 
         if (this.storage == null) {
             BankItemStorage bankItemStorage = getInventory();
             if (bankItemStorage == null) {
                 return Storage.empty();
             }
-            bankItemStorage.usedByPlayerUUID = FakePlayer.DEFAULT_UUID;
+            bankItemStorage.usedByPlayerUUID = BankStorage.FAKE_PLAYER_UUID;
             bankItemStorage.usedByPlayerName = "World";
             this.storage = createItemStorage(bankItemStorage);
         }

@@ -22,7 +22,7 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
@@ -41,7 +41,8 @@ public class Util {
     public static Random clientSyncedRandom;
 
     public static boolean isDebugMode = false;
-    public static Consumer<PlayerEntity> onToggleBuildMode = e -> {};
+    public static Consumer<PlayerEntity> onToggleBuildMode = e -> {
+    };
 
     public static boolean isBank(ItemStack itemStack) {
         return itemStack.getItem() instanceof BankItem;
@@ -65,6 +66,14 @@ public class Util {
 
     public static UUID getUUID(ItemStack itemStack) {
         return itemStack.get(BankStorage.UUIDComponentType);
+    }
+
+    public static BankType getType(ItemStack stack) {
+        return stack.getOrDefault(BankStorage.BankTypeComponentType, BankStorage.BANK_TYPES[0]);
+    }
+
+    public static void setType(ItemStack itemStack, BankType type) {
+        itemStack.set(BankStorage.BankTypeComponentType, type);
     }
 
     public static BankOptions getOrCreateOptions(ItemStack itemStack) {
@@ -118,23 +127,16 @@ public class Util {
 
         // first fill locked slots with their item
         for (HugeItemStack collectedItem : collectedItems) {
-            bankItemStorage
-                    .getlockedSlots()
-                    .keySet()
-                    .stream()
-                    .filter(index -> ItemStack.areItemsAndComponentsEqual(collectedItem.stack, bankItemStorage.getLockedStack(index)))
-                    .sorted()                       // SETSTACK
+            bankItemStorage.getlockedSlots().keySet().stream().filter(index -> ItemStack.areItemsAndComponentsEqual(collectedItem.stack, bankItemStorage.getLockedStack(index))).sorted()                       // SETSTACK
                     .forEach(index -> bankItemStorage.setStack(index, collectedItem.split(slotSize)));
         }
 
         // fill empty bank slots one at a time
         for (HugeItemStack collectedItem : collectedItems) {
 
-            if (collectedItem.count == 0)
-                continue;
+            if (collectedItem.count == 0) continue;
             for (int i = 0; i < bankItemStorage.size(); ++i) {
-                if (bankItemStorage.getLockedStack(i) != null)
-                    continue;
+                if (bankItemStorage.getLockedStack(i) != null) continue;
                 ItemStack existingStack = bankItemStorage.getStack(i);
                 if (existingStack.isEmpty()) {
                     // SETSTACK
@@ -147,8 +149,7 @@ public class Util {
         for (HugeItemStack collectedItem : collectedItems) {
 
             while (collectedItem.count > 0) {
-                BankStorage.LOGGER.warn("Item does not fit in bank after sort. This *should* be impossible. item: "
-                        + collectedItem.stack + " count: " + collectedItem.count);
+                BankStorage.LOGGER.warn("Item does not fit in bank after sort. This *should* be impossible. item: " + collectedItem.stack + " count: " + collectedItem.count);
                 player.getInventory().offerOrDrop(collectedItem.split(collectedItem.stack.getMaxCount()));
             }
         }
@@ -158,7 +159,7 @@ public class Util {
      * Doesn't Upgrade {@link BankType}.
      * Assumes {@link BankItemStorage} with this uuid already exists.
      */
-    public static BankItemStorage getBankItemStorage(UUID uuid, World world) {
+    public static BankItemStorage getBankItemStorage(UUID uuid, Level world) {
 
         BankPersistentState serverState = BankStateManager.getState(world.getServer());
         BankItemStorage bankItemStorage = serverState.get(uuid);
@@ -171,11 +172,11 @@ public class Util {
      * Creates new {@link BankItemStorage} if stack has no uuid.
      * Upgrades {@link BankType} if needed
      */
-    public static @Nullable BankItemStorage getBankItemStorage(ItemStack bank, World world) {
+    @Nullable
+    public static BankItemStorage getBankItemStorage(ItemStack bank, Level world) {
 
         if (Util.isLink(bank)) {
-            if (!Util.hasUUID(bank))
-                return null;
+            if (!Util.hasUUID(bank)) return null;
             BankItemStorage bankItemStorage = getBankItemStorage(Util.getUUID(bank), world);
             if (bankItemStorage.type != LinkItem.getType(bank)) {
                 LinkItem.setType(bank, bankItemStorage.type);
@@ -184,8 +185,7 @@ public class Util {
         }
 
         UUID uuid = hasUUID(bank) ? getUUID(bank) : UUID.randomUUID();
-        if (!hasUUID(bank))
-            bank.set(BankStorage.UUIDComponentType, uuid);
+        if (!hasUUID(bank)) bank.set(BankStorage.UUIDComponentType, uuid);
 
         BankType type = ((BankItem) bank.getItem()).getType();
         BankPersistentState serverState = BankStateManager.getState(world.getServer());
@@ -198,10 +198,8 @@ public class Util {
     }
 
     public static @Nullable UUID getUUIDFromScreenHandler(ScreenHandler screenHandler) {
-        if (!(screenHandler instanceof BankScreenHandler bankScreenHandler))
-            return null;
-        if (!(bankScreenHandler.inventory instanceof BankItemStorage bankItemStorage))
-            return null;
+        if (!(screenHandler instanceof BankScreenHandler bankScreenHandler)) return null;
+        if (!(bankScreenHandler.inventory instanceof BankItemStorage bankItemStorage)) return null;
         return bankItemStorage.uuid;
     }
 
@@ -210,19 +208,11 @@ public class Util {
     }
 
     public static Component invalid() {
-        ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.OPEN_URL,
-                Text.translatable("github_url.bankstorage").getString());
+        ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.OPEN_URL, Text.translatable("github_url.bankstorage").getString());
 
-        HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                Text.translatable("open_github_url.bankstorage"));
+        HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.translatable("open_github_url.bankstorage"));
 
-        return Text.translatable("invalid.bankstorage")
-                .append(Text.literal("\n§r"))
-                .append(Text.translatable("github_url.bankstorage").styled(style -> style
-                        .withHoverEvent(hoverEvent)
-                        .withClickEvent(clickEvent)
-                        .withUnderline(true)
-                        .withColor(Formatting.BLUE)));
+        return Text.translatable("invalid.bankstorage").append(Text.literal("\n§r")).append(Text.translatable("github_url.bankstorage").styled(style -> style.withHoverEvent(hoverEvent).withClickEvent(clickEvent).withUnderline(true).withColor(Formatting.BLUE)));
     }
 
     public static Component invalid(String context) {
@@ -250,8 +240,7 @@ class HugeItemStack {
 
     public String getModName() {
         ResourceLocation id = Registries.ITEM.getId(this.stack.getItem());
-        if (id == null)
-            return "";
+        if (id == null) return "";
         return id.getNamespace();
     }
 

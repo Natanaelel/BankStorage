@@ -1,54 +1,59 @@
 package net.natte.bankstorage.packet.server;
 
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
+import net.natte.bankstorage.item.LinkItem;
+import net.natte.bankstorage.screen.BankScreenHandlerFactory;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.Nullable;
 
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.Context;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPayloadHandler;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.network.codec.StreamCodec;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.util.Util;
 
-public record OpenBankFromKeyBindPacketC2S() implements CustomPayload {
+public record OpenBankFromKeyBindPacketC2S() implements CustomPacketPayload {
 
-    public static final CustomPayload.Id<OpenBankFromKeyBindPacketC2S> PACKET_ID = new CustomPayload.Id<>(Util.ID("open_bank_from_keybind_c2s"));
-    public static final PacketCodec<RegistryByteBuf, OpenBankFromKeyBindPacketC2S> PACKET_CODEC = PacketCodec.unit(new OpenBankFromKeyBindPacketC2S());
+    public static final Type<OpenBankFromKeyBindPacketC2S> TYPE = new Type<>(Util.ID("open_bank_from_keybind_c2s"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, OpenBankFromKeyBindPacketC2S> PACKET_CODEC = StreamCodec.unit(new OpenBankFromKeyBindPacketC2S());
 
-    public static class Receiver implements PlayPayloadHandler<OpenBankFromKeyBindPacketC2S> {
 
-        @Override
-        public void receive(OpenBankFromKeyBindPacketC2S packet, Context context) {
-            ServerPlayer player = context.player();
-            ItemStack bank = findBank(player);
-            if (bank == null)
-                return;
-            BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, player.getWorld());
-            if (bankItemStorage == null)
-                return;
-            player.openMenu(bankItemStorage.withItem(bank));
-        }
-
-        private @Nullable ItemStack findBank(ServerPlayerEntity player) {
-            PlayerInventory inventory = player.getInventory();
-            for (int i = 0; i < inventory.size(); i++) {
-                ItemStack stack = inventory.getStack(i);
-                if (Util.isBank(stack))
-                    return stack;
-                if (Util.isLink(stack) && Util.hasUUID(stack))
-                    return stack;
-            }
-            return null;
-        }
-    }
 
     @Override
-    public Id<? extends CustomPayload> getId() {
-        return PACKET_ID;
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+
+    public static void handle(OpenBankFromKeyBindPacketC2S packet, IPayloadContext context) {
+        assert context.connection().getDirection().isServerbound() : "Tried to handle server-bound packet not on server";
+        ServerPlayer player = (ServerPlayer) context.player();
+        int slot = findBank(player);
+
+        if (slot == -1)
+            return;
+        ItemStack bank = player.getInventory().getItem(slot);
+
+        BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, player.level());
+        if (bankItemStorage == null)
+            return;
+
+        BankScreenHandlerFactory screenHandlerFactory = new BankScreenHandlerFactory(bankItemStorage.type, bankItemStorage, bank, slot, ContainerLevelAccess.NULL);
+        player.openMenu(screenHandlerFactory, screenHandlerFactory::writeScreenOpeningData);
+    }
+
+    private static int findBank(ServerPlayer player) {
+        Inventory inventory = player.getInventory();
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            ItemStack stack = inventory.getItem(i);
+            if (Util.isBank(stack))
+                return i;
+            if (Util.isLink(stack) && Util.hasUUID(stack))
+                return i;
+        }
+        return -1;
     }
 }

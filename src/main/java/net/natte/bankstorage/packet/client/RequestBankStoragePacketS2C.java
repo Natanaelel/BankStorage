@@ -13,7 +13,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record RequestBankStoragePacketS2C(CachedBankStorage cachedBankStorage) implements CustomPacketPayload {
 
-    public static final Type<RequestBankStoragePacketS2C> PACKET_ID = new Type<>(Util.ID("requestbank_s2c"));
+    public static final Type<RequestBankStoragePacketS2C> TYPE = new Type<>(Util.ID("requestbank_s2c"));
     public static final StreamCodec<RegistryFriendlyByteBuf, RequestBankStoragePacketS2C> STREAM_CODEC = CachedBankStorage.STREAM_CODEC
             .map(
                     RequestBankStoragePacketS2C::new,
@@ -21,7 +21,7 @@ public record RequestBankStoragePacketS2C(CachedBankStorage cachedBankStorage) i
 
     @Override
     public Type<? extends CustomPacketPayload> type() {
-        return PACKET_ID;
+        return TYPE;
     }
 
     public static void handle(RequestBankStoragePacketS2C packet, IPayloadContext context) {

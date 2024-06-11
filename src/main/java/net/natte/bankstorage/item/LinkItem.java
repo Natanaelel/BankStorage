@@ -27,7 +27,7 @@ public class LinkItem extends BankFunctionality {
                 tooltip.add(Component.literal(Util.getUUID(stack).toString()).withStyle(ChatFormatting.DARK_AQUA));
         }
 
-        BankType type = getType(stack);
+        BankType type = Util.getType(stack);
         Component formattedStackLimit = Component.literal(NUMBER_FORMAT.format(type.stackLimit));
         tooltip.add(Component.translatable("tooltip.bankstorage.stacklimit", formattedStackLimit));
         tooltip.add(Component.translatable("tooltip.bankstorage.numslots", Component.literal(String.valueOf(type.size()))));
@@ -35,11 +35,4 @@ public class LinkItem extends BankFunctionality {
                 tooltipFlag);
     }
 
-    public static BankType getType(ItemStack stack) {
-        return stack.getOrDefault(BankStorage.BankTypeComponentType, BankStorage.BANK_TYPES[0]);
-    }
-
-    public static void setType(ItemStack itemStack, BankType type) {
-        itemStack.set(BankStorage.BankTypeComponentType, type);
-    }
 }

@@ -9,7 +9,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record ItemStackBobbingAnimationPacketS2C(int index) implements CustomPacketPayload {
 
-    public static final CustomPacketPayload.Type<ItemStackBobbingAnimationPacketS2C> PACKET_ID = new CustomPacketPayload.Type<>(Util.ID("bobbing_s2c"));
+    public static final CustomPacketPayload.Type<ItemStackBobbingAnimationPacketS2C> TYPE = new CustomPacketPayload.Type<>(Util.ID("bobbing_s2c"));
     public static final StreamCodec<ByteBuf, ItemStackBobbingAnimationPacketS2C> STREAM_CODEC = ByteBufCodecs.INT
             .map(
                     ItemStackBobbingAnimationPacketS2C::new,
@@ -17,7 +17,7 @@ public record ItemStackBobbingAnimationPacketS2C(int index) implements CustomPac
 
     @Override
     public Type<? extends CustomPacketPayload> type() {
-        return PACKET_ID;
+        return TYPE;
     }
 
     public static void handle(ItemStackBobbingAnimationPacketS2C packet, IPayloadContext context) {

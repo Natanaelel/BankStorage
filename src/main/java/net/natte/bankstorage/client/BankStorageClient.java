@@ -210,13 +210,13 @@ public class BankStorageClient {
 
     public void registerNetworkListeners() {
 
-        ClientPlayNetworking.registerGlobalReceiver(ItemStackBobbingAnimationPacketS2C.PACKET_ID,
-                new ItemStackBobbingAnimationPacketReceiver());
-        ClientPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketS2C.PACKET_ID,
-                new RequestBankStoragePacketReceiver());
-        ClientPlayNetworking.registerGlobalReceiver(SyncedRandomPacketS2C.PACKET_ID,
-                new SyncedRandomPacketReceiver());
+//        ClientPlayNetworking.registerGlobalReceiver(ItemStackBobbingAnimationPacketS2C.PACKET_ID,
+//                new ItemStackBobbingAnimationPacketReceiver());
+//        ClientPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketS2C.PACKET_ID,
+//                new RequestBankStoragePacketReceiver());
+//        ClientPlayNetworking.registerGlobalReceiver(SyncedRandomPacketS2C.PACKET_ID,
+//                new SyncedRandomPacketReceiver());
 
-        ClientPlayNetworking.registerGlobalReceiver(LockedSlotsPacketS2C.PACKET_ID, new SyncLockedSlotsReceiver());
+//        ClientPlayNetworking.registerGlobalReceiver(LockedSlotsPacketS2C.PACKET_ID, new SyncLockedSlotsReceiver());
     }
 }

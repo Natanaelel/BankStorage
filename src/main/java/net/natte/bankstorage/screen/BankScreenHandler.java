@@ -69,7 +69,7 @@ public class BankScreenHandler extends AbstractContainerMenu {
     // then be synced to the client.
 
     public BankScreenHandler(int syncId, Inventory playerInventory,
-            Container inventory, BankType type,
+            BankType type, ItemStack bankItem, int slot, Container inventory,
             ContainerLevelAccess context) {
         super(type.getScreenHandlerType(), syncId);
         this.context = context;

@@ -1,30 +1,10 @@
 package net.natte.bankstorage;
 
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.MapColor;
-import net.minecraft.block.cauldron.CauldronBehavior;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.Minecraft;
-import net.minecraft.component.DataComponentType;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroups;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.util.datafix.fixes.ChunkPalettedStorageFix;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -57,24 +37,28 @@ import net.natte.bankstorage.packet.server.SortPacketC2S;
 import net.natte.bankstorage.packet.server.UpdateBankOptionsPacketC2S;
 import net.natte.bankstorage.recipe.BankLinkRecipe;
 import net.natte.bankstorage.recipe.BankRecipe;
+import net.natte.bankstorage.screen.BankScreenHandler;
+import net.natte.bankstorage.screen.BankScreenHandlerFactory;
 import net.natte.bankstorage.util.Util;
 
 import java.util.Random;
 import java.util.UUID;
+import java.util.function.Supplier;
 
-import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.capabilities.BlockCapability;
+import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.items.wrapper.InvWrapper;
+import net.neoforged.neoforge.network.IContainerFactory;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import org.jetbrains.annotations.Nullable;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,13 +92,16 @@ public class BankStorage {
     public static final DataComponentType<BankOptions> OptionsComponentType = DataComponentType.<BankOptions>builder().persistent(BankOptions.CODEC).networkSynchronized(BankOptions.STREAM_CODEC).build();
     public static final DataComponentType<BankType> BankTypeComponentType = DataComponentType.<BankType>builder().persistent(BankType.CODEC).networkSynchronized(BankType.STREAM_CODEC).build();
 
+    public static final MenuType<BankScreenHandler> MENU_TYPE = IMenuTypeExtension.create(BankScreenHandlerFactory::createClientScreenHandler);
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MOD_ID);
     public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(MOD_ID);
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MOD_ID);
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
     public static final DeferredRegister<MenuType<?>> SCREEN_HANDLERS = DeferredRegister.create(Registries.MENU, MOD_ID);
+    private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MOD_ID);
 
+    private static final Supplier<AttachmentType<Random>> SYNCED_RANDOM_ATTACHMENT = ATTACHMENT_TYPES.register("random", () -> AttachmentType.<Random>builder(() -> new Random()).build());
 
     public BankStorage(IEventBus modBus) {
 
@@ -123,10 +110,10 @@ public class BankStorage {
         registerLink();
         registerRecipes();
         registerCommands();
-        registerPackets();
         registerNetworkListeners();
+        registerScreenHandlers();
 
-        registerEventListeners();
+        registerPlayerSyncedRandom(modBus);
         registerItemComponentTypes();
 
         ITEMS.register(modBus);
@@ -134,30 +121,40 @@ public class BankStorage {
         BLOCKS.register(modBus);
         BLOCK_ENTITIES.register(modBus);
         SCREEN_HANDLERS.register(modBus);
+        ATTACHMENT_TYPES.register(modBus);
 
         modBus.addListener(this::addItemsToCreativeTab);
         modBus.addListener(this::registerCapabilities);
+        modBus.addListener(this::registerPackets);
+    }
+
+    private void registerScreenHandlers() {
+        SCREEN_HANDLERS.register("bank_menu", () -> MENU_TYPE);
     }
 
     private void registerItemComponentTypes() {
-        DATA_COMPONENTS.register("uuid", id -> UUIDComponentType);
-        DATA_COMPONENTS.register("options", id -> OptionsComponentType);
-        DATA_COMPONENTS.register("type", id -> BankTypeComponentType);
+        DATA_COMPONENTS.register("uuid", () -> UUIDComponentType);
+        DATA_COMPONENTS.register("options", () -> OptionsComponentType);
+        DATA_COMPONENTS.register("type", () -> BankTypeComponentType);
     }
 
 
-    private void registerEventListeners() {
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            long randomSeed = handler.player.getRandom().nextLong();
-            ((SyncedRandomAccess) handler.player).bankstorage$setSyncedRandom(new Random(randomSeed));
-            sender.sendPacket(new SyncedRandomPacketS2C(randomSeed));
+    private void registerPlayerSyncedRandom(IEventBus modBus) {
+
+        // create and send random (seed) on join
+        modBus.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> {
+            if (event.getEntity() instanceof ServerPlayer player) {
+                long randomSeed = player.getRandom().nextLong();
+                Random random = new Random(randomSeed);
+                player.setData(SYNCED_RANDOM_ATTACHMENT, random);
+                player.connection.send(new SyncedRandomPacketS2C(randomSeed));
+            }
         });
 
-        ServerPlayerEvents.COPY_FROM.register((oldPlayer, newPlayer, alive) -> {
-            Random random = ((SyncedRandomAccess) oldPlayer).bankstorage$getSyncedRandom();
-            ((SyncedRandomAccess) newPlayer).bankstorage$setSyncedRandom(random);
+        // copy random on clone
+        modBus.addListener(PlayerEvent.Clone.class, event -> {
+            event.getEntity().setData(SYNCED_RANDOM_ATTACHMENT, event.getOriginal().getData(SYNCED_RANDOM_ATTACHMENT));
         });
-
     }
 
     private void registerLink() {
@@ -198,13 +195,13 @@ public class BankStorage {
 
         BLOCK_ENTITIES.register("bank_dock_block_entity", id -> BANK_DOCK_BLOCK_ENTITY);
 
-        ItemStorage.SIDED.registerForBlockEntity(
-                (bankDockBlockEntity, direction) -> bankDockBlockEntity.getItemStorage(), BANK_DOCK_BLOCK_ENTITY);
+//        ItemStorage.SIDED.registerForBlockEntity(
+//                (bankDockBlockEntity, direction) -> bankDockBlockEntity.getItemStorage(), BANK_DOCK_BLOCK_ENTITY);
 
     }
 
     private void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BANK_DOCK_BLOCK_ENTITY, (dock, side) -> new InvWrapper(dock.getItemStorage()));
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BANK_DOCK_BLOCK_ENTITY, (dock, side) -> dock.getItemHandler());
     }
 
     private void registerRecipes() {
@@ -222,21 +219,19 @@ public class BankStorage {
 
     private void registerPackets(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar("1");
-        registrar.playToClient(ItemStackBobbingAnimationPacketS2C.PACKET_ID, ItemStackBobbingAnimationPacketS2C.STREAM_CODEC, ItemStackBobbingAnimationPacketS2C::handle);
-        registrar.playToClient(RequestBankStoragePacketS2C.PACKET_ID, RequestBankStoragePacketS2C.STREAM_CODEC, RequestBankStoragePacketS2C::handle);
+        registrar.playToClient(ItemStackBobbingAnimationPacketS2C.TYPE, ItemStackBobbingAnimationPacketS2C.STREAM_CODEC, ItemStackBobbingAnimationPacketS2C::handle);
+        registrar.playToClient(RequestBankStoragePacketS2C.TYPE, RequestBankStoragePacketS2C.STREAM_CODEC, RequestBankStoragePacketS2C::handle);
+        registrar.playToClient(SyncedRandomPacketS2C.TYPE, SyncedRandomPacketS2C.STREAM_CODEC, SyncedRandomPacketS2C::handle);
+        registrar.playToClient(LockedSlotsPacketS2C.TYPE, LockedSlotsPacketS2C.STREAM_CODEC, LockedSlotsPacketS2C::handle);
 
-        PayloadTypeRegistry.playS2C().register(RequestBankStoragePacketS2C.PACKET_ID, RequestBankStoragePacketS2C.PACKET_CODEC);
-        PayloadTypeRegistry.playS2C().register(SyncedRandomPacketS2C.PACKET_ID, SyncedRandomPacketS2C.PACKET_CODEC);
-        PayloadTypeRegistry.playS2C().register(LockedSlotsPacketS2C.PACKET_ID, LockedSlotsPacketS2C.PACKET_CODEC);
-
-        PayloadTypeRegistry.playC2S().register(UpdateBankOptionsPacketC2S.PACKET_ID, UpdateBankOptionsPacketC2S.PACKET_CODEC);
-        PayloadTypeRegistry.playC2S().register(OpenBankFromKeyBindPacketC2S.PACKET_ID, OpenBankFromKeyBindPacketC2S.PACKET_CODEC);
-        PayloadTypeRegistry.playC2S().register(RequestBankStoragePacketC2S.PACKET_ID, RequestBankStoragePacketC2S.PACKET_CODEC);
-        PayloadTypeRegistry.playC2S().register(SortPacketC2S.PACKET_ID, SortPacketC2S.PACKET_CODEC);
-        PayloadTypeRegistry.playC2S().register(PickupModePacketC2S.PACKET_ID, PickupModePacketC2S.PACKET_CODEC);
-        PayloadTypeRegistry.playC2S().register(SelectedSlotPacketC2S.PACKET_ID, SelectedSlotPacketC2S.PACKET_CODEC);
-        PayloadTypeRegistry.playC2S().register(LockSlotPacketC2S.PACKET_ID, LockSlotPacketC2S.PACKET_CODEC);
-        PayloadTypeRegistry.playC2S().register(KeyBindUpdatePacketC2S.PACKET_ID, KeyBindUpdatePacketC2S.PACKET_CODEC);
+        registrar.playToServer(UpdateBankOptionsPacketC2S.TYPE, UpdateBankOptionsPacketC2S.STREAM_CODEC, UpdateBankOptionsPacketC2S::handle);
+        registrar.playToServer(OpenBankFromKeyBindPacketC2S.TYPE, OpenBankFromKeyBindPacketC2S.STREAM_CODEC, OpenBankFromKeyBindPacketC2S::handle);
+        registrar.playToServer(RequestBankStoragePacketC2S.TYPE, RequestBankStoragePacketC2S.STREAM_CODEC, RequestBankStoragePacketC2S::handle);
+        registrar.playToServer(SortPacketC2S.TYPE, SortPacketC2S.STREAM_CODEC, SortPacketC2S::handle);
+        registrar.playToServer(PickupModePacketC2S.TYPE, PickupModePacketC2S.STREAM_CODEC, PickupModePacketC2S::handle);
+        registrar.playToServer(SelectedSlotPacketC2S.TYPE, SelectedSlotPacketC2S.STREAM_CODEC, SelectedSlotPacketC2S::handle);
+        registrar.playToServer(LockSlotPacketC2S.TYPE, LockSlotPacketC2S.STREAM_CODEC, LockSlotPacketC2S::handle);
+        registrar.playToServer(KeyBindUpdatePacketC2S.TYPE, KeyBindUpdatePacketC2S.STREAM_CODEC, KeyBindUpdatePacketC2S::handle);
 
     }
 
@@ -248,7 +243,7 @@ public class BankStorage {
         ServerPlayNetworking.registerGlobalReceiver(SelectedSlotPacketC2S.PACKET_ID, new SelectedSlotPacketC2S.Receiver());
         ServerPlayNetworking.registerGlobalReceiver(LockSlotPacketC2S.PACKET_ID, new LockSlotPacketC2S.Receiver());
         ServerPlayNetworking.registerGlobalReceiver(KeyBindUpdatePacketC2S.PACKET_ID, new KeyBindUpdatePacketC2S.Receiver());
-        ServerPlayNetworking.registerGlobalReceiver(UpdateBankOptionsPacketC2S.PACKET_ID, new UpdateBankOptionsPacketC2S.Receiver());
+        ServerPlayNetworking.registerGlobalReceiver(UpdateBankOptionsPacketC2S.TYPE, new UpdateBankOptionsPacketC2S.Receiver());
         ServerPlayNetworking.registerGlobalReceiver(OpenBankFromKeyBindPacketC2S.PACKET_ID, new OpenBankFromKeyBindPacketC2S.Receiver());
 
     }
