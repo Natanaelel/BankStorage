@@ -1,4 +1,4 @@
-package net.natte.bankstorage.network;
+package net.natte.bankstorage.client.network;
 
 import java.util.Random;
 

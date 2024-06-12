@@ -1,4 +1,4 @@
-package net.natte.bankstorage.screen;
+package net.natte.bankstorage.client.screen;
 
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.text.Text;

@@ -11,13 +11,13 @@ import java.util.Random;
 
 public record SyncedRandomPacketS2C(long randomSeed) implements CustomPacketPayload {
 
-    public static final CustomPacketPayload.Type<SyncedRandomPacketS2C> TYPE = new CustomPacketPayload.Type<>(Util.ID("sync_random"));
+    public static final Type<SyncedRandomPacketS2C> TYPE = new Type<>(Util.ID("sync_random"));
     public static final StreamCodec<ByteBuf, SyncedRandomPacketS2C> STREAM_CODEC = ByteBufCodecs.VAR_LONG.map(
             SyncedRandomPacketS2C::new,
             SyncedRandomPacketS2C::randomSeed);
 
     @Override
-    public Type<? extends CustomPacketPayload> type() {
+    public Type<SyncedRandomPacketS2C> type() {
         return TYPE;
     }
 

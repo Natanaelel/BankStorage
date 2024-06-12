@@ -1,4 +1,4 @@
-package net.natte.bankstorage.events;
+package net.natte.bankstorage.client.events;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.block.Block;

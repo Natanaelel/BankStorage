@@ -2,44 +2,38 @@ package net.natte.bankstorage.packet.server;
 
 import java.util.UUID;
 
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.Context;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPayloadHandler;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Uuids;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerPlayer;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.packet.NetworkUtil;
 import net.natte.bankstorage.util.Util;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record RequestBankStoragePacketC2S(UUID uuid, short cachedRevision) implements CustomPayload {
+public record RequestBankStoragePacketC2S(UUID uuid, short cachedRevision) implements CustomPacketPayload {
 
-    public static final CustomPayload.Id<RequestBankStoragePacketC2S> PACKET_ID = new CustomPayload.Id<>(Util.ID("requestbank_c2s"));
-    public static final PacketCodec<RegistryByteBuf, RequestBankStoragePacketC2S> PACKET_CODEC = PacketCodec.tuple(
-            Uuids.PACKET_CODEC,
+    public static final Type<RequestBankStoragePacketC2S> TYPE = new Type<>(Util.ID("requestbank_c2s"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, RequestBankStoragePacketC2S> STREAM_CODEC = StreamCodec.composite(
+            UUIDUtil.STREAM_CODEC,
             RequestBankStoragePacketC2S::uuid,
-            PacketCodecs.SHORT,
+            ByteBufCodecs.SHORT,
             RequestBankStoragePacketC2S::cachedRevision,
             RequestBankStoragePacketC2S::new);
 
-    public static class Receiver implements
-            PlayPayloadHandler<RequestBankStoragePacketC2S> {
-
-        @Override
-        public void receive(RequestBankStoragePacketC2S packet, Context context) {
-            ServerPlayerEntity player = context.player();
-            BankItemStorage bankItemStorage = Util.getBankItemStorage(packet.uuid, player.getWorld());
-            // only send update if client doesn't already have latest version (revision)
-            if (packet.cachedRevision != bankItemStorage.getRevision()) {
-                NetworkUtil.syncCachedBankS2C(packet.uuid, player);
-            }
-        }
+    @Override
+    public Type<RequestBankStoragePacketC2S> type() {
+        return TYPE;
     }
 
-    @Override
-    public Id<? extends CustomPayload> getId() {
-        return PACKET_ID;
+    public static void handle(RequestBankStoragePacketC2S packet, IPayloadContext context) {
+        ServerPlayer player = (ServerPlayer) context.player();
+        BankItemStorage bankItemStorage = Util.getBankItemStorage(packet.uuid, player.level());
+        // only send update if client doesn't already have latest version (revision)
+        if (packet.cachedRevision != bankItemStorage.getRevision()) {
+            NetworkUtil.syncCachedBankS2C(packet.uuid, player);
+        }
     }
 }

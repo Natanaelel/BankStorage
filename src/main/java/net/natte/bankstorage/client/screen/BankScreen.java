@@ -1,4 +1,4 @@
-package net.natte.bankstorage.screen;
+package net.natte.bankstorage.client.screen;
 
 import java.text.NumberFormat;
 import java.util.List;
@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import net.natte.bankstorage.screen.BankScreenHandler;
 import org.jetbrains.annotations.Nullable;
 
 import com.mojang.blaze3d.systems.RenderSystem;

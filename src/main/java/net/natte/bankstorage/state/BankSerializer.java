@@ -5,18 +5,18 @@ import java.util.List;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.fabricmc.fabric.api.entity.FakePlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Uuids;
-import net.minecraft.util.dynamic.Codecs;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.util.ExtraCodecs;
 
+import net.minecraft.world.item.ItemStack;
+import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 
 public class BankSerializer {
 
     private static final Codec<BankItemStorage> BANK_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Uuids.STRING_CODEC
+            UUIDUtil.STRING_CODEC
                     .fieldOf("uuid")
                     .forGetter(b -> b.uuid),
             BankType.CODEC
@@ -32,10 +32,10 @@ public class BankSerializer {
             Codec.STRING
                     .lenientOptionalFieldOf("date_created", LocalDateTime.now().toString())
                     .forGetter(b -> b.dateCreated.toString()),
-            Uuids.STRING_CODEC
-                    .lenientOptionalFieldOf("last_used_by_uuid", FakePlayer.DEFAULT_UUID)
+            UUIDUtil.STRING_CODEC
+                    .lenientOptionalFieldOf("last_used_by_uuid", BankStorage.FAKE_PLAYER_UUID)
                     .forGetter(b -> b.usedByPlayerUUID),
-            Codecs.PLAYER_NAME
+            ExtraCodecs.PLAYER_NAME
                     .lenientOptionalFieldOf("last_used_by_player", "World")
                     .forGetter(b -> b.usedByPlayerName)
 

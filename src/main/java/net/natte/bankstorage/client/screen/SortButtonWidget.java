@@ -1,4 +1,4 @@
-package net.natte.bankstorage.screen;
+package net.natte.bankstorage.client.screen;
 
 import java.time.Duration;
 import java.util.function.Consumer;

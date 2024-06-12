@@ -1,4 +1,4 @@
-package net.natte.bankstorage.tooltip;
+package net.natte.bankstorage.client.tooltip;
 
 import java.util.List;
 

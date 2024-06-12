@@ -4,15 +4,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
+import net.natte.bankstorage.screen.BankScreenHandlerFactory;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.item.TooltipData;
@@ -71,21 +75,21 @@ public abstract class BankFunctionality extends Item {
     // 1 1 1 1 -> 0 (build) animate
 
     // on .use or .useOnBlock. never returns PASS
-    private InteractionResult useBank(PlayerEntity player, Hand hand, boolean usedOnBlock,
+    private InteractionResult useBank(Player player, InteractionHand hand, boolean usedOnBlock,
             @Nullable BlockHitResult hitResult) {
 
-        ItemStack bank = player.getStackInHand(hand);
-        World world = player.getWorld();
+        ItemStack bank = player.getItemInHand(hand);
+        Level world = player.level();
         boolean isBuildMode = Util.getOrCreateOptions(bank).buildMode != BuildMode.NONE;
         boolean hasBoundKey = !Util.isBuildModeKeyUnBound;
 
         if (bank.getCount() != 1)
             return InteractionResult.FAIL;
 
-        boolean shouldToggleBuildMode = !usedOnBlock && player.isSneaking() && Util.isBuildModeKeyUnBound;
+        boolean shouldToggleBuildMode = !usedOnBlock && player.isShiftKeyDown() && Util.isBuildModeKeyUnBound;
 
         if (shouldToggleBuildMode) { // animate
-            if (world.isClient)
+            if (world.isClientSide)
                 Util.onToggleBuildMode.accept(player);
             return InteractionResult.CONSUME;
         }
@@ -95,21 +99,21 @@ public abstract class BankFunctionality extends Item {
         if (tryOpenWhenUsedOnAir) {
             if (isBuildMode && hasBoundKey)
                 return InteractionResult.FAIL;
-            return tryOpenBank(world, player, bank);
+            return tryOpenBank(world, player, hand, bank);
         }
 
         boolean openWhenUsedOnBlock = usedOnBlock && !isBuildMode;
 
         if (openWhenUsedOnBlock) {
-            return tryOpenBank(world, player, bank);
+            return tryOpenBank(world, player, hand, bank);
         }
 
         return build(new ItemUsageContext(world, player, hand, bank, hitResult));
     }
 
-    private InteractionResult tryOpenBank(World world, PlayerEntity player, ItemStack bank) {
+    private InteractionResult tryOpenBank(Level world, Player player, ItemStack bank) {
 
-        if (world.isClient)
+        if (world.isClientSide)
             return InteractionResult.CONSUME;
 
         @Nullable
@@ -117,13 +121,15 @@ public abstract class BankFunctionality extends Item {
 
         // fail
         if (bankItemStorage == null) {
-            player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
+            player.displayClientMessage(Component.translatable("popup.bankstorage.unlinked"), true);
             return InteractionResult.FAIL;
         }
 
         // success
-        bankItemStorage.usedByPlayerUUID = player.getUuid();
+        bankItemStorage.usedByPlayerUUID = player.getUUID();
         bankItemStorage.usedByPlayerName = player.getName().getString();
+
+        BankScreenHandlerFactory screenHandlerFactory = new BankScreenHandlerFactory(bankItemStorage.type, bankItemStorage, bank, slot, ContainerLevelAccess.NULL);
 
         player.openHandledScreen(bankItemStorage.withItem(bank));
         return InteractionResult.CONSUME;

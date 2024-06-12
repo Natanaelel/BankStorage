@@ -9,14 +9,14 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record ItemStackBobbingAnimationPacketS2C(int index) implements CustomPacketPayload {
 
-    public static final CustomPacketPayload.Type<ItemStackBobbingAnimationPacketS2C> TYPE = new CustomPacketPayload.Type<>(Util.ID("bobbing_s2c"));
+    public static final Type<ItemStackBobbingAnimationPacketS2C> TYPE = new Type<>(Util.ID("bobbing_s2c"));
     public static final StreamCodec<ByteBuf, ItemStackBobbingAnimationPacketS2C> STREAM_CODEC = ByteBufCodecs.INT
             .map(
                     ItemStackBobbingAnimationPacketS2C::new,
                     ItemStackBobbingAnimationPacketS2C::index);
 
     @Override
-    public Type<? extends CustomPacketPayload> type() {
+    public Type<ItemStackBobbingAnimationPacketS2C> type() {
         return TYPE;
     }
 

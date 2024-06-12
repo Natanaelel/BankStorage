@@ -1,32 +1,26 @@
 package net.natte.bankstorage.packet.server;
 
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.Context;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPayloadHandler;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.natte.bankstorage.util.Util;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record KeyBindUpdatePacketC2S(boolean isUnbound) implements CustomPayload {
+public record KeyBindUpdatePacketC2S(boolean isUnbound) implements CustomPacketPayload {
 
-    public static final CustomPayload.Id<KeyBindUpdatePacketC2S> PACKET_ID = new CustomPayload.Id<>(Util.ID("keybindupdate"));
-    public static final PacketCodec<RegistryByteBuf, KeyBindUpdatePacketC2S> PACKET_CODEC = PacketCodec.tuple(
-            PacketCodecs.BOOL,
+    public static final Type<KeyBindUpdatePacketC2S> TYPE = new Type<>(Util.ID("keybindupdate"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, KeyBindUpdatePacketC2S> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.BOOL,
             KeyBindUpdatePacketC2S::isUnbound,
             KeyBindUpdatePacketC2S::new);
 
-    public static class Receiver implements
-            PlayPayloadHandler<KeyBindUpdatePacketC2S> {
-
-        @Override
-        public void receive(KeyBindUpdatePacketC2S packet, Context context) {
-            Util.isBuildModeKeyUnBound = packet.isUnbound;
-        }
+    @Override
+    public Type<KeyBindUpdatePacketC2S> type() {
+        return TYPE;
     }
 
-    @Override
-    public Id<? extends CustomPayload> getId() {
-        return PACKET_ID;
+    public static void handle(KeyBindUpdatePacketC2S packet, IPayloadContext context) {
+        Util.isBuildModeKeyUnBound = packet.isUnbound;
     }
 }

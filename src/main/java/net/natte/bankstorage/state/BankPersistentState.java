@@ -5,18 +5,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.saveddata.SavedData;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.RegistryWrapper.WrapperLookup;
-import net.minecraft.world.PersistentState;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 
-public class BankPersistentState extends PersistentState {
+public class BankPersistentState extends SavedData {
 
     private static final String BANK_DATA_KEY = "bank_data";
     private final Map<UUID, BankItemStorage> BANK_MAP;
@@ -25,7 +25,7 @@ public class BankPersistentState extends PersistentState {
         BANK_MAP = new HashMap<>();
     }
 
-    public static BankPersistentState createFromNbt(NbtCompound nbtCompound, WrapperLookup registryLookup) {
+    public static BankPersistentState createFromNbt(CompoundTag nbtCompound, HolderLookup.Provider registryLookup) {
 
         BankPersistentState state = new BankPersistentState();
 
@@ -34,7 +34,7 @@ public class BankPersistentState extends PersistentState {
         BankStorage.LOGGER.debug("Loading banks from nbt");
 
         List<BankItemStorage> banks = BankSerializer.CODEC
-                .parse(registryLookup.getOps(NbtOps.INSTANCE), nbtCompound.get(BANK_DATA_KEY))
+                .parse(registryLookup.createSerializationContext(NbtOps.INSTANCE), nbtCompound.get(BANK_DATA_KEY))
                 .getOrThrow();
 
         for (BankItemStorage bank : banks) {
@@ -47,14 +47,14 @@ public class BankPersistentState extends PersistentState {
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound nbtCompound, WrapperLookup registryLookup) {
+    public CompoundTag save(CompoundTag nbtCompound, HolderLookup.Provider registryLookup) {
 
         BankStorage.LOGGER.debug("Saving banks to nbt");
 
-        NbtElement bankNbt = BankSerializer.CODEC
-                .encodeStart(registryLookup.getOps(NbtOps.INSTANCE), getBankItemStorages())
+        Tag bankNbt = BankSerializer.CODEC
+                .encodeStart(registryLookup.createSerializationContext(NbtOps.INSTANCE), getBankItemStorages())
                 .resultOrPartial(BankStorage.LOGGER::error)
-                .orElse(new NbtCompound());
+                .orElse(new CompoundTag());
 
         nbtCompound.put(BANK_DATA_KEY, bankNbt);
         BankStorage.LOGGER.debug("Saving done");

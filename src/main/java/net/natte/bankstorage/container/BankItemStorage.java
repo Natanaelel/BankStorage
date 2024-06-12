@@ -9,10 +9,13 @@ import java.util.UUID;
 
 import java.time.LocalDateTime;
 
-import net.minecraft.world.SimpleContainer;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.util.FakePlayer;
-import net.neoforged.neoforge.network.IContainerFactory;
+import net.natte.bankstorage.options.PickupMode;
+import net.natte.bankstorage.storage.BankContainer;
+import net.natte.bankstorage.storage.BankItemHandler;
+import net.natte.bankstorage.storage.BankSlotData;
 import org.jetbrains.annotations.Nullable;
 
 import net.fabricmc.fabric.api.entity.FakePlayer;
@@ -28,15 +31,15 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.options.BankOptions;
-import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 
-public class BankItemStorage extends SimpleContainer implements IContainerFactory<ItemStack> {
+public class BankItemStorage {
 
-    // public BankOptions options;
     public BankType type;
-    // private Text displayName;
     public UUID uuid;
+
+    // this is where the items are stored
+    private List<ItemStack> items;
 
     private Map<Integer, ItemStack> lockedSlots;
     private short lockedSlotsRevision = 0;
@@ -48,12 +51,12 @@ public class BankItemStorage extends SimpleContainer implements IContainerFactor
     public LocalDateTime dateCreated = LocalDateTime.MIN;
 
     public BankItemStorage(BankType type, UUID uuid) {
-        super(type.rows * type.cols);
         this.type = type;
-        // this.options = new BankOptions();
         this.uuid = uuid;
 
         this.lockedSlots = new HashMap<>();
+
+        this.items = NonNullList.createWithCapacity(type.size());
 
     }
 
@@ -63,9 +66,10 @@ public class BankItemStorage extends SimpleContainer implements IContainerFactor
     }
 
     public BankItemStorage asType(BankType type) {
+        assert type.size() >= this.type.size() : "Cannot downgrade banks!";
         if (this.type != type) {
             if (type.size() < this.type.size()) {
-                BankStorage.LOGGER.error(Util.invalid("BankItemStorage.asType(BankType)").getString());
+//                BankStorage.LOGGER.error("Cannot downgrade banks! This probably happened because of a duplicated bank item (there are links! use them!)");
                 return this;
             }
             return changeType(type);
@@ -74,74 +78,39 @@ public class BankItemStorage extends SimpleContainer implements IContainerFactor
     }
 
     public BankItemStorage changeType(BankType type) {
-        BankStorage.LOGGER
-                .debug("Upgrading bank from " + this.type.getName() + " to " + type.getName() + " uuid " + this.uuid);
+        BankStorage.LOGGER.debug("Upgrading bank from " + this.type.getName() + " to " + type.getName() + " uuid " + this.uuid);
+
+        assert type.size() > this.type.size() : "Cannot downgrade banks!";
+
         BankItemStorage newBankItemStorage = new BankItemStorage(type, this.uuid);
-        for (int i = 0; i < this.heldStacks.size(); ++i) {
-            newBankItemStorage.heldStacks.set(i, this.heldStacks.get(i));
+        for (int i = 0; i < type.size(); ++i) {
+            newBankItemStorage.items.set(i, i < this.items.size() ? this.items.get(i) : new BankSlotData());
             newBankItemStorage.lockedSlots = this.lockedSlots;
         }
         return newBankItemStorage;
-    }
-
-    @Override
-    public BankScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity playerEntity) {
-        return new BankScreenHandler(syncId, playerInventory, this, this.type,
-                ScreenHandlerContext.EMPTY);
-    }
-
-    public ExtendedScreenHandlerFactory<ItemStack> withDockPosition(BlockPos pos) {
-        return new ExtendedScreenHandlerFactory<ItemStack>() {
-
-            public BankScreenHandler createMenu(int syncId, PlayerInventory playerInventory,
-                    PlayerEntity playerEntity) {
-                return new BankScreenHandler(syncId, playerInventory,
-                        BankItemStorage.this,
-                        BankItemStorage.this.type,
-                        ScreenHandlerContext.create(playerEntity.getWorld(), pos));
-            }
-
-            @Override
-            public Text getDisplayName() {
-                return BankItemStorage.this.getDisplayName();
-            }
-
-            @Override
-            public ItemStack getScreenOpeningData(ServerPlayerEntity player) {
-                return BankItemStorage.this.getScreenOpeningData(player);
-            }
-        };
-    }
-
-    @Override
-    public Text getDisplayName() {
-        if (this.bankLikeItem == null) {
-            return Util.invalid("getDisplayName()");
-        }
-
-        return this.bankLikeItem.getName();
     }
 
     public ItemStack getItem() {
         return this.bankLikeItem;
     }
 
-    @Override
+    public BankItemHandler getItemHandler(PickupMode pickupMode){
+        return new BankItemHandler(items, lockedSlots, pickupMode);
+    }
+
+    public Container getContainer(){
+        return new BankContainer(this);
+    }
+
     public void markDirty() {
-        super.markDirty();
         updateLockedSlotsRevision();
         updateRevision();
-        // if (this.uuid != null) {
-        // CachedBankStorage.requestCacheUpdate(this.uuid);
-        // }
     }
 
-    @Override
     public int size() {
-        return this.heldStacks.size();
+        return this.items.size();
     }
 
-    @Override
     public int getMaxCountPerStack() {
         return this.type.stackLimit;
     }
@@ -160,12 +129,12 @@ public class BankItemStorage extends SimpleContainer implements IContainerFactor
     }
 
     public List<ItemStack> getItems() {
-        return this.heldStacks;
+        return this.items;
     }
 
     public List<ItemStack> getBlockItems() {
         List<ItemStack> items = new ArrayList<>();
-        for (ItemStack stack : this.heldStacks) {
+        for (ItemStack stack : this.items) {
             if (!stack.isEmpty() && stack.getItem() instanceof BlockItem)
                 items.add(stack);
         }
@@ -223,11 +192,6 @@ public class BankItemStorage extends SimpleContainer implements IContainerFactor
         this.revision = (short) ((this.revision + 1) & Short.MAX_VALUE);
     }
 
-    @Override
-    public ItemStack getScreenOpeningData(ServerPlayerEntity player) {
-        return bankLikeItem;
-    }
-
     public static BankItemStorage createFromCodec(
             UUID uuid,
             BankType type,
@@ -241,7 +205,7 @@ public class BankItemStorage extends SimpleContainer implements IContainerFactor
 
         for (int i = 0; i < items.size(); ++i) {
             // SETSTACK
-            bankItemStorage.heldStacks.set(i, items.get(i));
+            bankItemStorage.items.set(i, items.get(i));
         }
 
         for (int i : lockedSlots.keySet()) {

@@ -1,11 +1,7 @@
 package net.natte.bankstorage.blockentity;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
@@ -15,34 +11,22 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.natte.bankstorage.options.BankOptions;
+import net.natte.bankstorage.options.PickupMode;
+import net.natte.bankstorage.storage.BankItemHandler;
 import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import org.jetbrains.annotations.Nullable;
 
-import net.fabricmc.fabric.api.entity.FakePlayer;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.network.listener.ClientPlayPacketListener;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.registry.RegistryWrapper.WrapperLookup;
-import net.minecraft.util.math.BlockPos;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
-import net.natte.bankstorage.storage.BankCombinedStorage;
-import net.natte.bankstorage.storage.BankSingleStackStorage;
 import net.natte.bankstorage.util.Util;
 
 public class BankDockBlockEntity extends BlockEntity {
 
+    private static final String BANK_ITEM_KEY = "bank";
+
     private ItemStack bankItem = ItemStack.EMPTY;
-    private BankCombinedStorage storage = null;
+    private BankItemHandler bankItemHandler = null;
 
     public BankDockBlockEntity(BlockPos pos, BlockState state) {
         super(BankStorage.BANK_DOCK_BLOCK_ENTITY, pos, state);
@@ -72,7 +56,7 @@ public class BankDockBlockEntity extends BlockEntity {
     public void setChanged() {
         level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         level.invalidateCapabilities(worldPosition);
-        this.storage = null;
+        this.bankItemHandler = null;
         super.setChanged();
     }
 
@@ -80,13 +64,13 @@ public class BankDockBlockEntity extends BlockEntity {
     protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registryLookup) {
         super.saveAdditional(nbt, registryLookup);
         Tag itemAsNbt = this.bankItem.saveOptional(registryLookup);
-        nbt.put("bank", itemAsNbt);
+        nbt.put(BANK_ITEM_KEY, itemAsNbt);
     }
 
     @Override
     protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registryLookup) {
         super.loadAdditional(nbt, registryLookup);
-        this.bankItem = ItemStack.parseOptional(registryLookup, nbt.getCompound("bank"));
+        this.bankItem = ItemStack.parseOptional(registryLookup, nbt.getCompound(BANK_ITEM_KEY));
     }
 
     @Nullable
@@ -97,6 +81,7 @@ public class BankDockBlockEntity extends BlockEntity {
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registryLookup) {
+        // TODO: check this works
         return saveWithoutMetadata(registryLookup);
     }
 
@@ -111,31 +96,23 @@ public class BankDockBlockEntity extends BlockEntity {
         return null;
     }
 
-    public IItemHandler getItemStorage() {
+    public IItemHandler getItemHandler() {
 
-        if (this.storage == null) {
+        if (!this.hasBank())
+            return null;
+
+        if (this.bankItemHandler == null) {
             BankItemStorage bankItemStorage = getInventory();
             if (bankItemStorage == null) {
-                return Storage.empty();
+                return null;
             }
             bankItemStorage.usedByPlayerUUID = BankStorage.FAKE_PLAYER_UUID;
             bankItemStorage.usedByPlayerName = "World";
-            this.storage = createItemStorage(bankItemStorage);
+            BankOptions options = bankItem.get(BankStorage.OptionsComponentType);
+            PickupMode pickupMode = options == null ? PickupMode.ALL : options.pickupMode;
+            this.bankItemHandler = bankItemStorage.getItemHandler(pickupMode);
         }
-        return this.storage;
+        return this.bankItemHandler;
 
-    }
-
-    private BankCombinedStorage createItemStorage(BankItemStorage bankItemStorage) {
-        int slots = bankItemStorage.size();
-
-        List<BankSingleStackStorage> storages = new ArrayList<>();
-
-        for (int i = 0; i < slots; i++) {
-            BankSingleStackStorage storage = new BankSingleStackStorage(bankItemStorage, i);
-            storages.add(storage);
-        }
-
-        return new BankCombinedStorage(storages, Util.getOrCreateOptions(this.bankItem).pickupMode);
     }
 }

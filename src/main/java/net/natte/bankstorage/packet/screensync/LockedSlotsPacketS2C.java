@@ -14,7 +14,8 @@ import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record LockedSlotsPacketS2C(int containerId, Map<Integer, ItemStack> lockedSlots) implements CustomPacketPayload {
+public record LockedSlotsPacketS2C(int containerId,
+                                   Map<Integer, ItemStack> lockedSlots) implements CustomPacketPayload {
 
     public static final Type<LockedSlotsPacketS2C> TYPE = new Type<>(Util.ID("sync_locked_slots_s2c"));
     public static final StreamCodec<RegistryFriendlyByteBuf, LockedSlotsPacketS2C> STREAM_CODEC = StreamCodec.composite(
@@ -25,7 +26,7 @@ public record LockedSlotsPacketS2C(int containerId, Map<Integer, ItemStack> lock
             LockedSlotsPacketS2C::new);
 
     @Override
-    public Type<? extends CustomPacketPayload> type() {
+    public Type<LockedSlotsPacketS2C> type() {
         return TYPE;
     }
 

@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public class BankSlot extends Slot {
 
-    public int stackLimit;
+    private final int stackLimit;
     private @Nullable ItemStack lockedStack = null;
 
     public BankSlot(Container inventory, int index, int x, int y, int stackLimit) {

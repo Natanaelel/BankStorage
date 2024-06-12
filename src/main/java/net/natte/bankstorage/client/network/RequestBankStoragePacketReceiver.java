@@ -1,4 +1,4 @@
-package net.natte.bankstorage.network;
+package net.natte.bankstorage.client.network;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.Context;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.PlayPayloadHandler;

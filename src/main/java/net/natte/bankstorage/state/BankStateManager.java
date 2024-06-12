@@ -1,25 +1,31 @@
 package net.natte.bankstorage.state;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateManager;
-import net.minecraft.world.World;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.natte.bankstorage.BankStorage;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 
 public class BankStateManager {
 
-    public static final PersistentState.Type<BankPersistentState> TYPE = new PersistentState.Type<>(
+    public static final SavedData.Factory<BankPersistentState> TYPE = new SavedData.Factory<>(
             BankPersistentState::new,
             BankPersistentState::createFromNbt,
             null);
 
-    public static BankPersistentState getState(MinecraftServer server) {
-        PersistentStateManager persistentStateManager = server.getWorld(World.OVERWORLD).getPersistentStateManager();
+    private static BankPersistentState INSTANCE;
 
-        BankPersistentState state = persistentStateManager.getOrCreate(TYPE, BankStorage.MOD_ID);
+    public static void initialize(ServerStartedEvent event) {
+        MinecraftServer server = event.getServer();
+        DimensionDataStorage persistentStateManager = server.overworld().getDataStorage();
 
-        state.markDirty(); // maybe eventually sometime explore the opportunity to possibly schedule the meeting to discuss the timeframe of the decision to terminate this line of code
-                           // nah, keep it
-        return state;
+        INSTANCE = persistentStateManager.get(TYPE, BankStorage.MOD_ID);
+
+    }
+
+    // get state and setDirty
+    public static BankPersistentState getState() {
+        INSTANCE.setDirty(); // could be optimized?
+        return INSTANCE;
     }
 }

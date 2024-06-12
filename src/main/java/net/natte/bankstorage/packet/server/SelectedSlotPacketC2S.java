@@ -1,52 +1,47 @@
 package net.natte.bankstorage.packet.server;
 
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.Context;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPayloadHandler;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Hand;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.util.Util;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record SelectedSlotPacketC2S(boolean isRight, int slot) implements CustomPayload {
+public record SelectedSlotPacketC2S(boolean isRight, int slot) implements CustomPacketPayload {
 
-    public static final CustomPayload.Id<SelectedSlotPacketC2S> PACKET_ID = new CustomPayload.Id<>(Util.ID("selected_slot"));
-    public static final PacketCodec<RegistryByteBuf, SelectedSlotPacketC2S> PACKET_CODEC = PacketCodec.tuple(
-            PacketCodecs.BOOL,
+    public static final CustomPacketPayload.Type<SelectedSlotPacketC2S> TYPE = new CustomPacketPayload.Type<>(Util.ID("selected_slot"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, SelectedSlotPacketC2S> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.BOOL,
             SelectedSlotPacketC2S::isRight,
-            PacketCodecs.INTEGER,
+            ByteBufCodecs.INT,
             SelectedSlotPacketC2S::slot,
             SelectedSlotPacketC2S::new);
 
-    public static class Receiver implements
-            PlayPayloadHandler<SelectedSlotPacketC2S> {
-
-        @Override
-        public void receive(SelectedSlotPacketC2S packet, Context context) {
-            ServerPlayerEntity player = context.player();
-            ItemStack stack = player.getStackInHand(packet.isRight ? Hand.MAIN_HAND : Hand.OFF_HAND);
-            if (Util.isBankLike(stack) && Util.hasUUID(stack)) {
-                BankItemStorage bankItemStorage = Util.getBankItemStorage(Util.getUUID(stack), player.getWorld());
-                if (bankItemStorage == null)
-                    return;
-                BankOptions options = Util.getOrCreateOptions(stack);
-                options.selectedItemSlot = packet.slot;
-                int size = bankItemStorage.getBlockItems().size();
-                options.selectedItemSlot = size == 0 ? 0
-                        : Math.min(Math.max(options.selectedItemSlot, 0), size - 1);
-                Util.setOptions(stack, options);
-
-            }
-        }
-    }
 
     @Override
-    public Id<? extends CustomPayload> getId() {
-        return PACKET_ID;
+    public Type<SelectedSlotPacketC2S> type() {
+        return TYPE;
+    }
+
+    public static void handle(SelectedSlotPacketC2S packet, IPayloadContext context) {
+        ServerPlayer player = (ServerPlayer) context.player();
+        ItemStack stack = player.getItemInHand(packet.isRight ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND);
+        if (Util.isBankLike(stack) && Util.hasUUID(stack)) {
+            BankItemStorage bankItemStorage = Util.getBankItemStorage(Util.getUUID(stack), player.level());
+            if (bankItemStorage == null)
+                return;
+            BankOptions options = Util.getOrCreateOptions(stack);
+            options.selectedItemSlot = packet.slot;
+            int size = bankItemStorage.getBlockItems().size();
+            options.selectedItemSlot = size == 0 ? 0
+                    : Math.min(Math.max(options.selectedItemSlot, 0), size - 1);
+            Util.setOptions(stack, options);
+
+        }
     }
 }

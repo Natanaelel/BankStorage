@@ -26,14 +26,14 @@ import org.jetbrains.annotations.NotNull;
  */
 public record UpdateBankOptionsPacketC2S(BankOptions options) implements CustomPacketPayload {
 
-    public static final CustomPacketPayload.Type<UpdateBankOptionsPacketC2S> TYPE = new CustomPacketPayload.Type<>(Util.ID("update_options_c2s"));
+    public static final Type<UpdateBankOptionsPacketC2S> TYPE = new Type<>(Util.ID("update_options_c2s"));
     public static final StreamCodec<ByteBuf, UpdateBankOptionsPacketC2S> STREAM_CODEC = BankOptions.STREAM_CODEC
             .map(
                     UpdateBankOptionsPacketC2S::new,
                     UpdateBankOptionsPacketC2S::options);
 
     @Override
-    public Type<? extends CustomPacketPayload> type() {
+    public Type<UpdateBankOptionsPacketC2S> type() {
         return TYPE;
     }
 
@@ -85,8 +85,5 @@ public record UpdateBankOptionsPacketC2S(BankOptions options) implements CustomP
 
         }
         Util.setOptions(bankItem, options);
-
-
     }
-
 }

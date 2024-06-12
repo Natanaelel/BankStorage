@@ -1,4 +1,4 @@
-package net.natte.bankstorage.events;
+package net.natte.bankstorage.client.events;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

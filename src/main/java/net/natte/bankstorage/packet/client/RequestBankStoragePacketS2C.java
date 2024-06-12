@@ -20,7 +20,7 @@ public record RequestBankStoragePacketS2C(CachedBankStorage cachedBankStorage) i
                     RequestBankStoragePacketS2C::cachedBankStorage);
 
     @Override
-    public Type<? extends CustomPacketPayload> type() {
+    public Type<RequestBankStoragePacketS2C> type() {
         return TYPE;
     }
 
@@ -40,6 +40,5 @@ public record RequestBankStoragePacketS2C(CachedBankStorage cachedBankStorage) i
                 context.connection().send(new UpdateBankOptionsPacketC2S(options));
             }
         }
-
     }
 }

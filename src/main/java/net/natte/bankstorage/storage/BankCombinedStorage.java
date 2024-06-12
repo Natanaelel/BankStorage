@@ -7,9 +7,11 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.options.PickupMode;
+import net.neoforged.neoforge.items.IItemHandler;
 
-public class BankCombinedStorage implements Storage<ItemVariant> {
+public class BankCombinedStorage implements IItemHandler {
 
     private List<BankSingleStackStorage> parts;
     private PickupMode pickupMode;
@@ -25,33 +27,7 @@ public class BankCombinedStorage implements Storage<ItemVariant> {
 
     @Override
     public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
-        long amount = 0;
-        switch (this.pickupMode) {
-            case NONE:
-                break;
-            case ALL:
-                amount += insertIntoLockedSlots(resource, maxAmount - amount, transaction);
-                amount += insertIntoNonEmptySlots(resource, maxAmount - amount, transaction);
-                amount += insertIntoAnySlots(resource, maxAmount - amount, transaction);
-                break;
-            case FILTERED:
-                amount += insertIntoLockedSlots(resource, maxAmount - amount, transaction);
-                amount += insertIntoNonEmptySlots(resource, maxAmount - amount, transaction);
-                if (hasSlotWithItem(resource)) {
-                    amount += insertIntoAnySlots(resource, maxAmount - amount, transaction);
-                }
-                break;
-            case VOID:
-                if (hasSlotWithItem(resource)) {
-                    amount += insertIntoLockedSlots(resource, maxAmount - amount, transaction);
-                    amount += insertIntoNonEmptySlots(resource, maxAmount - amount, transaction);
-                    // Don't insert into new slot when voiding overflow https://github.com/Natanaelel/BankStorage/issues/20
-                    // amount += insertIntoAnySlots(resource, maxAmount - amount, transaction);
-                    amount = maxAmount;
-                }
-                break;
-        }
-        return amount;
+
     }
 
     @Override
@@ -139,4 +115,57 @@ public class BankCombinedStorage implements Storage<ItemVariant> {
         }
         return false;
     }
+
+    @Override
+    public int getSlots() {
+        return this.parts.size();
+    }
+
+    @Override
+    public ItemStack getStackInSlot(int slot) {
+        return this.parts.get(slot).getStack();
+    }
+
+    @Override
+    public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+        int maxAmount = stack.getCount();
+        int insertedAmount = 0;
+        switch (this.pickupMode) {
+            case NONE:
+                break;
+            case ALL:
+                insertedAmount += insertIntoLockedSlots(stack, maxAmount - insertedAmount, transaction);
+                insertedAmount += insertIntoNonEmptySlots(stack, maxAmount - insertedAmount, transaction);
+                insertedAmount += insertIntoAnySlots(stack, maxAmount - insertedAmount, transaction);
+                break;
+            case FILTERED:
+                insertedAmount += insertIntoLockedSlots(resource, maxAmount - insertedAmount, transaction);
+                insertedAmount += insertIntoNonEmptySlots(resource, maxAmount - insertedAmount, transaction);
+                if (hasSlotWithItem(resource)) {
+                    insertedAmount += insertIntoAnySlots(resource, maxAmount - insertedAmount, transaction);
+                }
+                break;
+            case VOID:
+                if (hasSlotWithItem(resource)) {
+                    insertedAmount += insertIntoLockedSlots(resource, maxAmount - insertedAmount, transaction);
+                    insertedAmount += insertIntoNonEmptySlots(resource, maxAmount - insertedAmount, transaction);
+                    // Don't insert into new slot when voiding overflow https://github.com/Natanaelel/BankStorage/issues/20
+                    // insertedAmount += insertIntoAnySlots(resource, maxAmount - insertedAmount, transaction);
+                    insertedAmount = maxAmount;
+                }
+                break;
+        }
+        return insertedAmount;
+    }
+
+    @Override
+    public ItemStack extractItem(int slot, int amount, boolean simulate) {
+        return null;
+    }
+
+    @Override
+    public int getSlotLimit(int slot) {
+        return this.parts.get(slot).getSlotLimit();
+    }
+
 }

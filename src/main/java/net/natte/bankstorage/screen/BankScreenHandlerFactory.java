@@ -58,7 +58,7 @@ public class BankScreenHandlerFactory implements MenuProvider {
 
     @Nullable
     @Override
-    public BankScreenHandler createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
-        return null;
+    public BankScreenHandler createMenu(int syncId, Inventory playerInventory, Player player) {
+        return new BankScreenHandler(syncId, playerInventory, type, bankItem, slot, bank, screenHandlerContext);
     }
 }

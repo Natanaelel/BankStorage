@@ -5,6 +5,7 @@ import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -14,11 +15,11 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
-import net.natte.bankstorage.access.SyncedRandomAccess;
 import net.natte.bankstorage.block.BankDockBlock;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.command.RestoreBankCommands;
 import net.natte.bankstorage.container.BankType;
+import net.natte.bankstorage.inventory.ItemPickupHandler;
 import net.natte.bankstorage.item.LinkItem;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
@@ -39,12 +40,14 @@ import net.natte.bankstorage.recipe.BankLinkRecipe;
 import net.natte.bankstorage.recipe.BankRecipe;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.screen.BankScreenHandlerFactory;
+import net.natte.bankstorage.state.BankStateManager;
 import net.natte.bankstorage.util.Util;
 
 import java.util.Random;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -52,9 +55,11 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.entity.EntityEvent;
+import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.items.wrapper.InvWrapper;
-import net.neoforged.neoforge.network.IContainerFactory;
+import net.neoforged.neoforge.event.server.ServerLifecycleEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -110,7 +115,6 @@ public class BankStorage {
         registerLink();
         registerRecipes();
         registerCommands();
-        registerNetworkListeners();
         registerScreenHandlers();
 
         registerPlayerSyncedRandom(modBus);
@@ -126,6 +130,11 @@ public class BankStorage {
         modBus.addListener(this::addItemsToCreativeTab);
         modBus.addListener(this::registerCapabilities);
         modBus.addListener(this::registerPackets);
+        modBus.addListener(ServerStartedEvent.class, BankStateManager::initialize);
+        modBus.addListener(EntityEvent.EntityConstructing.class, entityConstructing -> {
+            if ((entityConstructing.getEntity() instanceof ItemEntity itemEntity) && Util.isBankLike(itemEntity.getItem()))
+                itemEntity.setUnlimitedLifetime();
+        });
     }
 
     private void registerScreenHandlers() {
@@ -158,7 +167,7 @@ public class BankStorage {
     }
 
     private void registerLink() {
-        BankStorage.ITEMS.register("bank_link", id -> BANK_LINK);
+        BankStorage.ITEMS.register("bank_link", () -> BANK_LINK);
         CauldronInteraction.WATER.map().put(BANK_LINK, CauldronInteraction.DYED_ITEM);
     }
 
@@ -190,13 +199,11 @@ public class BankStorage {
     }
 
     private void registerDock() {
-        BLOCKS.register("bank_dock", id -> BANK_DOCK_BLOCK);
-        ITEMS.register("bank_dock", id -> new BlockItem(BANK_DOCK_BLOCK, new Item.Properties()));
+        BLOCKS.register("bank_dock", () -> BANK_DOCK_BLOCK);
+        ITEMS.register("bank_dock", () -> new BlockItem(BANK_DOCK_BLOCK, new Item.Properties()));
 
-        BLOCK_ENTITIES.register("bank_dock_block_entity", id -> BANK_DOCK_BLOCK_ENTITY);
+        BLOCK_ENTITIES.register("bank_dock_block_entity", () -> BANK_DOCK_BLOCK_ENTITY);
 
-//        ItemStorage.SIDED.registerForBlockEntity(
-//                (bankDockBlockEntity, direction) -> bankDockBlockEntity.getItemStorage(), BANK_DOCK_BLOCK_ENTITY);
 
     }
 
@@ -209,16 +216,15 @@ public class BankStorage {
                 new BankRecipe.Serializer());
         Registry.register(Registries.RECIPE_SERIALIZER, Util.ID("bank_link"),
                 new BankLinkRecipe.Serializer());
-
     }
 
     public void registerCommands() {
         RestoreBankCommands.register();
-
     }
 
     private void registerPackets(RegisterPayloadHandlersEvent event) {
-        PayloadRegistrar registrar = event.registrar("1");
+        PayloadRegistrar registrar = event.registrar(MOD_ID);
+
         registrar.playToClient(ItemStackBobbingAnimationPacketS2C.TYPE, ItemStackBobbingAnimationPacketS2C.STREAM_CODEC, ItemStackBobbingAnimationPacketS2C::handle);
         registrar.playToClient(RequestBankStoragePacketS2C.TYPE, RequestBankStoragePacketS2C.STREAM_CODEC, RequestBankStoragePacketS2C::handle);
         registrar.playToClient(SyncedRandomPacketS2C.TYPE, SyncedRandomPacketS2C.STREAM_CODEC, SyncedRandomPacketS2C::handle);
@@ -232,19 +238,6 @@ public class BankStorage {
         registrar.playToServer(SelectedSlotPacketC2S.TYPE, SelectedSlotPacketC2S.STREAM_CODEC, SelectedSlotPacketC2S::handle);
         registrar.playToServer(LockSlotPacketC2S.TYPE, LockSlotPacketC2S.STREAM_CODEC, LockSlotPacketC2S::handle);
         registrar.playToServer(KeyBindUpdatePacketC2S.TYPE, KeyBindUpdatePacketC2S.STREAM_CODEC, KeyBindUpdatePacketC2S::handle);
-
-    }
-
-    public void registerNetworkListeners() {
-
-        ServerPlayNetworking.registerGlobalReceiver(RequestBankStoragePacketC2S.PACKET_ID, new RequestBankStoragePacketC2S.Receiver());
-        ServerPlayNetworking.registerGlobalReceiver(SortPacketC2S.PACKET_ID, new SortPacketC2S.Receiver());
-        ServerPlayNetworking.registerGlobalReceiver(PickupModePacketC2S.PACKET_ID, new PickupModePacketC2S.Receiver());
-        ServerPlayNetworking.registerGlobalReceiver(SelectedSlotPacketC2S.PACKET_ID, new SelectedSlotPacketC2S.Receiver());
-        ServerPlayNetworking.registerGlobalReceiver(LockSlotPacketC2S.PACKET_ID, new LockSlotPacketC2S.Receiver());
-        ServerPlayNetworking.registerGlobalReceiver(KeyBindUpdatePacketC2S.PACKET_ID, new KeyBindUpdatePacketC2S.Receiver());
-        ServerPlayNetworking.registerGlobalReceiver(UpdateBankOptionsPacketC2S.TYPE, new UpdateBankOptionsPacketC2S.Receiver());
-        ServerPlayNetworking.registerGlobalReceiver(OpenBankFromKeyBindPacketC2S.PACKET_ID, new OpenBankFromKeyBindPacketC2S.Receiver());
 
     }
 }

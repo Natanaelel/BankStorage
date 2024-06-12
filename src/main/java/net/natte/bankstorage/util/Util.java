@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -90,7 +91,7 @@ public class Util {
         itemStack.set(BankStorage.OptionsComponentType, options);
     }
 
-    public static void sortBank(BankItemStorage bankItemStorage, ServerPlayerEntity player, SortMode sortMode) {
+    public static void sortBank(BankItemStorage bankItemStorage, ServerPlayer player, SortMode sortMode) {
 
         // collect unique elements with *unlimited* stack size
         // and clear bank
@@ -178,8 +179,8 @@ public class Util {
         if (Util.isLink(bank)) {
             if (!Util.hasUUID(bank)) return null;
             BankItemStorage bankItemStorage = getBankItemStorage(Util.getUUID(bank), world);
-            if (bankItemStorage.type != LinkItem.getType(bank)) {
-                LinkItem.setType(bank, bankItemStorage.type);
+            if (bankItemStorage.type != bank.get(BankStorage.BankTypeComponentType)) {
+                bank.set(BankStorage.BankTypeComponentType, bankItemStorage.type);
             }
             return bankItemStorage;
         }
@@ -239,8 +240,8 @@ class HugeItemStack {
     }
 
     public String getModName() {
-        ResourceLocation id = Registries.ITEM.getId(this.stack.getItem());
         if (id == null) return "";
+        ResourceLocation id = Registries.ITEM.getId(this.stack.getItem());
         return id.getNamespace();
     }
 
