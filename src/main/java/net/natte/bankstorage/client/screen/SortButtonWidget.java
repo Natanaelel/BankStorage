@@ -3,26 +3,26 @@ package net.natte.bankstorage.client.screen;
 import java.time.Duration;
 import java.util.function.Consumer;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
+import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.natte.bankstorage.options.SortMode;
 
-public class SortButtonWidget extends ButtonWidget {
+public class SortButtonWidget extends Button {
 
     public SortMode sortMode;
     private long lastPressedTime;
-    private Identifier texture;
+    private ResourceLocation texture;
 
-    public SortButtonWidget(SortMode sortMode, int x, int y, int width, int height, Identifier texture,
-            Consumer<SortButtonWidget> pressAction) {
-        super(x, y, width, height, ScreenTexts.EMPTY, button -> pressAction.accept((SortButtonWidget) button),
-                DEFAULT_NARRATION_SUPPLIER);
+    public SortButtonWidget(SortMode sortMode, int x, int y, int width, int height, ResourceLocation texture,
+                            Consumer<SortButtonWidget> pressAction) {
+        super(x, y, width, height, CommonComponents.EMPTY, button -> pressAction.accept((SortButtonWidget) button),
+                DEFAULT_NARRATION);
         this.sortMode = sortMode;
         this.lastPressedTime = 0;
         this.texture = texture;
@@ -34,17 +34,17 @@ public class SortButtonWidget extends ButtonWidget {
     @Override
     public void onPress() {
         super.onPress();
-        this.lastPressedTime = Util.getMeasuringTimeMs();
+        this.lastPressedTime = Util.getMillis();
     }
 
     public long timeSinceLastPressed() {
-        return Util.getMeasuringTimeMs() - this.lastPressedTime;
+        return Util.getMillis() - this.lastPressedTime;
     }
 
     @Override
-    public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.drawTexture(this.texture, this.getX(), this.getY(),
-                uOffset(), vOffset() + (this.isSelected() ? this.height : 0),
+    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+        context.blit(this.texture, this.getX(), this.getY(),
+                uOffset(), vOffset() + (this.isHoveredOrFocused() ? this.height : 0),
                 this.width, this.height, 256, 256);
     }
 
@@ -61,9 +61,9 @@ public class SortButtonWidget extends ButtonWidget {
     }
 
     public void refreshTooltip() {
-        this.setTooltip(Tooltip.of(Text.translatable("title.bankstorage.sortmode." + sortMode.name().toLowerCase())
-                .append(Text.empty().append("\n").append(
-                        Text.translatable("tooltip.bankstorage.sortmode." + sortMode.name().toLowerCase())
-                                .formatted(Formatting.DARK_GRAY)))));
+        this.setTooltip(Tooltip.create(Component.translatable("title.bankstorage.sortmode." + sortMode.name().toLowerCase())
+                .append(Component.empty().append("\n").append(
+                        Component.translatable("tooltip.bankstorage.sortmode." + sortMode.name().toLowerCase())
+                                .withStyle(ChatFormatting.DARK_GRAY)))));
     }
 }

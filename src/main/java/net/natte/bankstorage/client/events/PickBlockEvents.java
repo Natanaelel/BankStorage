@@ -3,9 +3,12 @@ package net.natte.bankstorage.client.events;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.BankStorageClient;
+import net.natte.bankstorage.client.BankStorageClient;
 import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
@@ -16,9 +19,9 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 
 public class PickBlockEvents {
-    public static boolean pickBlock(MinecraftClient client) {
-        ItemStack right = client.player.getMainHandStack();
-        ItemStack left = client.player.getOffHandStack();
+    public static boolean pickBlock(Minecraft client) {
+        ItemStack right = client.player.getMainHandItem();
+        ItemStack left = client.player.getOffhandItem();
         if (pickBlockFromBank(right, true, client))
             return true;
         if (pickBlockFromBank(left, false, client))
@@ -26,7 +29,7 @@ public class PickBlockEvents {
         return false;
     }
 
-    private static boolean pickBlockFromBank(ItemStack stack, boolean isRight, MinecraftClient client) {
+    private static boolean pickBlockFromBank(ItemStack stack, boolean isRight, Minecraft client) {
         if (!Util.isBankLike(stack))
             return false;
 
@@ -43,13 +46,13 @@ public class PickBlockEvents {
             return false;
 
         ItemStack currentSelected = cachedBankStorage.getSelectedItem(options.selectedItemSlot);
-        if (!currentSelected.isEmpty() && ItemStack.areItemsAndComponentsEqual(pickedStack, currentSelected)) {
+        if (!currentSelected.isEmpty() && ItemStack.isSameItemSameComponents(pickedStack, currentSelected)) {
             return true;
         }
         int slot = -1;
         for (int i = 0; i < cachedBankStorage.blockItems.size(); ++i) {
             ItemStack itemStack = cachedBankStorage.blockItems.get(i);
-            if (!itemStack.isEmpty() && ItemStack.areItemsAndComponentsEqual(pickedStack, itemStack)) {
+            if (!itemStack.isEmpty() && ItemStack.isSameItemSameComponents(pickedStack, itemStack)) {
                 slot = i;
                 break;
             }
@@ -59,13 +62,12 @@ public class PickBlockEvents {
             return false;
 
         options.selectedItemSlot = slot;
-
-        ClientPlayNetworking.send(new UpdateBankOptionsPacketC2S(options));
+        client.getConnection().send(new UpdateBankOptionsPacketC2S(options));
         return true;
 
     }
 
-    private static ItemStack getPickedStack(ItemStack stack, MinecraftClient client) {
+    private static ItemStack getPickedStack(ItemStack stack, Minecraft client) {
         if (client.crosshairTarget == null || client.crosshairTarget.getType() != HitResult.Type.BLOCK) {
             return null;
         }

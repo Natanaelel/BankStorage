@@ -7,11 +7,6 @@
 		"ScreenHandlerMixin",
 		"ServerPlayerEntityMixin"
 	],
-	"client": [
-		"MouseMixin",
-		"ItemPickMixin",
-		"KeyBindUpdateMixin"
-	],
 	"injectors": {
 		"defaultRequire": 1
 	}

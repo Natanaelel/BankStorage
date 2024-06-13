@@ -10,6 +10,8 @@ import java.util.function.Supplier;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,7 +44,7 @@ public class Util {
     public static Random clientSyncedRandom;
 
     public static boolean isDebugMode = false;
-    public static Consumer<PlayerEntity> onToggleBuildMode = e -> {
+    public static Consumer<Player> onToggleBuildMode = e -> {
     };
 
     public static boolean isBank(ItemStack itemStack) {
@@ -58,7 +60,7 @@ public class Util {
     }
 
     public static boolean isAllowedInBank(ItemStack itemStack) {
-        return !isBankLike(itemStack) && itemStack.getItem().canBeNested();
+        return itemStack.getItem().canFitInsideContainerItems();
     }
 
     public static boolean hasUUID(ItemStack itemStack) {
@@ -198,7 +200,7 @@ public class Util {
         return new ResourceLocation(BankStorage.MOD_ID, path);
     }
 
-    public static @Nullable UUID getUUIDFromScreenHandler(ScreenHandler screenHandler) {
+    public static @Nullable UUID getUUIDFromScreenHandler(AbstractContainerMenu screenHandler) {
         if (!(screenHandler instanceof BankScreenHandler bankScreenHandler)) return null;
         if (!(bankScreenHandler.inventory instanceof BankItemStorage bankItemStorage)) return null;
         return bankItemStorage.uuid;

@@ -1,32 +1,32 @@
 package net.natte.bankstorage.client.rendering;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.BlockEntityRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.render.item.ItemRenderer;
-import net.minecraft.client.render.model.json.ModelTransformationMode;
-import net.minecraft.client.util.math.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 
 public class BankDockBlockEntityRenderer implements BlockEntityRenderer<BankDockBlockEntity> {
 
-    public BankDockBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {
+    private final ItemRenderer itemRenderer;
+
+    public BankDockBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
+        itemRenderer = ctx.getItemRenderer();
     }
 
     @Override
-    public void render(BankDockBlockEntity blockEntity, float tickDelta, MatrixStack matrixStack,
-            VertexConsumerProvider vertexConsumers, int light, int overlay) {
+    public void render(BankDockBlockEntity blockEntity, float tickDelta, PoseStack poseStack, MultiBufferSource vertexConsumers, int packedLight, int packedOverlay) {
 
-        ItemRenderer itemRenderer = MinecraftClient.getInstance().getItemRenderer();
+        poseStack.pushPose();
+        poseStack.translate(0.5f, 0.5f, 0.5f);
+        poseStack.scale(2f, 2f, 2f);
 
-        matrixStack.push();
-        matrixStack.translate(0.5f, 0.5f, 0.5f);
-        matrixStack.scale(2f, 2f, 2f);
+        itemRenderer.renderStatic(blockEntity.getBank(), ItemDisplayContext.FIXED, packedLight, packedOverlay, poseStack,
+                vertexConsumers, null, 0);
 
-        itemRenderer.renderItem(blockEntity.getBank(), ModelTransformationMode.FIXED, light, overlay, matrixStack,
-                vertexConsumers, null, overlay);
-
-        matrixStack.pop();
+        poseStack.popPose();
     }
 }

@@ -1,7 +1,7 @@
 package net.natte.bankstorage.client.events;
 
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.natte.bankstorage.BankStorageClient;
+import net.minecraft.client.Minecraft;
+import net.natte.bankstorage.client.BankStorageClient;
 import net.natte.bankstorage.packet.server.KeyBindUpdatePacketC2S;
 import net.natte.bankstorage.util.Util;
 
@@ -9,7 +9,11 @@ public class KeyBindUpdateEvents {
     public static void onKeyBindChange() {
         boolean isUnbound = BankStorageClient.toggleBuildModeKeyBinding.isUnbound();
         Util.isBuildModeKeyUnBound = isUnbound;
-        if (ClientPlayNetworking.canSend(KeyBindUpdatePacketC2S.PACKET_ID))
-            ClientPlayNetworking.send(new KeyBindUpdatePacketC2S(isUnbound));
+        Minecraft client = Minecraft.getInstance();
+        var connection = client.getConnection();
+        if (connection == null)
+            return;
+        if (connection.hasChannel(KeyBindUpdatePacketC2S.TYPE))
+            connection.send(new KeyBindUpdatePacketC2S(isUnbound));
     }
 }

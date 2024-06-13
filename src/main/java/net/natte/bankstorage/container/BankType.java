@@ -56,7 +56,6 @@ public class BankType {
 //        this.screenHandlerType = IMenuTypeExtension.create(BankScreenHandler.fromType(this));
         this.screenHandlerType = IMenuTypeExtension.create(BankScreenHandlerFactory::createClientScreenHandler);
 //        Registry.register(Registries.MENU, identifier, screenHandlerType);
-        BankStorage.SCREEN_HANDLERS.register(this.name, id -> screenHandlerType);
 
         CauldronInteraction.WATER.map().put(this.item, CauldronInteraction.DYED_ITEM);
     }

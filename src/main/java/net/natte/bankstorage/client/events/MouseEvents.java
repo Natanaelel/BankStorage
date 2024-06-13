@@ -1,33 +1,33 @@
 package net.natte.bankstorage.client.events;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
-import net.natte.bankstorage.BankStorageClient;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.natte.bankstorage.client.BankStorageClient;
+import net.natte.bankstorage.client.rendering.BuildModePreviewRenderer;
 import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.packet.server.UpdateBankOptionsPacketC2S;
-import net.natte.bankstorage.rendering.BuildModePreviewRenderer;
 import net.natte.bankstorage.util.Util;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
-@Environment(EnvType.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public class MouseEvents {
 
-    public static boolean onScroll(PlayerInventory playerInventory, double scroll) {
+    public static boolean onScroll(Inventory playerInventory, double scroll) {
 
-        PlayerEntity player = playerInventory.player;
+        Player player = playerInventory.player;
 
-        if (!player.isSneaking())
+        if (!player.isShiftKeyDown())
             return false;
 
-        ItemStack right = player.getMainHandStack();
-        ItemStack left = player.getOffHandStack();
+        ItemStack right = player.getMainHandItem();
+        ItemStack left = player.getOffhandItem();
         ItemStack bank;
         if (Util.isBankLike(right))
             bank = right;
@@ -46,21 +46,21 @@ public class MouseEvents {
         CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(bank);
         if (cachedBankStorage == null)
             return false;
-        options.selectedItemSlot = MathHelper.clamp(selectedItemSlot, 0, cachedBankStorage.blockItems.size() - 1);
-        ClientPlayNetworking.send(new UpdateBankOptionsPacketC2S(options));
+        options.selectedItemSlot = Mth.clamp(selectedItemSlot, 0, cachedBankStorage.blockItems.size() - 1);
+        ((LocalPlayer) player).connection.send(new UpdateBankOptionsPacketC2S(options));
 
         return true;
 
     }
 
-    public static void onToggleBuildMode(PlayerEntity player) {
+    public static void onToggleBuildMode(Player player) {
 
         // BankOptions options = Util.getOrCreateOptions(stack);
         BankOptions options = BankStorageClient.buildModePreviewRenderer.options;
         options.buildMode = options.buildMode.next();
-        ClientPlayNetworking.send(new UpdateBankOptionsPacketC2S(options));
+        ((LocalPlayer) player).connection.send(new UpdateBankOptionsPacketC2S(options));
         // Util.setOptions(stack, options);
-        player.sendMessage(Text.translatable("popup.bankstorage.buildmode."
+        player.displayClientMessage(Component.translatable("popup.bankstorage.buildmode."
                 + options.buildMode.toString().toLowerCase()), true);
 
     }

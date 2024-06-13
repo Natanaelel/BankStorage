@@ -16,21 +16,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
+import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.screen.BankScreenHandlerFactory;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.client.item.TooltipData;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.text.Text;
-import net.minecraft.util.InteractionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.InteractionResultHolder;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.world.World;
-import net.natte.bankstorage.access.SyncedRandomAccess;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.item.tooltip.BankTooltipData;
@@ -76,7 +65,7 @@ public abstract class BankFunctionality extends Item {
 
     // on .use or .useOnBlock. never returns PASS
     private InteractionResult useBank(Player player, InteractionHand hand, boolean usedOnBlock,
-            @Nullable BlockHitResult hitResult) {
+                                      @Nullable BlockHitResult hitResult) {
 
         ItemStack bank = player.getItemInHand(hand);
         Level world = player.level();
@@ -108,10 +97,10 @@ public abstract class BankFunctionality extends Item {
             return tryOpenBank(world, player, hand, bank);
         }
 
-        return build(new ItemUsageContext(world, player, hand, bank, hitResult));
+        return build(new UseOnContext(world, player, hand, bank, hitResult));
     }
 
-    private InteractionResult tryOpenBank(Level world, Player player, ItemStack bank) {
+    private InteractionResult tryOpenBank(Level world, Player player, InteractionHand hand, ItemStack bank) {
 
         if (world.isClientSide)
             return InteractionResult.CONSUME;
@@ -129,31 +118,31 @@ public abstract class BankFunctionality extends Item {
         bankItemStorage.usedByPlayerUUID = player.getUUID();
         bankItemStorage.usedByPlayerName = player.getName().getString();
 
+        int slot = hand == InteractionHand.MAIN_HAND ? player.getInventory().selected : 40;
         BankScreenHandlerFactory screenHandlerFactory = new BankScreenHandlerFactory(bankItemStorage.type, bankItemStorage, bank, slot, ContainerLevelAccess.NULL);
 
-        player.openHandledScreen(bankItemStorage.withItem(bank));
+        player.openMenu(screenHandlerFactory, screenHandlerFactory::writeScreenOpeningData);
         return InteractionResult.CONSUME;
     }
 
-    private InteractionResult build(ItemUsageContext context) {
+    private InteractionResult build(UseOnContext context) {
 
-        PlayerEntity player = context.getPlayer();
-        ItemStack bank = context.getStack();
-        World world = context.getWorld();
+        Player player = context.getPlayer();
+        ItemStack bank = context.getItemInHand();
+        Level world = context.getLevel();
 
-        Random random = world.isClient ? Util.clientSyncedRandom
-                : ((SyncedRandomAccess) player).bankstorage$getSyncedRandom();
+        Random random = world.isClientSide ? Util.clientSyncedRandom : player.getData(BankStorage.SYNCED_RANDOM_ATTACHMENT);
 
         BankOptions options = Util.getOrCreateOptions(bank);
 
         BankItemStorage bankItemStorage = null;
         ItemStack blockToPlace;
-        if (world.isClient) {
+        if (world.isClientSide) {
             @Nullable
             CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(bank);
             if (cachedBankStorage == null) {
                 if (Util.isLink(bank))
-                    player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
+                    player.displayClientMessage(Component.translatable("popup.bankstorage.unlinked"), true);
                 return InteractionResult.FAIL;
             }
             blockToPlace = cachedBankStorage.chooseItemToPlace(options, random);
@@ -161,10 +150,10 @@ public abstract class BankFunctionality extends Item {
             bankItemStorage = Util.getBankItemStorage(bank, world);
             if (bankItemStorage == null) {
                 if (Util.isLink(bank))
-                    player.sendMessage(Text.translatable("popup.bankstorage.unlinked"), true);
+                    player.displayClientMessage(Component.translatable("popup.bankstorage.unlinked"), true);
                 return InteractionResult.FAIL;
             }
-            bankItemStorage.usedByPlayerUUID = player.getUuid();
+            bankItemStorage.usedByPlayerUUID = player.getUUID();
             bankItemStorage.usedByPlayerName = player.getName().getString();
 
             blockToPlace = bankItemStorage.chooseItemToPlace(options, random);
@@ -175,11 +164,11 @@ public abstract class BankFunctionality extends Item {
         int count = blockToPlace.getCount();
         blockToPlace.setCount(1);
         InteractionResult useResult = blockToPlace
-                .useOnBlock(new ItemUsageContext(world, player, context.getHand(), blockToPlace, context.hit));
+                .useOn(new UseOnContext(world, player, context.getHand(), blockToPlace, context.hitResult));
 
         blockToPlace.setCount(blockToPlace.getCount() == 1 ? count : count - 1);
 
-        if (world.isClient)
+        if (world.isClientSide)
             CachedBankStorage.requestCacheUpdate(Util.getUUID(bank));
 
         if (bankItemStorage != null) {
@@ -207,7 +196,7 @@ public abstract class BankFunctionality extends Item {
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
-        return useBank(context.getPlayer(), context.getHand(), true, context.hit);
+        return useBank(context.getPlayer(), context.getHand(), true, context.hitResult);
     }
 
     @Override

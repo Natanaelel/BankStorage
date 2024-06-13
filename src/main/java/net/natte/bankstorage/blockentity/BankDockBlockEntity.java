@@ -7,6 +7,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -15,6 +16,7 @@ import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.storage.BankItemHandler;
 import net.neoforged.neoforge.items.IItemHandler;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.natte.bankstorage.BankStorage;
@@ -25,6 +27,7 @@ public class BankDockBlockEntity extends BlockEntity {
 
     private static final String BANK_ITEM_KEY = "bank";
 
+    @NotNull
     private ItemStack bankItem = ItemStack.EMPTY;
     private BankItemHandler bankItemHandler = null;
 

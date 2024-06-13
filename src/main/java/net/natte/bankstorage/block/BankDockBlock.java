@@ -1,26 +1,11 @@
 package net.natte.bankstorage.block;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockEntityProvider;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ItemScatterer;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.World;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
@@ -33,13 +18,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.container.BankItemStorage;
-import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.screen.BankScreenHandlerFactory;
 import net.natte.bankstorage.util.Util;
-import net.neoforged.neoforge.capabilities.BlockCapability;
-import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 
 public class BankDockBlock extends Block implements BlockEntityType.BlockEntitySupplier {
 
@@ -117,18 +97,18 @@ public class BankDockBlock extends Block implements BlockEntityType.BlockEntityS
             }
         }
 
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 
     @Override
-    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-        if (state.isOf(newState.getBlock())) {
+    public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean moved) {
+        if (state.is(newState.getBlock())) {
             return;
         }
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof BankDockBlockEntity bankDockBlockEntity) {
-            ItemScatterer.spawn(world, pos.getX(), pos.getY(), pos.getZ(), bankDockBlockEntity.getBank());
+            Containers.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), bankDockBlockEntity.getBank());
         }
-        super.onStateReplaced(state, world, pos, newState, moved);
+        super.onRemove(state, world, pos, newState, moved);
     }
 }

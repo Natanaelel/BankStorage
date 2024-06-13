@@ -1,35 +1,22 @@
 package net.natte.bankstorage.client.screen;
 
 import java.text.NumberFormat;
-import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-import java.util.function.Consumer;
 
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.natte.bankstorage.client.BankStorageClient;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import org.jetbrains.annotations.Nullable;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.screen.ingame.HandledScreens.Provider;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
-import net.natte.bankstorage.BankStorageClient;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.options.BankOptions;
@@ -38,61 +25,54 @@ import net.natte.bankstorage.options.SortMode;
 import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
 import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.SortPacketC2S;
-import net.natte.bankstorage.rendering.ItemCountUtils;
 import net.natte.bankstorage.util.Util;
 
-public class BankScreen extends HandledScreen<BankScreenHandler> {
+public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
-    private static final Identifier WIDGETS_TEXTURE = Util.ID("textures/gui/widgets.png");
+    private static final ResourceLocation WIDGETS_TEXTURE = Util.ID("textures/gui/widgets.png");
 
     private static final NumberFormat FORMAT = NumberFormat.getNumberInstance(Locale.US);
 
     private BankType type;
-    private Identifier texture;
+    private ResourceLocation texture;
 
     private SortMode sortMode;
 
-    public static Provider<BankScreenHandler, BankScreen> fromType(BankType type) {
-        return (screenHandler, playerInventory, text) -> {
-            return new BankScreen(screenHandler, playerInventory, text, type);
-        };
-    }
 
-    public BankScreen(BankScreenHandler screenHandler, PlayerInventory playerInventory, Text text, BankType type) {
+    public BankScreen(BankScreenHandler screenHandler, Inventory playerInventory, Component text) {
         super(screenHandler, playerInventory, text);
 
-        this.type = type;
+        this.type = screenHandler.getBankType();
         this.texture = this.type.getGuiTexture();
-        this.backgroundWidth = this.type.guiTextureWidth;
-        this.backgroundHeight = this.type.guiTextureHeight;
+        this.imageWidth = this.type.guiTextureWidth;
+        this.imageHeight = this.type.guiTextureHeight;
 
-        this.playerInventoryTitleY += this.type.rows * 18 - 52;
+        this.inventoryLabelY += this.type.rows * 18 - 52;
 
     }
 
     @Override
     protected void init() {
         super.init();
-        BankOptions options = Util.getOrCreateOptions(this.handler.getBankLikeItem());
+        BankOptions options = Util.getOrCreateOptions(this.menu.getBankLikeItem());
         this.sortMode = options.sortMode;
         PickupModeOption initialPickupMode = PickupModeOption.from(options.pickupMode);
-        this.addDrawableChild(
+        this.addRenderableWidget(
                 new TexturedCyclingButtonWidget<PickupModeOption>(initialPickupMode,
-                        x + titleX + this.type.guiTextureWidth - 49, y + titleY - 4, 14, 14,
+                        leftPos + titleLabelX + this.type.guiTextureWidth - 49, topPos + titleLabelY - 4, 14, 14,
                         WIDGETS_TEXTURE, this::onPickupModeButtonPress));
 
-        this.addDrawableChild(
+        this.addRenderableWidget(
                 new SortButtonWidget(options.sortMode,
-                        x + titleX + this.type.guiTextureWidth - 31, y + titleY - 4,
+                        leftPos + titleLabelX + this.type.guiTextureWidth - 31, topPos + titleLabelY - 4,
                         14, 14, WIDGETS_TEXTURE, this::onSortButtonPress));
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-
         // middle click sorting
-        if (button == 2 && (this.getSlotAt(mouseX, mouseY) instanceof BankSlot)) {
-            client.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f));
+        if (button == 2 && (this.hoveredSlot instanceof BankSlot)) {
+            minecraft.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f));
             sendSortPacket();
             return true;
         }
@@ -136,72 +116,55 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (BankStorageClient.lockSlotKeyBinding.matchesKey(keyCode, scanCode)) {
-            BankStorageClient.lockSlotKeyBinding.setPressed(true);
+        if (BankStorageClient.lockSlotKeyBinding.matches(keyCode, scanCode)) {
+            BankStorageClient.lockSlotKeyBinding.setDown(true);
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        if (BankStorageClient.lockSlotKeyBinding.matchesKey(keyCode, scanCode)) {
-            BankStorageClient.lockSlotKeyBinding.setPressed(false);
+        if (BankStorageClient.lockSlotKeyBinding.matches(keyCode, scanCode)) {
+            BankStorageClient.lockSlotKeyBinding.setDown(false);
         }
         return super.keyReleased(keyCode, scanCode, modifiers);
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         // this.renderBackground(context, mouseX, mouseY, delta);
         super.render(context, mouseX, mouseY, delta);
         this.drawMouseoverTooltip(context, mouseX, mouseY);
         this.setFocused(null);
     }
 
+
+
     @Override
-    protected void calculateOffset() {
-        ItemStack itemStack = this.handler.getCursorStack();
-        if (itemStack.isEmpty() || !this.cursorDragging) {
-            return;
-        }
-        if (this.heldButtonType == 2) {
-            this.draggedStackRemainder = itemStack.getMaxCount();
-            return;
-        }
-        this.draggedStackRemainder = itemStack.getCount();
-        for (Slot slot : this.cursorDragSlots) {
-            ItemStack itemStack2 = slot.getStack();
-            int i = itemStack2.isEmpty() ? 0 : itemStack2.getCount();
-            int j = slot.getMaxItemCount(itemStack);
-            int k = Math.min(ScreenHandler.calculateStackSize(this.cursorDragSlots, (int) this.heldButtonType,
-                    (ItemStack) itemStack) + i, j);
-            this.draggedStackRemainder -= k - i;
-        }
+    protected void renderBg(GuiGraphics drawContext, float timeDelta, int mouseX, int mouseY) {
+
+        int x = (width - imageWidth) / 2;
+        int y = (height - imageHeight) / 2;
+        // wtf?? TODO! fix
+        drawContext.blit(this.texture, x, y, 0, 0, imageWidth, imageHeight,
+                (int) Math.ceil(imageWidth / 256d) * 256, (int) Math.ceil(imageHeight / 256d) * 256);
     }
 
     @Override
-    protected void drawBackground(DrawContext drawContext, float timeDelta, int mouseX, int mouseY) {
-
-        int x = (width - backgroundWidth) / 2;
-        int y = (height - backgroundHeight) / 2;
-        drawContext.drawTexture(this.texture, x, y, 0, 0, backgroundWidth, backgroundHeight,
-                (int) Math.ceil(backgroundWidth / 256d) * 256, (int) Math.ceil(backgroundHeight / 256d) * 256);
-    }
-
-    @Override
-    public void drawSlot(DrawContext context, Slot slot) {
+    public void renderSlot(GuiGraphics context, Slot slot) {
         if (slot instanceof BankSlot bankSlot) {
+            // TODO: could almost remove entirely (99% match)
             drawBankSlot(context, bankSlot);
         } else {
-            super.drawSlot(context, slot);
+            super.renderSlot(context, slot);
         }
 
     }
 
-    private void drawBankSlot(DrawContext context, BankSlot slot) {
+    private void drawBankSlot(GuiGraphics context, BankSlot slot) {
         int i = slot.x;
         int j = slot.y;
-        ItemStack itemStack = slot.getStack();
+        ItemStack itemStack = slot.getItem();
         boolean bl = false;
         boolean bl2 = slot == this.touchDragSlotStart && !this.touchDragStack.isEmpty() && !this.touchIsRightClickDrag;
         ItemStack itemStack2 = this.handler.getCursorStack();
@@ -282,9 +245,9 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         return bl;
     }
 
-    public void drawItemCountInSlot(DrawContext context, TextRenderer textRenderer, ItemStack stack, int x, int y,
+    public void drawItemCountInSlot(GuiGraphics context, TextRenderer textRenderer, ItemStack stack, int x, int y,
             boolean drawInYellow) {
-        ClientPlayerEntity clientPlayerEntity;
+        LocalPlayer clientPlayerEntity;
         float f;
         int l;
         int k;
@@ -332,7 +295,7 @@ public class BankScreen extends HandledScreen<BankScreenHandler> {
         matrices.pop();
     }
 
-    protected void drawMouseoverTooltip(DrawContext context, int x, int y) {
+    protected void drawMouseoverTooltip(GuiGraphics context, int x, int y) {
         if (this.handler.getCursorStack().isEmpty() && this.focusedSlot != null && this.focusedSlot.hasStack()) {
             ItemStack itemStack = this.focusedSlot.getStack();
             List<Text> tooltip = this.getTooltipFromItem(itemStack);

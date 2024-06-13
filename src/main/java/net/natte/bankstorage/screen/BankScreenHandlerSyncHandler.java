@@ -2,50 +2,46 @@ package net.natte.bankstorage.screen;
 
 import java.util.Map;
 
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerSyncHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.core.NonNullList;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerSynchronizer;
+import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
 
-public class BankScreenHandlerSyncHandler implements ScreenHandlerSyncHandler {
-    private final ScreenHandlerSyncHandler screenHandlerSyncHandler;
-    private final ServerPlayerEntity player;
+public class BankScreenHandlerSyncHandler implements ContainerSynchronizer {
+    private final ContainerSynchronizer screenHandlerSyncHandler;
+    private final ServerPlayer player;
 
-    public BankScreenHandlerSyncHandler(ScreenHandlerSyncHandler original, ServerPlayerEntity player) {
+    public BankScreenHandlerSyncHandler(ContainerSynchronizer original, ServerPlayer player) {
         this.screenHandlerSyncHandler = original;
         this.player = player;
     }
 
-    @Override
-    public void updateState(ScreenHandler screenHandler, DefaultedList<ItemStack> items, ItemStack cursorStack,
-            int[] indices) {
-        screenHandlerSyncHandler.updateState(screenHandler, items, cursorStack, indices);
 
-        syncLockedSlots(screenHandler,
-                ((BankItemStorage) ((BankScreenHandler) screenHandler).inventory).getlockedSlots());
-
+    public void syncLockedSlots(AbstractContainerMenu screenHandler, Map<Integer, ItemStack> lockedSlots) {
+        player.connection.send(new LockedSlotsPacketS2C(screenHandler.containerId, lockedSlots));
     }
 
     @Override
-    public void updateSlot(ScreenHandler screenHandler, int slot, ItemStack stack) {
-        screenHandlerSyncHandler.updateSlot(screenHandler, slot, stack);
+    public void sendInitialData(AbstractContainerMenu screenHandler, NonNullList<ItemStack> items, ItemStack carriedItem, int[] initialData) {
+        screenHandlerSyncHandler.sendInitialData(screenHandler, items, carriedItem, initialData);
+        syncLockedSlots(screenHandler, ((BankItemStorage) ((BankScreenHandler) screenHandler).inventory).getlockedSlots());
     }
 
     @Override
-    public void updateCursorStack(ScreenHandler screenHandler, ItemStack stack) {
-        screenHandlerSyncHandler.updateCursorStack(screenHandler, stack);
+    public void sendSlotChange(AbstractContainerMenu screenHandler, int slot, ItemStack itemStack) {
+        screenHandlerSyncHandler.sendSlotChange(screenHandler, slot, itemStack);
     }
 
     @Override
-    public void updateProperty(ScreenHandler screenHandler, int progerty, int stack) {
-        screenHandlerSyncHandler.updateProperty(screenHandler, progerty, stack);
+    public void sendCarriedChange(AbstractContainerMenu screenHandlerMenu, ItemStack itemStack) {
+        screenHandlerSyncHandler.sendCarriedChange(screenHandlerMenu, itemStack);
     }
 
-    public void syncLockedSlots(ScreenHandler screenHandler, Map<Integer, ItemStack> lockedSlots) {
-        ServerPlayNetworking.send(player, new LockedSlotsPacketS2C(screenHandler.syncId, lockedSlots));
+    @Override
+    public void sendDataChange(AbstractContainerMenu screenHandler, int property, int value) {
+        screenHandlerSyncHandler.sendDataChange(screenHandler, property, value);
     }
 }

@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.storage.BankContainer;
@@ -18,17 +19,6 @@ import net.natte.bankstorage.storage.BankItemHandler;
 import net.natte.bankstorage.storage.BankSlotData;
 import org.jetbrains.annotations.Nullable;
 
-import net.fabricmc.fabric.api.entity.FakePlayer;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.util.Util;
@@ -84,7 +74,7 @@ public class BankItemStorage {
 
         BankItemStorage newBankItemStorage = new BankItemStorage(type, this.uuid);
         for (int i = 0; i < type.size(); ++i) {
-            newBankItemStorage.items.set(i, i < this.items.size() ? this.items.get(i) : new BankSlotData());
+            newBankItemStorage.items.set(i, i < this.items.size() ? this.items.get(i) : ItemStack.EMPTY);
             newBankItemStorage.lockedSlots = this.lockedSlots;
         }
         return newBankItemStorage;
@@ -95,7 +85,7 @@ public class BankItemStorage {
     }
 
     public BankItemHandler getItemHandler(PickupMode pickupMode){
-        return new BankItemHandler(items, lockedSlots, pickupMode);
+        return new BankItemHandler(items, lockedSlots, type, pickupMode);
     }
 
     public Container getContainer(){
@@ -113,19 +103,6 @@ public class BankItemStorage {
 
     public int getMaxCountPerStack() {
         return this.type.stackLimit;
-    }
-
-    @Override
-    public int getMaxCount(ItemStack stack) {
-        return getMaxCountPerStack();
-    }
-
-    @Override
-    public boolean canInsert(ItemStack stack) {
-        if (!Util.isAllowedInBank(stack))
-            return false;
-
-        return super.canInsert(stack);
     }
 
     public List<ItemStack> getItems() {

@@ -10,6 +10,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -105,8 +106,10 @@ public class BankStorage {
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
     public static final DeferredRegister<MenuType<?>> SCREEN_HANDLERS = DeferredRegister.create(Registries.MENU, MOD_ID);
     private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MOD_ID);
+    private static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(Registries.RECIPE_SERIALIZER, MOD_ID);
 
-    private static final Supplier<AttachmentType<Random>> SYNCED_RANDOM_ATTACHMENT = ATTACHMENT_TYPES.register("random", () -> AttachmentType.<Random>builder(() -> new Random()).build());
+
+    public static final Supplier<AttachmentType<Random>> SYNCED_RANDOM_ATTACHMENT = ATTACHMENT_TYPES.register("random", () -> AttachmentType.<Random>builder(() -> new Random()).build());
 
     public BankStorage(IEventBus modBus) {
 
@@ -126,6 +129,7 @@ public class BankStorage {
         BLOCK_ENTITIES.register(modBus);
         SCREEN_HANDLERS.register(modBus);
         ATTACHMENT_TYPES.register(modBus);
+        RECIPE_SERIALIZERS.register(modBus);
 
         modBus.addListener(this::addItemsToCreativeTab);
         modBus.addListener(this::registerCapabilities);
@@ -139,6 +143,7 @@ public class BankStorage {
 
     private void registerScreenHandlers() {
         SCREEN_HANDLERS.register("bank_menu", () -> MENU_TYPE);
+
     }
 
     private void registerItemComponentTypes() {
@@ -212,10 +217,11 @@ public class BankStorage {
     }
 
     private void registerRecipes() {
-        Registry.register(Registries.RECIPE_SERIALIZER, Util.ID("bank_upgrade"),
-                new BankRecipe.Serializer());
-        Registry.register(Registries.RECIPE_SERIALIZER, Util.ID("bank_link"),
-                new BankLinkRecipe.Serializer());
+        RECIPE_SERIALIZERS.register("bank_update", BankRecipe.Serializer::new);
+//        Registry.register(Registries.RECIPE_SERIALIZER, Util.ID("bank_upgrade"),
+//                new BankRecipe.Serializer());
+//        Registry.register(Registries.RECIPE_SERIALIZER, Util.ID("bank_link"),
+//                new BankLinkRecipe.Serializer());
     }
 
     public void registerCommands() {

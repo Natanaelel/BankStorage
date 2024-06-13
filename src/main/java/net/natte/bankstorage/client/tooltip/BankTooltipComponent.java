@@ -2,29 +2,44 @@ package net.natte.bankstorage.client.tooltip;
 
 import java.util.List;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.tooltip.TooltipComponent;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.item.ItemStack;
+import net.natte.bankstorage.client.rendering.ItemCountUtils;
+import net.natte.bankstorage.item.tooltip.BankTooltipData;
 import net.natte.bankstorage.rendering.ItemCountUtils;
 import net.natte.bankstorage.util.Util;
 
-public class BankTooltipComponent implements TooltipComponent {
+public class BankTooltipComponent implements ClientTooltipComponent {
 
-    public static final Identifier TEXTURE = Util.ID("textures/gui/widgets.png");
+    public static final ResourceLocation TEXTURE = Util.ID("textures/gui/widgets.png");
 
     private final List<ItemStack> items;
-    private final MinecraftClient client;
+    private final Minecraft client;
 
-    public BankTooltipComponent(List<ItemStack> items) {
+    private BankTooltipComponent(List<ItemStack> items) {
         this.items = items;
-        this.client = MinecraftClient.getInstance();
+        this.client = Minecraft.getInstance();
+    }
+
+    public static BankTooltipComponent of(BankTooltipData tooltipData){
+        return new BankTooltipComponent(tooltipData.items());
     }
 
     private int getRows() {
@@ -41,12 +56,12 @@ public class BankTooltipComponent implements TooltipComponent {
     }
 
     @Override
-    public int getWidth(TextRenderer textRenderer) {
+    public int getWidth(Font textRenderer) {
         return getColumns() * 18 + 2;
     }
 
     @Override
-    public void drawItems(TextRenderer textRenderer, int x, int y, DrawContext context) {
+    public void renderImage(Font textRenderer, int x, int y, GuiGraphics context) {
         drawBackground(context, x, y);
 
         int row = 0;
@@ -61,11 +76,11 @@ public class BankTooltipComponent implements TooltipComponent {
         }
     }
 
-    private void drawBackground(DrawContext context, int x, int y) {
+    private void drawBackground(GuiGraphics context, int x, int y) {
         int row = 0;
         int col = 0;
         for (@SuppressWarnings("unused") ItemStack stack : items) {
-            context.drawTexture(TEXTURE, x + col * 18, y + row * 18, 20, 128, 20, 20);
+            context.blit(TEXTURE, x + col * 18, y + row * 18, 20, 128, 20, 20);
             ++col;
             if (col == 9) {
                 col = 0;
@@ -74,33 +89,33 @@ public class BankTooltipComponent implements TooltipComponent {
         }
     }
 
-    private void drawSlot(ItemStack itemStack, DrawContext context, TextRenderer textRenderer, int x, int y) {
+    private void drawSlot(ItemStack itemStack, GuiGraphics context, Font textRenderer, int x, int y) {
         // slot texture
-        context.drawTexture(TEXTURE, x, y, 1, 129, 18, 18);
+        context.blit(TEXTURE, x, y, 1, 129, 18, 18);
         // item
-        context.drawItem(itemStack, x + 1, y + 1);
+        context.renderItem(itemStack, x + 1, y + 1);
         // item count, durability, cooldown
         drawItemCountInSlot(context, textRenderer, itemStack, x + 1, y + 1);
     }
 
-    public void drawItemCountInSlot(DrawContext context, TextRenderer textRenderer, ItemStack stack, int x, int y) {
-        ClientPlayerEntity clientPlayerEntity;
+    public void drawItemCountInSlot(GuiGraphics context, Font textRenderer, ItemStack stack, int x, int y) {
+        LocalPlayer clientPlayerEntity;
         float f;
         int l;
         int k;
         if (stack.isEmpty()) {
             return;
         }
-        MatrixStack matrices = context.getMatrices();
-        matrices.push();
+        PoseStack matrices = context.pose();
+        matrices.pushPose();
 
-        if (stack.isItemBarVisible()) {
-            int i = stack.getItemBarStep();
-            int j = stack.getItemBarColor();
+        if (stack.isBarVisible()) {
+            int i = stack.getBarWidth();
+            int j = stack.getBarColor();
             k = x + 2;
             l = y + 13;
-            context.fill(RenderLayer.getGuiOverlay(), k, l, k + 13, l + 2, -16777216);
-            context.fill(RenderLayer.getGuiOverlay(), k, l, k + i, l + 1, j | 0xFF000000);
+            context.fill(RenderType.guiOverlay(), k, l, k + 13, l + 2, -16777216);
+            context.fill(RenderType.guiOverlay(), k, l, k + i, l + 1, j | 0xFF000000);
         }
         if (stack.getCount() != 1) {
             String count = ItemCountUtils.toConsiseString(stack.getCount());
@@ -108,26 +123,27 @@ public class BankTooltipComponent implements TooltipComponent {
             matrices.translate(0.0f, 0.0f, 200.0f);
             float scale = ItemCountUtils.scale(string);
 
-            int textWidth = (int) (textRenderer.getWidth(string));
+            int textWidth = (int) (textRenderer.width(string));
 
             int xOffset = x + 18 - 2;
             int yOffset = y + 18 - 2;
-            matrices.push();
+            matrices.pushPose();
             matrices.translate(xOffset, yOffset, 0);
             matrices.scale(scale, scale, 1);
             matrices.translate(-xOffset, -yOffset, 0);
-            context.drawText(textRenderer, string, x + 18 - 1 - textWidth, y + 9, 0xFFFFFF, true);
-            matrices.pop();
+            // TODO: check out drawCenteredString maybe?
+            context.drawString(textRenderer, string, x + 18 - 1 - textWidth, y + 9, 0xFFFFFF, true);
+            matrices.popPose();
 
         }
         f = (clientPlayerEntity = this.client.player) == null ? 0.0f
-                : clientPlayerEntity.getItemCooldownManager().getCooldownProgress(stack.getItem(),
-                        this.client.getTickDelta());
+                : clientPlayerEntity.getCooldowns().getCooldownPercent(stack.getItem(),
+                        this.client.getFrameTime());
         if (f > 0.0f) {
-            k = y + MathHelper.floor((float) (16.0f * (1.0f - f)));
-            l = k + MathHelper.ceil((float) (16.0f * f));
-            context.fill(RenderLayer.getGuiOverlay(), x, k, x + 16, l, Integer.MAX_VALUE);
+            k = y + Mth.floor((float) (16.0f * (1.0f - f)));
+            l = k + Mth.ceil((float) (16.0f * f));
+            context.fill(RenderType.guiOverlay(), x, k, x + 16, l, Integer.MAX_VALUE);
         }
-        matrices.pop();
+        matrices.popPose();
     }
 }

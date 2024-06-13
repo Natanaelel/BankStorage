@@ -1,18 +1,18 @@
 package net.natte.bankstorage.client.screen;
 
-import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.network.chat.Component;
 
 public interface CycleableOption {
 
-    public Text getName();
-    public Text getInfo();
+    public Component getName();
+    public Component getInfo();
 
     public int uOffset();
     public int vOffset();
 
     default public Tooltip getTooltip() {
-        return Tooltip.of(getName().copy().append(Text.empty().append("\n").append(getInfo()).formatted(Formatting.DARK_GRAY)));
+        return Tooltip.create(getName().copy().append(Component.empty().append("\n").append(getInfo()).withStyle(ChatFormatting.DARK_GRAY)));
     }
 }

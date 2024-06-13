@@ -1,30 +1,17 @@
 package net.natte.bankstorage.screen;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.network.IContainerFactory;
-import org.jetbrains.annotations.Nullable;
 
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType.ExtendedFactory;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.resource.featuretoggle.FeatureSet;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.ClickType;
+import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
@@ -33,6 +20,7 @@ import net.natte.bankstorage.inventory.LockedSlot;
 import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.packet.NetworkUtil;
 import net.natte.bankstorage.util.Util;
+import org.jetbrains.annotations.Nullable;
 
 public class BankScreenHandler extends AbstractContainerMenu {
 
@@ -41,12 +29,16 @@ public class BankScreenHandler extends AbstractContainerMenu {
     private BankType type;
     // barebones on client
     private BankItemStorage bankItemStorage;
+    // null on client
+    @Nullable
+    UUID uuid;
 
     private final ContainerLevelAccess context;
 
     public BankScreenHandlerSyncHandler bankScreenSync;
 
     private ItemStack bankLikeItem;
+    private final int slotWithOpenedBank;
 
     public ItemStack getBankLikeItem() {
         return this.bankLikeItem;
@@ -54,36 +46,21 @@ public class BankScreenHandler extends AbstractContainerMenu {
 
     private short lockedSlotsRevision = 0;
 
-//    public static IContainerFactory<BankScreenHandler, ItemStack> fromType(BankType type) {
-//        return (syncId, playerInventory, bankLikeItem) -> {
-//            BankScreenHandler bankScreenHandler = new BankScreenHandler(syncId, playerInventory,
-//                    new BankItemStorage(type, null), type,
-//                    ContainerLevelAccess.NULL);
-//            bankScreenHandler.bankLikeItem = bankLikeItem;
-//            return bankScreenHandler;
-//        };
-//    }
-
-    // This constructor gets called from the BlockEntity on the server without
-    // calling the other constructor first, the server knows the inventory of the
-    // container
-    // and can therefore directly provide it as an argument. This inventory will
-    // then be synced to the client.
-
     public BankScreenHandler(int syncId, Inventory playerInventory,
-            BankType type, ItemStack bankItem, int slot, BankItemStorage bankItemStorage,
-            ContainerLevelAccess context) {
+                             BankType type, ItemStack bankItem, int slot, BankItemStorage bankItemStorage,
+                             ContainerLevelAccess context) {
         super(type.getScreenHandlerType(), syncId);
         this.context = context;
 
         this.bankLikeItem = bankItem;
 //        this.bankLikeItem = inventory instanceof BankItemStorage bankItemStorage ? bankItemStorage.getItem()
 //                : ItemStack.EMPTY;
-
+        this.slotWithOpenedBank = slot;
         checkContainerSize(inventory, type.size());
 
         this.type = type;
         this.inventory = bankItemStorage.getContainer();
+        this.uuid = bankItemStorage.uuid;
 
         inventory.startOpen(playerInventory.player);
         int rows = this.type.rows;
@@ -103,16 +80,18 @@ public class BankScreenHandler extends AbstractContainerMenu {
         int inventoryY = 32 + rows * 18;
         for (int y = 0; y < 3; ++y) {
             for (int x = 0; x < 9; ++x) {
-                this.addSlot(new Slot(playerInventory, x + y * 9 + 9, 8 + x * 18, inventoryY + y * 18));
+                // cannot move opened bank
+                if (x + y * 9 + 9 == slotWithOpenedBank)
+                    this.addSlot(new LockedSlot(playerInventory, x + y * 9 + 9, 8 + x * 18, inventoryY + y * 18));
+                else
+                    this.addSlot(new Slot(playerInventory, x + y * 9 + 9, 8 + x * 18, inventoryY + y * 18));
             }
         }
 
         // hotbar
         for (int x = 0; x < 9; ++x) {
             // cannot move opened bank
-            if (playerInventory.selected == x
-                    && Util.isBankLike(playerInventory.getItem(playerInventory.selected))
-                    && this.context == ContainerLevelAccess.NULL) {
+            if (x == slotWithOpenedBank) {
                 this.addSlot(new LockedSlot(playerInventory, x, 8 + x * 18, inventoryY + 58));
             } else {
                 this.addSlot(new Slot(playerInventory, x, 8 + x * 18, inventoryY + 58));
@@ -122,11 +101,18 @@ public class BankScreenHandler extends AbstractContainerMenu {
     }
 
     @Override
-    public boolean canUse(PlayerEntity player) {
-        return this.context.get((world, pos) -> {
+    public boolean stillValid(Player player) {
+        if (!AbstractContainerMenu.stillValid(this.context, player, BankStorage.BANK_DOCK_BLOCK))
+            return false;
+
+        return this.context.evaluate((world, pos) -> {
             if (!(world.getBlockEntity(pos) instanceof BankDockBlockEntity blockEntity))
                 return false;
-            if (!blockEntity.hasBank())
+            if (blockEntity.hasBank())
+                return false;
+            if (!blockEntity.getBank().has(BankStorage.UUIDComponentType))
+                return false;
+            if (!blockEntity.getBank().get(BankStorage.UUIDComponentType).equals(this.uuid))
                 return false;
             return true;
         }, true);
@@ -138,27 +124,27 @@ public class BankScreenHandler extends AbstractContainerMenu {
 
     // Shift + Player Inv Slot
     @Override
-    public ItemStack quickMove(PlayerEntity player, int invSlot) {
+    public ItemStack quickMoveStack(Player player, int invSlot) {
         ItemStack newStack = ItemStack.EMPTY;
         Slot slot = this.slots.get(invSlot);
-        if (slot != null && slot.hasStack()) {
-            ItemStack originalStack = slot.getStack();
+        if (slot != null && slot.hasItem()) {
+            ItemStack originalStack = slot.getItem();
             newStack = originalStack.copy();
-            if (invSlot < this.inventory.size()) {
+            if (invSlot < this.inventory.getContainerSize()) {
                 // move from bank to player
-                if (!this.insertItemToPlayer(originalStack, this.inventory.size(), this.slots.size(), true)) {
+                if (!this.insertItemToPlayer(originalStack, this.inventory.getContainerSize(), this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
 
             } // move from player to bank
-            else if (!this.insertItem(originalStack, 0, this.inventory.size(), false)) {
+            else if (!this.moveItemStackTo(originalStack, 0, this.inventory.getContainerSize(), false)) {
                 return ItemStack.EMPTY;
             }
 
             if (originalStack.isEmpty()) {
-                slot.setStack(ItemStack.EMPTY);
+                slot.setByPlayer(ItemStack.EMPTY);
             } else {
-                slot.markDirty();
+                slot.setChanged();
             }
         }
 
@@ -166,7 +152,7 @@ public class BankScreenHandler extends AbstractContainerMenu {
     }
 
     @Override
-    protected boolean insertItem(ItemStack stack, int startIndex, int endIndex, boolean fromLast) {
+    protected boolean moveItemStackTo(ItemStack stack, int startIndex, int endIndex, boolean fromLast) {
         ItemStack itemStack;
         Slot slot;
         boolean bl = false;
@@ -177,20 +163,20 @@ public class BankScreenHandler extends AbstractContainerMenu {
         // add to locked stack
         while (!stack.isEmpty() && (fromLast ? i >= startIndex : i < endIndex)) {
             slot = this.slots.get(i);
-            int slotSize = slot.getMaxItemCount(stack);
-            itemStack = slot.getStack();
+            int slotSize = slot.getMaxStackSize(stack);
+            itemStack = slot.getItem();
 
-            if (slot instanceof BankSlot bankSlot && bankSlot.isLocked() && bankSlot.canInsert(stack)) {
+            if (slot instanceof BankSlot bankSlot && bankSlot.isLocked() && bankSlot.mayPlace(stack)) {
                 if (itemStack.isEmpty()) {
-                    slot.setStack(stack.split(slotSize));
-                    slot.markDirty();
+                    slot.setByPlayer(stack.split(slotSize));
+                    slot.setChanged();
                     bl = true;
                 } else {
                     int toMove = Math.min(slotSize - itemStack.getCount(), Math.min(slotSize, stack.getCount()));
                     if (toMove > 0) {
-                        itemStack.increment(toMove);
-                        stack.decrement(toMove);
-                        slot.markDirty();
+                        itemStack.grow(toMove);
+                        stack.shrink(toMove);
+                        slot.setChanged();
                         bl = true;
 
                     }
@@ -208,20 +194,20 @@ public class BankScreenHandler extends AbstractContainerMenu {
         i = fromLast ? endIndex - 1 : startIndex;
         while (!stack.isEmpty() && (fromLast ? i >= startIndex : i < endIndex)) {
             slot = this.slots.get(i);
-            int maxStackCount = slot.getMaxItemCount(stack);
-            itemStack = slot.getStack();
-            if (!itemStack.isEmpty() && ItemStack.areItemsAndComponentsEqual(stack, itemStack)
-                    && ((slot instanceof BankSlot bankSlot) ? bankSlot.canInsert(stack) : true)) {
+            int maxStackCount = slot.getMaxStackSize(stack);
+            itemStack = slot.getItem();
+            if (!itemStack.isEmpty() && ItemStack.isSameItemSameComponents(stack, itemStack)
+                    && ((slot instanceof BankSlot bankSlot) ? bankSlot.mayPlace(stack) : true)) {
                 int j = itemStack.getCount() + stack.getCount();
                 if (j <= maxStackCount) {
                     stack.setCount(0);
                     itemStack.setCount(j);
-                    slot.markDirty();
+                    slot.setChanged();
                     bl = true;
                 } else if (itemStack.getCount() < maxStackCount) {
-                    stack.decrement(maxStackCount - itemStack.getCount());
+                    stack.shrink(maxStackCount - itemStack.getCount());
                     itemStack.setCount(maxStackCount);
-                    slot.markDirty();
+                    slot.setChanged();
                     bl = true;
                 }
             }
@@ -237,15 +223,15 @@ public class BankScreenHandler extends AbstractContainerMenu {
             i = fromLast ? endIndex - 1 : startIndex;
             while (fromLast ? i >= startIndex : i < endIndex) {
                 slot = this.slots.get(i);
-                itemStack = slot.getStack();
-                if (itemStack.isEmpty() && slot.canInsert(stack)
-                        && ((slot instanceof BankSlot bankSlot) ? bankSlot.canInsert(stack) : true)) {
-                    if (stack.getCount() > slot.getMaxItemCount()) {
-                        slot.setStack(stack.split(slot.getMaxItemCount()));
+                itemStack = slot.getItem();
+                if (itemStack.isEmpty() && slot.mayPlace(stack)
+                        && ((slot instanceof BankSlot bankSlot) ? bankSlot.mayPlace(stack) : true)) {
+                    if (stack.getCount() > slot.getMaxStackSize()) {
+                        slot.setByPlayer(stack.split(slot.getMaxStackSize()));
                     } else {
-                        slot.setStack(stack.split(Math.min(stack.getCount(), stack.getMaxCount())));
+                        slot.setByPlayer(stack.split(Math.min(stack.getCount(), stack.getMaxStackSize())));
                     }
-                    slot.markDirty();
+                    slot.setChanged();
                     bl = true;
                     // break;
                 }
@@ -270,19 +256,19 @@ public class BankScreenHandler extends AbstractContainerMenu {
         if (stack.isStackable()) {
             while (!stack.isEmpty() && (fromLast ? i >= startIndex : i < endIndex)) {
                 slot = this.slots.get(i);
-                int maxStackCount = slot.getMaxItemCount(stack);
-                itemStack = slot.getStack();
-                if (!itemStack.isEmpty() && ItemStack.areItemsAndComponentsEqual(stack, itemStack)) {
+                int maxStackCount = slot.getMaxStackSize(stack);
+                itemStack = slot.getItem();
+                if (!itemStack.isEmpty() && ItemStack.isSameItemSameComponents(stack, itemStack)) {
                     int j = itemStack.getCount() + stack.getCount();
                     if (j <= maxStackCount) {
                         stack.setCount(0);
                         itemStack.setCount(j);
-                        slot.markDirty();
+                        slot.setChanged();
                         bl = true;
                     } else if (itemStack.getCount() < maxStackCount) {
-                        stack.decrement(maxStackCount - itemStack.getCount());
+                        stack.shrink(maxStackCount - itemStack.getCount());
                         itemStack.setCount(maxStackCount);
-                        slot.markDirty();
+                        slot.setChanged();
                         bl = true;
                     }
                 }
@@ -297,11 +283,11 @@ public class BankScreenHandler extends AbstractContainerMenu {
             i = fromLast ? endIndex - 1 : startIndex;
             while (fromLast ? i >= startIndex : i < endIndex) {
                 slot = this.slots.get(i);
-                itemStack = slot.getStack();
-                if (itemStack.isEmpty() && slot.canInsert(stack)) {
-                    slot.setStack(stack
-                            .split(Math.min(slot.getMaxItemCount(), Math.min(stack.getCount(), stack.getMaxCount()))));
-                    slot.markDirty();
+                itemStack = slot.getItem();
+                if (itemStack.isEmpty() && slot.mayPlace(stack)) {
+                    slot.setByPlayer(stack
+                            .split(Math.min(slot.getMaxStackSize(), Math.min(stack.getCount(), stack.getMaxStackSize()))));
+                    slot.setChanged();
                     bl = true;
                     break;
                 }
@@ -316,65 +302,56 @@ public class BankScreenHandler extends AbstractContainerMenu {
     }
 
     @Override
-    public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player) {
+    public void clicked(int slotIndex, int button, ClickType actionType, Player player) {
 
-        if (actionType == SlotActionType.SWAP) {
+        if (actionType == ClickType.SWAP) {
             // cannot move opened BankItem with numbers
-            if (this.slots.get(slotIndex) instanceof LockedSlot ||
-                    (button == player.getInventory().selectedSlot
-                            && this.slots.get(this.slots.size() - 9 + button) instanceof LockedSlot))
+            if (!this.slots.get(slotIndex).mayPickup(player) || button == slotWithOpenedBank)
+//                    (button == slotWithOpenedBank && button >= 0 && button )
+//                            && this.slots.get(this.slots.size() - 9 + button) instanceof LockedSlot))
                 return;
 
-            ItemStack stackInSlot = this.slots.get(slotIndex).getStack();
+            ItemStack stackInSlot = this.slots.get(slotIndex).getItem();
 
             // can't move large stack with numbers
-            if (stackInSlot.getCount() > stackInSlot.getMaxCount())
+            if (stackInSlot.getCount() > stackInSlot.getMaxStackSize())
                 return;
         }
 
-        UUID uuid = Util.getUUIDFromScreenHandler(this);
-
-        super.onSlotClick(slotIndex, button, actionType, player);
+        super.clicked(slotIndex, button, actionType, player);
         if (uuid != null)
-            NetworkUtil.syncCachedBankS2C(uuid, ((ServerPlayerEntity) player));
+            NetworkUtil.syncCachedBankS2C(uuid, ((ServerPlayer) player));
 
     }
 
 
-    @Override
-    public boolean handleSlotClick(PlayerEntity player, ClickType clickType, Slot slot, ItemStack stack,
-            ItemStack cursorStack) {
+//    @Override
+//    public boolean tryItemClickBehaviourOverride(Player player, ClickAction clickAction, Slot slot, ItemStack stack, ItemStack cursorStack) {
+//
+//        // is v needed anymore? TODO: check
+//        // prevent dupe by putting item inside multiple bundles at the same time
+//        FeatureFlagSet featureSet = player.level().enabledFeatures();
+//        if (cursorStack.isItemEnabled(featureSet) && cursorStack.overrideStackedOnOther(slot, clickAction, player)) {
+//            return true;
+//        }
+//        if (stack.getCount() > stack.getMaxStackSize()) {
+//            return false;
+//        }
+//        slotsChanged(this.inventory);
+//        return super.tryItemClickBehaviourOverride(player, clickAction, slot, stack, cursorStack);
+//    }
 
-        // prevent dupe by putting item inside multiple bundles at the same time
-        FeatureSet featureSet = player.getWorld().getEnabledFeatures();
-        if (cursorStack.isItemEnabled(featureSet) && cursorStack.onStackClicked(slot, clickType, player)) {
-            return true;
-        }
-        if (stack.getCount() > stack.getMaxCount()) {
-            return false;
-        }
-        onContentChanged(this.inventory);
-        return super.handleSlotClick(player, clickType, slot, stack, cursorStack);
-    }
-
     @Override
-    public void onClosed(PlayerEntity player) {
-        ItemStack left = player.getOffHandStack();
-        ItemStack right = player.getMainHandStack();
-        if (Util.hasUUID(left)) {
-            CachedBankStorage.requestCacheUpdate(Util.getUUID(left));
-        }
-        if (Util.hasUUID(right)) {
-            CachedBankStorage.requestCacheUpdate(Util.getUUID(right));
-        }
-        super.onClosed(player);
+    public void removed(Player player) {
+        if (uuid != null)
+            NetworkUtil.syncCachedBankS2C(uuid, ((ServerPlayer) player));
+        super.removed(player);
     }
 
 
-
     @Override
-    public void sendContentUpdates() {
-        super.sendContentUpdates();
+    public void broadcastChanges() {
+        super.broadcastChanges();
         if (this.bankScreenSync == null)
             return;
         BankItemStorage bankItemStorage = (BankItemStorage) inventory;
@@ -419,5 +396,9 @@ public class BankScreenHandler extends AbstractContainerMenu {
 
     public void lockedSlotsMarkDirty() {
         ((BankItemStorage) this.inventory).updateLockedSlotsRevision();
+    }
+
+    public BankType getBankType() {
+        return type;
     }
 }
