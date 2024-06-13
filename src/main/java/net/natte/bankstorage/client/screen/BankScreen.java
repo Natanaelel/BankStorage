@@ -1,8 +1,12 @@
 package net.natte.bankstorage.client.screen;
 
 import java.text.NumberFormat;
+import java.util.List;
 import java.util.Locale;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.player.LocalPlayer;
@@ -12,6 +16,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.client.BankStorageClient;
+import net.natte.bankstorage.client.rendering.ItemCountUtils;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,6 +43,8 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
     private SortMode sortMode;
 
+    @Nullable
+    private BankSlot currentlyRenderingBankSlot = null;
 
     public BankScreen(BankScreenHandler screenHandler, Inventory playerInventory, Component text) {
         super(screenHandler, playerInventory, text);
@@ -132,12 +139,10 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
     @Override
     public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        // this.renderBackground(context, mouseX, mouseY, delta);
         super.render(context, mouseX, mouseY, delta);
-        this.drawMouseoverTooltip(context, mouseX, mouseY);
+        this.renderTooltip(context, mouseX, mouseY);
         this.setFocused(null);
     }
-
 
 
     @Override
@@ -152,158 +157,111 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
     @Override
     public void renderSlot(GuiGraphics context, Slot slot) {
-        if (slot instanceof BankSlot bankSlot) {
-            // TODO: could almost remove entirely (99% match)
-            drawBankSlot(context, bankSlot);
-        } else {
-            super.renderSlot(context, slot);
-        }
+        if (slot instanceof BankSlot bankSlot)
+            this.currentlyRenderingBankSlot = bankSlot;
+        super.renderSlot(context, slot);
+
+        this.currentlyRenderingBankSlot = null;
 
     }
 
-    private void drawBankSlot(GuiGraphics context, BankSlot slot) {
-        int i = slot.x;
-        int j = slot.y;
-        ItemStack itemStack = slot.getItem();
-        boolean bl = false;
-        boolean bl2 = slot == this.touchDragSlotStart && !this.touchDragStack.isEmpty() && !this.touchIsRightClickDrag;
-        ItemStack itemStack2 = this.handler.getCursorStack();
-        boolean drawInYellow = false;
-        if (slot == this.touchDragSlotStart && !this.touchDragStack.isEmpty() && this.touchIsRightClickDrag
-                && !itemStack.isEmpty()) {
-            itemStack = itemStack.copyWithCount(itemStack.getCount() / 2);
-        } else if (this.cursorDragging && this.cursorDragSlots.contains(slot) && !itemStack2.isEmpty()) {
-            if (this.cursorDragSlots.size() == 1) {
-                return;
-            }
-            if (this.canInsertItemIntoSlot((Slot) slot, (ItemStack) itemStack2, (boolean) true)
-                    && this.handler.canInsertIntoSlot(slot)) {
-                bl = true;
-                int k = slot.getMaxItemCount(itemStack2);
-                int l = slot.getStack().isEmpty() ? 0 : slot.getStack().getCount();
-                int m = this.calculateStackSize(this.cursorDragSlots, (int) this.heldButtonType, (ItemStack) itemStack2)
-                        + l;
-                if (m > k) {
-                    m = k;
-                    drawInYellow = true;
-                }
-                itemStack = itemStack2.copyWithCount(m);
-            } else {
-                this.cursorDragSlots.remove(slot);
-                this.calculateOffset();
-            }
+    @Override
+    protected void renderSlotContents(GuiGraphics guiGraphics, ItemStack itemstack, Slot slot, @Nullable String countString) {
+        if (this.currentlyRenderingBankSlot == null) {
+            super.renderSlotContents(guiGraphics, itemstack, slot, countString);
+            return;
         }
-        context.getMatrices().push();
-        context.getMatrices().translate(0.0f, 0.0f, 100.0f);
+        renderBankSlot(guiGraphics, this.currentlyRenderingBankSlot, itemstack, countString != null);
+    }
+
+    private void renderBankSlot(GuiGraphics context, BankSlot slot, ItemStack stack, boolean drawInYellow) {
+
+        // TODO:
+        // () render locked texture
+        // render item
+        // (transparency hack): render transparent overlay
+        // render count
+        // render decorations without count
+
+        int x = slot.x;
+        int y = slot.y;
 
         if (slot.isLocked()) {
             // locked slot texture
-            context.drawTexture(WIDGETS_TEXTURE, i, j, itemStack.isEmpty() ? 16 : 0, 46, 16, 16);
+            context.blit(WIDGETS_TEXTURE, x, y, 0, 46, 16, 16);
         }
 
-        if (itemStack.isEmpty() && slot.isEnabled() && slot.isLocked()) {
-            // transparent item (not transparent)
-            context.drawItem(slot.getLockedStack(), i, j);
 
-            // overlay transparent texture with backgroud color to trick everyone into
-            // thinking the item is transparent
-            RenderSystem.enableBlend();
-            context.drawTexture(WIDGETS_TEXTURE, i, j, 200, 32, 46, 16, 16, 256, 256);
-            RenderSystem.disableBlend();
+        if (slot.isLocked() && stack.isEmpty()) {
+            // draw transparent item
+            // TODO: make transparent
+            int seed = x + y * this.imageWidth;
+            context.renderItem(stack, x, y, seed);
+        } else {
+            // draw opaque item
+            int seed = x + y * this.imageWidth;
+            context.renderItem(stack, x, y, seed);
         }
 
-        if (!bl2) {
-            if (bl) {
-                context.fill(i, j, i + 16, j + 16, -2130706433);
-            }
-            context.drawItem(itemStack, i, j, slot.x + slot.y * this.backgroundWidth);
-            this.drawItemCountInSlot(context, this.textRenderer, itemStack, i, j, drawInYellow);
-        }
-        context.getMatrices().pop();
+//        if (itemStack.isEmpty() && slot.isEnabled() && slot.isLocked()) {
+//            // transparent item (not transparent)
+//            context.drawItem(slot.getLockedStack(), i, j);
+//
+//            // overlay transparent texture with backgroud color to trick everyone into
+//            // thinking the item is transparent
+//            RenderSystem.enableBlend();
+//            context.drawTexture(WIDGETS_TEXTURE, i, j, 200, 32, 46, 16, 16, 256, 256);
+//            RenderSystem.disableBlend();
+//        }
+
+        if (drawInYellow || stack.getCount() > 1)
+            drawItemCountInSlot(context, this.font, stack.getCount(), x, y, drawInYellow);
+
+        // copyWithCount(1) and null text to force not draw count text
+        context.renderItemDecorations(this.font, stack.copyWithCount(1), x, y, null);
+
+
     }
 
-    public int calculateStackSize(Set<Slot> slots, int mode, ItemStack stack) {
-        return switch (mode) {
-            case 0 -> MathHelper.floor((float) stack.getCount() / (float) slots.size());
-            case 1 -> 1;
-            case 2 -> stack.getItem().getMaxCount();
-            default -> stack.getCount();
-        };
+    public void drawItemCountInSlot(GuiGraphics context, Font textRenderer, int count, int x, int y, boolean drawInYellow) {
+
+        // TODO: this: optimize text scale and such
+
+        PoseStack poseStack = context.pose();
+
+        poseStack.pushPose();
+
+
+        String countString = ItemCountUtils.toConsiseString(count);
+        String formattedString = drawInYellow ? ChatFormatting.YELLOW + countString : countString;
+        float scale = ItemCountUtils.scale(countString);
+
+        int textWidth = (int) (textRenderer.width(countString));
+
+        int xOffset = x + 18 - 2;
+        int yOffset = y + 18 - 2;
+
+        // scale from origin bottom right corner of slot
+        poseStack.translate(xOffset, yOffset, 0);
+        poseStack.scale(scale, scale, 1);
+        poseStack.translate(-xOffset, -yOffset, 0);
+
+        poseStack.translate(0.0f, 0.0f, 200.0f);
+        context.drawString(textRenderer, formattedString, x + 18 - 1 - textWidth, y + 9, 0xFFFFFF, true);
+
+
+        poseStack.popPose();
+
+
     }
 
-    public boolean canInsertItemIntoSlot(/* @Nullable */ Slot slot, ItemStack stack, boolean allowOverflow) {
-        boolean bl = !slot.hasStack();
-        if (slot instanceof BankSlot bankSlot) {
-            if (bankSlot.isLocked()) {
-                if (!ItemStack.areItemsAndComponentsEqual(stack, bankSlot.getLockedStack()))
-                    return false;
-            }
-        }
-        if (!bl && ItemStack.areItemsAndComponentsEqual(stack, slot.getStack())) {
-            return slot.getStack().getCount() + (allowOverflow ? 0 : stack.getCount()) <= slot.getMaxItemCount(stack);
-        }
-        return bl;
-    }
+    @Override
+    protected List<Component> getTooltipFromContainerItem(ItemStack stack) {
+        List<Component> tooltip = super.getTooltipFromContainerItem(stack);
+        if (stack.getCount() > 9999)
+            tooltip.add(1, Component.literal(FORMAT.format(stack.getCount())).withStyle(ChatFormatting.GRAY));
 
-    public void drawItemCountInSlot(GuiGraphics context, TextRenderer textRenderer, ItemStack stack, int x, int y,
-            boolean drawInYellow) {
-        LocalPlayer clientPlayerEntity;
-        float f;
-        int l;
-        int k;
-        if (stack.isEmpty()) {
-            return;
-        }
-        MatrixStack matrices = context.getMatrices();
-
-        matrices.push();
-
-        if (stack.isItemBarVisible()) {
-            int i = stack.getItemBarStep();
-            int j = stack.getItemBarColor();
-            k = x + 2;
-            l = y + 13;
-            context.fill(RenderLayer.getGuiOverlay(), k, l, k + 13, l + 2, -16777216);
-            context.fill(RenderLayer.getGuiOverlay(), k, l, k + i, l + 1, j | 0xFF000000);
-        }
-        if (stack.getCount() != 1 || drawInYellow) {
-            String count = ItemCountUtils.toConsiseString(stack.getCount());
-            String string = count;
-            String formattedString = drawInYellow ? Formatting.YELLOW.toString() + count : count;
-            matrices.translate(0.0f, 0.0f, 200.0f);
-            float scale = ItemCountUtils.scale(string);
-
-            int textWidth = (int) (textRenderer.getWidth(string));
-
-            int xOffset = x + 18 - 2;
-            int yOffset = y + 18 - 2;
-            matrices.push();
-            matrices.translate(xOffset, yOffset, 0);
-            matrices.scale(scale, scale, 1);
-            matrices.translate(-xOffset, -yOffset, 0);
-            context.drawText(textRenderer, formattedString, x + 18 - 1 - textWidth, y + 9, 0xFFFFFF, true);
-            matrices.pop();
-        }
-        f = (clientPlayerEntity = this.client.player) == null ? 0.0f
-                : clientPlayerEntity.getItemCooldownManager().getCooldownProgress(stack.getItem(),
-                        this.client.getTickDelta());
-        if (f > 0.0f) {
-            k = y + MathHelper.floor((float) (16.0f * (1.0f - f)));
-            l = k + MathHelper.ceil((float) (16.0f * f));
-            context.fill(RenderLayer.getGuiOverlay(), x, k, x + 16, l, Integer.MAX_VALUE);
-        }
-        matrices.pop();
-    }
-
-    protected void drawMouseoverTooltip(GuiGraphics context, int x, int y) {
-        if (this.handler.getCursorStack().isEmpty() && this.focusedSlot != null && this.focusedSlot.hasStack()) {
-            ItemStack itemStack = this.focusedSlot.getStack();
-            List<Text> tooltip = this.getTooltipFromItem(itemStack);
-            if (itemStack.getCount() > 9999) {
-                tooltip.add(1, Text.literal(FORMAT.format(itemStack.getCount())).formatted(Formatting.GRAY));
-            }
-            context.drawTooltip(this.textRenderer, tooltip, itemStack.getTooltipData(), x, y);
-        }
+        return tooltip;
     }
 
     private void onPickupModeButtonPress(TexturedCyclingButtonWidget<PickupModeOption> button) {
