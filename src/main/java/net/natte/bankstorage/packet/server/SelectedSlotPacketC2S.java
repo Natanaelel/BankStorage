@@ -32,7 +32,7 @@ public record SelectedSlotPacketC2S(boolean isRight, int slot) implements Custom
         ServerPlayer player = (ServerPlayer) context.player();
         ItemStack stack = player.getItemInHand(packet.isRight ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND);
         if (Util.isBankLike(stack) && Util.hasUUID(stack)) {
-            BankItemStorage bankItemStorage = Util.getBankItemStorage(Util.getUUID(stack), player.level());
+            BankItemStorage bankItemStorage = Util.getBankItemStorage(Util.getUUID(stack));
             if (bankItemStorage == null)
                 return;
             BankOptions options = Util.getOrCreateOptions(stack);

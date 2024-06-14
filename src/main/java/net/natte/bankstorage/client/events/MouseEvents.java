@@ -7,6 +7,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.HitResult;
 import net.natte.bankstorage.client.BankStorageClient;
 import net.natte.bankstorage.client.rendering.BuildModePreviewRenderer;
 import net.natte.bankstorage.container.CachedBankStorage;
@@ -16,6 +17,7 @@ import net.natte.bankstorage.packet.server.UpdateBankOptionsPacketC2S;
 import net.natte.bankstorage.util.Util;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.client.ClientHooks;
 import net.neoforged.neoforge.client.event.InputEvent;
 
 @OnlyIn(Dist.CLIENT)

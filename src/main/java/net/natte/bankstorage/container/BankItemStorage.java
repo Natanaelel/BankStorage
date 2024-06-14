@@ -1,27 +1,18 @@
 package net.natte.bankstorage.container;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
-
-import java.time.LocalDateTime;
-
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.natte.bankstorage.BankStorage;
+import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.storage.BankContainer;
 import net.natte.bankstorage.storage.BankItemHandler;
-import net.natte.bankstorage.storage.BankSlotData;
 import org.jetbrains.annotations.Nullable;
 
-import net.natte.bankstorage.BankStorage;
-import net.natte.bankstorage.options.BankOptions;
-import net.natte.bankstorage.util.Util;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class BankItemStorage {
 

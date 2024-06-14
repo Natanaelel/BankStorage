@@ -30,7 +30,7 @@ public record RequestBankStoragePacketC2S(UUID uuid, short cachedRevision) imple
 
     public static void handle(RequestBankStoragePacketC2S packet, IPayloadContext context) {
         ServerPlayer player = (ServerPlayer) context.player();
-        BankItemStorage bankItemStorage = Util.getBankItemStorage(packet.uuid, player.level());
+        BankItemStorage bankItemStorage = Util.getBankItemStorage(packet.uuid);
         // only send update if client doesn't already have latest version (revision)
         if (packet.cachedRevision != bankItemStorage.getRevision()) {
             NetworkUtil.syncCachedBankS2C(packet.uuid, player);

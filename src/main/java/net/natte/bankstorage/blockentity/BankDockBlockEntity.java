@@ -94,7 +94,7 @@ public class BankDockBlockEntity extends BlockEntity {
             return null;
 
         if (Util.isBankLike(this.bankItem)) {
-            return Util.getBankItemStorage(this.bankItem, this.level);
+            return Util.getBankItemStorage(this.bankItem);
         }
         return null;
     }

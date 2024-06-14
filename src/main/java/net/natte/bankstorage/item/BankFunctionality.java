@@ -106,7 +106,7 @@ public abstract class BankFunctionality extends Item {
             return InteractionResult.CONSUME;
 
         @Nullable
-        BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, world);
+        BankItemStorage bankItemStorage = Util.getBankItemStorage(bank);
 
         // fail
         if (bankItemStorage == null) {
@@ -147,7 +147,7 @@ public abstract class BankFunctionality extends Item {
             }
             blockToPlace = cachedBankStorage.chooseItemToPlace(options, random);
         } else {
-            bankItemStorage = Util.getBankItemStorage(bank, world);
+            bankItemStorage = Util.getBankItemStorage(bank);
             if (bankItemStorage == null) {
                 if (Util.isLink(bank))
                     player.displayClientMessage(Component.translatable("popup.bankstorage.unlinked"), true);

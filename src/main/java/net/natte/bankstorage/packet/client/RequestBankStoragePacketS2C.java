@@ -37,7 +37,7 @@ public record RequestBankStoragePacketS2C(CachedBankStorage cachedBankStorage) i
             if (newSelectedSlot != selectedSlot) {
                 BankOptions options = BankStorageClient.buildModePreviewRenderer.options;
                 options.selectedItemSlot = newSelectedSlot;
-                context.connection().send(new UpdateBankOptionsPacketC2S(options));
+                context.listener().send(new UpdateBankOptionsPacketC2S(options));
             }
         }
     }

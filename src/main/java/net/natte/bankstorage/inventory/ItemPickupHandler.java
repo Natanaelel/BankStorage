@@ -41,7 +41,7 @@ public class ItemPickupHandler {
                 if (!itemStack.has(BankStorage.UUIDComponentType))
                     continue;
 
-                BankItemStorage bankItemStorage = Util.getBankItemStorage(itemStack, world);
+                BankItemStorage bankItemStorage = Util.getBankItemStorage(itemStack);
                 if (bankItemStorage == null)
                     continue;
 

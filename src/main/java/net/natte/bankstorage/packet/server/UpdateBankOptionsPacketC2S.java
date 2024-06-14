@@ -68,7 +68,7 @@ public record UpdateBankOptionsPacketC2S(BankOptions options) implements CustomP
         else
             return;
 
-        BankItemStorage bankItemStorage = Util.getBankItemStorage(bankItem, player.level());
+        BankItemStorage bankItemStorage = Util.getBankItemStorage(bankItem);
         int clampedSelectedItemSlot = 0;
         if (bankItemStorage != null) {
             clampedSelectedItemSlot = Mth.clamp(packet.options.selectedItemSlot, 0,

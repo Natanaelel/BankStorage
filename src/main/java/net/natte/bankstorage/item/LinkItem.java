@@ -1,16 +1,16 @@
 package net.natte.bankstorage.item;
 
-import java.text.NumberFormat;
-import java.util.List;
-import java.util.Locale;
-
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.natte.bankstorage.BankStorage;
+import net.minecraft.world.item.TooltipFlag;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.util.Util;
+
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.Locale;
 
 public class LinkItem extends BankFunctionality {
 

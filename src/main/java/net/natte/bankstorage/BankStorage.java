@@ -36,6 +36,7 @@ import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
 import net.natte.bankstorage.packet.server.SelectedSlotPacketC2S;
 import net.natte.bankstorage.packet.server.SortPacketC2S;
 import net.natte.bankstorage.packet.server.UpdateBankOptionsPacketC2S;
+import net.natte.bankstorage.recipe.BankLinkRecipe;
 import net.natte.bankstorage.recipe.BankRecipe;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.screen.BankScreenHandlerFactory;
@@ -215,6 +216,7 @@ public class BankStorage {
 
     private void registerRecipes() {
         RECIPE_SERIALIZERS.register("bank_update", BankRecipe.Serializer::new);
+        RECIPE_SERIALIZERS.register("bank_link", BankLinkRecipe.Serializer::new);
 //        Registry.register(Registries.RECIPE_SERIALIZER, Util.ID("bank_upgrade"),
 //                new BankRecipe.Serializer());
 //        Registry.register(Registries.RECIPE_SERIALIZER, Util.ID("bank_link"),

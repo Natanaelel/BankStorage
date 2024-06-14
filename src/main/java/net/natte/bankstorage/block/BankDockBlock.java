@@ -70,7 +70,7 @@ public class BankDockBlock extends Block implements BlockEntityType.BlockEntityS
                 // open bank screen
                 if (!world.isClientSide) {
                     ItemStack bankItem = bankDockBlockEntity.getBank();
-                    BankItemStorage bankItemStorage = Util.getBankItemStorage(bankItem, world);
+                    BankItemStorage bankItemStorage = Util.getBankItemStorage(bankItem);
                     if (bankItemStorage == null)
                         return InteractionResult.FAIL;
                     BankScreenHandlerFactory screenHandlerFactory = new BankScreenHandlerFactory(

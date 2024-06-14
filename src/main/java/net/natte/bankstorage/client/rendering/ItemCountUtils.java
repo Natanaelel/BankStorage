@@ -1,6 +1,6 @@
 package net.natte.bankstorage.client.rendering;
 
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 public class ItemCountUtils {
 
@@ -27,9 +27,9 @@ public class ItemCountUtils {
      * 1 == vanilla
      */
     public static float scale(String string) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        int guiScale = (int) client.getWindow().getScaleFactor();
-        float width = client.textRenderer.getTextHandler().getWidth(string);
+        Minecraft client = Minecraft.getInstance();
+        int guiScale = (int) client.getWindow().getGuiScale();
+        float width = client.font.width(string);
         if (guiScale == 1)
             return width / 6.0 >= 4 ? 0.7f : 1f;
 

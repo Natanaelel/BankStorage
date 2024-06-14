@@ -1,47 +1,35 @@
 package net.natte.bankstorage.client.events;
 
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.item.ItemStack;
 import net.minecraft.world.item.ItemStack;
-import net.natte.bankstorage.BankStorageClient;
 import net.natte.bankstorage.client.BankStorageClient;
 import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.packet.server.UpdateBankOptionsPacketC2S;
 import net.natte.bankstorage.util.Util;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
+@OnlyIn(Dist.CLIENT)
 public class PickBlockEvents {
-    public static boolean pickBlock(Minecraft client) {
+    public static boolean pickBlock(ItemStack pickedStack) {
+        Minecraft client = Minecraft.getInstance();
         ItemStack right = client.player.getMainHandItem();
         ItemStack left = client.player.getOffhandItem();
-        if (pickBlockFromBank(right, true, client))
-            return true;
-        if (pickBlockFromBank(left, false, client))
-            return true;
-        return false;
+        return pickBlockFromBank(pickedStack, right, client) || pickBlockFromBank(pickedStack, left, client);
     }
 
-    private static boolean pickBlockFromBank(ItemStack stack, boolean isRight, Minecraft client) {
-        if (!Util.isBankLike(stack))
+    private static boolean pickBlockFromBank(ItemStack pickedStack, ItemStack heldStack, Minecraft client) {
+        if (!Util.isBankLike(heldStack))
             return false;
 
-        // BankOptions options = Util.getOrCreateOptions(stack);
+        // BankOptions options = Util.getOrCreateOptions(heldStack);
         BankOptions options = BankStorageClient.buildModePreviewRenderer.options;
         if (options.buildMode != BuildMode.NORMAL)
             return false;
 
-        ItemStack pickedStack = getPickedStack(stack, client);
-        if (pickedStack == null)
-            return false;
-        CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(stack);
+        CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(heldStack);
         if (cachedBankStorage == null)
             return false;
 
@@ -64,26 +52,6 @@ public class PickBlockEvents {
         options.selectedItemSlot = slot;
         client.getConnection().send(new UpdateBankOptionsPacketC2S(options));
         return true;
-
-    }
-
-    private static ItemStack getPickedStack(ItemStack stack, Minecraft client) {
-        if (client.crosshairTarget == null || client.crosshairTarget.getType() != HitResult.Type.BLOCK) {
-            return null;
-        }
-
-        BlockPos blockPos = ((BlockHitResult) client.crosshairTarget).getBlockPos();
-        BlockState blockState = client.world.getBlockState(blockPos);
-        if (blockState.isAir()) {
-            return null;
-        }
-        Block block = blockState.getBlock();
-        ItemStack pickBlockStack = block.getPickStack(client.world, blockPos, blockState);
-
-        if (pickBlockStack.isEmpty()) {
-            return null;
-        }
-        return pickBlockStack;
 
     }
 }

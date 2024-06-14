@@ -35,7 +35,7 @@ public record OpenBankFromKeyBindPacketC2S() implements CustomPacketPayload {
             return;
         ItemStack bank = player.getInventory().getItem(slot);
 
-        BankItemStorage bankItemStorage = Util.getBankItemStorage(bank, player.level());
+        BankItemStorage bankItemStorage = Util.getBankItemStorage(bank);
         if (bankItemStorage == null)
             return;
 
