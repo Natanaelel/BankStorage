@@ -32,12 +32,12 @@ public record SortPacketC2S(SortMode sortMode) implements CustomPacketPayload {
         AbstractContainerMenu screenHandler = player.containerMenu;
         if (!(screenHandler instanceof BankScreenHandler bankScreenHandler))
             return;
-        ItemStack bankLikeItem = ((BankItemStorage) bankScreenHandler.inventory).getItem();
+        ItemStack bankLikeItem = bankScreenHandler.getBankLikeItem();
         BankOptions options = Util.getOrCreateOptions(bankLikeItem);
         options.sortMode = packet.sortMode;
         Util.setOptions(bankLikeItem, options);
 
-        BankItemStorage bankItemStorage = (BankItemStorage) bankScreenHandler.inventory;
+        BankItemStorage bankItemStorage = bankScreenHandler.getBankItemStorage();
 
         Util.sortBank(bankItemStorage, player, packet.sortMode);
     }

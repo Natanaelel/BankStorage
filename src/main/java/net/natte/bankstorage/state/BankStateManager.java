@@ -19,7 +19,7 @@ public class BankStateManager {
         MinecraftServer server = event.getServer();
         DimensionDataStorage persistentStateManager = server.overworld().getDataStorage();
 
-        INSTANCE = persistentStateManager.get(TYPE, BankStorage.MOD_ID);
+        INSTANCE = persistentStateManager.computeIfAbsent(TYPE, BankStorage.MOD_ID);
 
     }
 

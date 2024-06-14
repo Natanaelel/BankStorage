@@ -7,6 +7,9 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
+import java.util.Objects;
+
+// TODO: make immutable...
 public class BankOptions {
     public PickupMode pickupMode = PickupMode.NONE;
     public BuildMode buildMode = BuildMode.NONE;
@@ -48,5 +51,20 @@ public class BankOptions {
         copy.sortMode = sortMode;
         copy.selectedItemSlot = selectedItemSlot;
         return copy;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        BankOptions options = (BankOptions) o;
+        return selectedItemSlot == options.selectedItemSlot && pickupMode == options.pickupMode && buildMode == options.buildMode && sortMode == options.sortMode;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pickupMode, buildMode, sortMode, selectedItemSlot);
     }
 }

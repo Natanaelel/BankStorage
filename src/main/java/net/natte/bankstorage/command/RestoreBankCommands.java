@@ -6,6 +6,8 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.UuidArgument;
 import net.minecraft.commands.arguments.item.ItemPredicateArgument;
+import net.minecraft.commands.synchronization.ArgumentTypeInfo;
+import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ClickEvent;
@@ -33,6 +35,10 @@ public class RestoreBankCommands {
     private static final Map<UUID, BankFilter> filters = new HashMap<>();
 
     private static final UUID TERMINAL_UUID = UUID.randomUUID();
+
+
+    private static final ArgumentTypeInfo<SortingModeArgumentType,?> SORTING_MODE_ARGUMENT_TYPE = SingletonArgumentInfo.contextFree(SortingModeArgumentType::sortingMode);
+    private static final ArgumentTypeInfo<BankTypeArgumentType,?> BANK_TYPE_ARGUMENT_TYPE = SingletonArgumentInfo.contextFree(BankTypeArgumentType::bankType);
 
     public static void registerCommands(RegisterCommandsEvent event) {
 
@@ -66,8 +72,11 @@ public class RestoreBankCommands {
 
     public static void registerArgumentTypes() {
 
-        BankStorage.COMMAND_ARGUMENT_TYPES.register("sorting_mode", () -> SingletonArgumentInfo.contextFree(SortingModeArgumentType::sortingMode));
-        BankStorage.COMMAND_ARGUMENT_TYPES.register("bank_type", () -> SingletonArgumentInfo.contextFree(BankTypeArgumentType::bankType));
+        BankStorage.COMMAND_ARGUMENT_TYPES.register("sorting_mode", () -> SORTING_MODE_ARGUMENT_TYPE);
+        BankStorage.COMMAND_ARGUMENT_TYPES.register("bank_type", () -> BANK_TYPE_ARGUMENT_TYPE);
+
+        ArgumentTypeInfos.registerByClass(SortingModeArgumentType.class, SORTING_MODE_ARGUMENT_TYPE);
+        ArgumentTypeInfos.registerByClass(BankTypeArgumentType.class, BANK_TYPE_ARGUMENT_TYPE);
 
     }
 

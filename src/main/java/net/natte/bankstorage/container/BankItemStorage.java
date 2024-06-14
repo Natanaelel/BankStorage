@@ -36,10 +36,14 @@ public class BankItemStorage {
         this.uuid = uuid;
 
         this.lockedSlots = new HashMap<>();
+    }
 
-        // crash? TODO
-        this.items = NonNullList.createWithCapacity(type.size());
-
+    public void initializeItems() {
+        List<ItemStack> list = new ArrayList<>();
+        for (int i = 0; i < type.size(); ++i) {
+            list.add(ItemStack.EMPTY);
+        }
+        this.items = list;
     }
 
     public BankItemStorage withItem(ItemStack itemStack) {
@@ -64,11 +68,13 @@ public class BankItemStorage {
 
         assert type.size() > this.type.size() : "Cannot downgrade banks!";
 
+
         BankItemStorage newBankItemStorage = new BankItemStorage(type, this.uuid);
-        for (int i = 0; i < type.size(); ++i) {
-            newBankItemStorage.items.set(i, i < this.items.size() ? this.items.get(i) : ItemStack.EMPTY);
-            newBankItemStorage.lockedSlots = this.lockedSlots;
+        newBankItemStorage.initializeItems();
+        for (int i = 0; i < this.items.size(); ++i) {
+            newBankItemStorage.items.set(i, this.items.get(i));
         }
+        newBankItemStorage.lockedSlots = this.lockedSlots;
         return newBankItemStorage;
     }
 
@@ -76,11 +82,11 @@ public class BankItemStorage {
         return this.bankLikeItem;
     }
 
-    public BankItemHandler getItemHandler(PickupMode pickupMode){
+    public BankItemHandler getItemHandler(PickupMode pickupMode) {
         return new BankItemHandler(items, lockedSlots, type, pickupMode);
     }
 
-    public Container getContainer(){
+    public Container getContainer() {
         return new BankContainer(this);
     }
 
@@ -171,7 +177,7 @@ public class BankItemStorage {
             String lastUsedByPlayerName) {
 
         BankItemStorage bankItemStorage = new BankItemStorage(type, uuid);
-
+        bankItemStorage.initializeItems();
         for (int i = 0; i < items.size(); ++i) {
             // SETSTACK
             bankItemStorage.items.set(i, items.get(i));

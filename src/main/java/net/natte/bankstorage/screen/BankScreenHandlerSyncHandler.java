@@ -27,7 +27,7 @@ public class BankScreenHandlerSyncHandler implements ContainerSynchronizer {
     @Override
     public void sendInitialData(AbstractContainerMenu screenHandler, NonNullList<ItemStack> items, ItemStack carriedItem, int[] initialData) {
         screenHandlerSyncHandler.sendInitialData(screenHandler, items, carriedItem, initialData);
-        syncLockedSlots(screenHandler, ((BankItemStorage) ((BankScreenHandler) screenHandler).inventory).getlockedSlots());
+        syncLockedSlots(screenHandler,  ((BankScreenHandler) screenHandler).getLockedSlots());
     }
 
     @Override

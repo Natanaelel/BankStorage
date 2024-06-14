@@ -11,6 +11,7 @@ import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.util.Util;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 
 public class BankType {
@@ -68,5 +69,15 @@ public class BankType {
         }
 
         throw new Error("Cannot get BankType of name '" + name + "'");
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
     }
 }

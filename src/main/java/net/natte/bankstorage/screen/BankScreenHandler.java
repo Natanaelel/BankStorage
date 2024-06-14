@@ -1,29 +1,28 @@
 package net.natte.bankstorage.screen;
 
-import java.util.Map;
-import java.util.UUID;
-
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.inventory.*;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.inventory.LockedSlot;
-import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.packet.NetworkUtil;
-import net.natte.bankstorage.util.Util;
 import org.jetbrains.annotations.Nullable;
 
-public class BankScreenHandler extends AbstractContainerMenu {
+import java.util.Map;
+import java.util.UUID;
 
+
+public class BankScreenHandler extends AbstractContainerMenu {
     public Container inventory;
 
     private BankType type;
@@ -49,26 +48,23 @@ public class BankScreenHandler extends AbstractContainerMenu {
     public BankScreenHandler(int syncId, Inventory playerInventory,
                              BankType type, ItemStack bankItem, int slot, BankItemStorage bankItemStorage,
                              ContainerLevelAccess context) {
-//        super(type.getScreenHandlerType(), syncId);
         super(BankStorage.MENU_TYPE, syncId);
         this.context = context;
 
         this.bankLikeItem = bankItem;
-//        this.bankLikeItem = inventory instanceof BankItemStorage bankItemStorage ? bankItemStorage.getItem()
-//                : ItemStack.EMPTY;
+        this.bankItemStorage = bankItemStorage;
+        this.inventory = bankItemStorage.getContainer();
+
         this.slotWithOpenedBank = slot;
         checkContainerSize(inventory, type.size());
 
         this.type = type;
-        this.inventory = bankItemStorage.getContainer();
         this.uuid = bankItemStorage.uuid;
 
         inventory.startOpen(playerInventory.player);
         int rows = this.type.rows;
         int cols = this.type.cols;
 
-//        BankItemStorage bankItemStorage = (BankItemStorage) inventory;
-        // bank
         for (int y = 0; y < rows; ++y) {
             for (int x = 0; x < cols; ++x) {
                 int slotIndex = x + y * cols;
@@ -355,7 +351,6 @@ public class BankScreenHandler extends AbstractContainerMenu {
         super.broadcastChanges();
         if (this.bankScreenSync == null)
             return;
-        BankItemStorage bankItemStorage = (BankItemStorage) inventory;
         if (bankItemStorage.getLockedSlotsRevision() != this.lockedSlotsRevision) {
             this.setLockedSlotsNoSync(bankItemStorage.getlockedSlots());
             this.bankScreenSync.syncLockedSlots(this, bankItemStorage.getlockedSlots());
@@ -369,16 +364,15 @@ public class BankScreenHandler extends AbstractContainerMenu {
 
     public void lockSlot(int index, ItemStack stack) {
         ((BankSlot) this.slots.get(index)).lock(stack);
-        ((BankItemStorage) this.inventory).lockSlot(index, stack);
+        bankItemStorage.lockSlot(index, stack);
     }
 
     public void unlockSlot(int index) {
         ((BankSlot) this.slots.get(index)).unlock();
-        ((BankItemStorage) this.inventory).unlockSlot(index);
+        bankItemStorage.unlockSlot(index);
     }
 
     public void setLockedSlotsNoSync(Map<Integer, ItemStack> lockedSlots) {
-        BankItemStorage bankItemStorage = (BankItemStorage) this.inventory;
 
         for (int i = 0; i < this.slots.size(); ++i) {
             Slot slot = this.slots.get(i);
@@ -396,10 +390,18 @@ public class BankScreenHandler extends AbstractContainerMenu {
     }
 
     public void lockedSlotsMarkDirty() {
-        ((BankItemStorage) this.inventory).updateLockedSlotsRevision();
+        bankItemStorage.updateLockedSlotsRevision();
     }
 
     public BankType getBankType() {
         return type;
+    }
+
+    public Map<Integer, ItemStack> getLockedSlots() {
+        return bankItemStorage.getlockedSlots();
+    }
+
+    public BankItemStorage getBankItemStorage() {
+        return bankItemStorage;
     }
 }

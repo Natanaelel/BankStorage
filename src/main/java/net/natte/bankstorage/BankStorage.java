@@ -28,26 +28,13 @@ import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
 import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.packet.client.SyncedRandomPacketS2C;
 import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
-import net.natte.bankstorage.packet.server.KeyBindUpdatePacketC2S;
-import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
-import net.natte.bankstorage.packet.server.OpenBankFromKeyBindPacketC2S;
-import net.natte.bankstorage.packet.server.PickupModePacketC2S;
-import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
-import net.natte.bankstorage.packet.server.SelectedSlotPacketC2S;
-import net.natte.bankstorage.packet.server.SortPacketC2S;
-import net.natte.bankstorage.packet.server.UpdateBankOptionsPacketC2S;
+import net.natte.bankstorage.packet.server.*;
 import net.natte.bankstorage.recipe.BankLinkRecipe;
-import net.natte.bankstorage.recipe.BankRecipe;
+import net.natte.bankstorage.recipe.BankUpgradeRecipe;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.screen.BankScreenHandlerFactory;
 import net.natte.bankstorage.state.BankStateManager;
 import net.natte.bankstorage.util.Util;
-
-import java.util.Random;
-import java.util.UUID;
-import java.util.function.Supplier;
-
-import net.neoforged.bus.EventBus;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -66,9 +53,11 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
-import net.neoforged.neoforge.registries.RegisterEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Random;
+import java.util.UUID;
 
 @Mod(BankStorage.MOD_ID)
 public class BankStorage {
@@ -91,14 +80,17 @@ public class BankStorage {
 
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MOD_ID);
-    public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(MOD_ID);
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MOD_ID);
+    public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(MOD_ID);
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
     public static final DeferredRegister<MenuType<?>> SCREEN_HANDLERS = DeferredRegister.create(Registries.MENU, MOD_ID);
     private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MOD_ID);
     private static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(Registries.RECIPE_SERIALIZER, MOD_ID);
     public static final DeferredRegister<ArgumentTypeInfo<?, ?>> COMMAND_ARGUMENT_TYPES = DeferredRegister.create(BuiltInRegistries.COMMAND_ARGUMENT_TYPE, BankStorage.MOD_ID);
 
+
+    public static final DeferredHolder<RecipeSerializer<?>, BankUpgradeRecipe.Serializer> BANK_UPGRADE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("bank_upgrade", BankUpgradeRecipe.Serializer::new);
+    public static final DeferredHolder<RecipeSerializer<?>, BankLinkRecipe.Serializer> BANK_LINK_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("bank_link", BankLinkRecipe.Serializer::new);
 
     public static final DeferredHolder<Block, BankDockBlock> BANK_DOCK_BLOCK = BLOCKS.register("bank_dock", () -> new BankDockBlock(BlockBehaviour.Properties.of().strength(5.0f, 6.0f)
             .mapColor(MapColor.COLOR_BLACK).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion()));
@@ -120,7 +112,6 @@ public class BankStorage {
 
     public BankStorage(IEventBus modBus) {
         registerBanks();
-        registerRecipes();
         registerCommands();
         registerScreenHandlers();
 
@@ -216,11 +207,6 @@ public class BankStorage {
 
     private void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BANK_DOCK_BLOCK_ENTITY.get(), (dock, side) -> dock.getItemHandler());
-    }
-
-    private void registerRecipes() {
-        RECIPE_SERIALIZERS.register("bank_update", BankRecipe.Serializer::new);
-        RECIPE_SERIALIZERS.register("bank_link", BankLinkRecipe.Serializer::new);
     }
 
     public void registerCommands() {

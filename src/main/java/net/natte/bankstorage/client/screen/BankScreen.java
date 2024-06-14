@@ -49,6 +49,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
     @Nullable
     private BankSlot currentlyRenderingBankSlot = null;
+    private boolean isLockSlotKeyDown;
 
     public BankScreen(BankScreenHandler screenHandler, Inventory playerInventory, Component text) {
         super(screenHandler, playerInventory, text);
@@ -91,36 +92,37 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
             return true;
         }
         // left click + lockSlot keybind
-        if (button == 0 && BankStorageClient.lockSlotKeyBinding.isDown()) {
-            {
-                int hoveredSlotIndex = bankSlot.index;
-                ItemStack hoveredStack = bankSlot.getItem();
-                ItemStack cursorStack = this.menu.getCarried();
-                boolean isLocked = bankSlot.isLocked();
+        if (button == 0 && this.isLockSlotKeyDown) {
 
-                Consumer<@Nullable ItemStack> lockSlot = stack -> {
-                    Minecraft.getInstance().getConnection().send(new LockSlotPacketC2S(this.menu.containerId, hoveredSlotIndex,
-                            stack == null ? ItemStack.EMPTY : stack, stack != null));
-                };
+            System.out.println("locking some slot now frfr");
+            int hoveredSlotIndex = bankSlot.index;
+            ItemStack hoveredStack = bankSlot.getItem();
+            ItemStack cursorStack = this.menu.getCarried();
+            boolean isLocked = bankSlot.isLocked();
 
-                if (isLocked) {
-                    if (cursorStack.isEmpty()) {
-                        lockSlot.accept(null);
-                    } else if (hoveredStack.isEmpty()) {
-                        lockSlot.accept(cursorStack);
-                    }
-                } else {
-                    if (hoveredStack.isEmpty()) {
-                        lockSlot.accept(cursorStack);
-                    } else if (cursorStack.isEmpty()
-                            || ItemStack.isSameItemSameComponents(hoveredStack, cursorStack)) {
-                        lockSlot.accept(hoveredStack);
-                    }
+            Consumer<@Nullable ItemStack> lockSlot = stack -> {
+                Minecraft.getInstance().getConnection().send(new LockSlotPacketC2S(this.menu.containerId, hoveredSlotIndex,
+                        stack == null ? ItemStack.EMPTY : stack, stack != null));
+            };
 
+            if (isLocked) {
+                if (cursorStack.isEmpty()) {
+                    lockSlot.accept(null);
+                } else if (hoveredStack.isEmpty()) {
+                    lockSlot.accept(cursorStack);
                 }
-                this.skipNextRelease = true;
-                return true;
+            } else {
+                if (hoveredStack.isEmpty()) {
+                    lockSlot.accept(cursorStack);
+                } else if (cursorStack.isEmpty()
+                        || ItemStack.isSameItemSameComponents(hoveredStack, cursorStack)) {
+                    lockSlot.accept(hoveredStack);
+                }
+
             }
+            this.skipNextRelease = true;
+            return true;
+
         }
 
         return super.mouseClicked(mouseX, mouseY, button);
@@ -130,16 +132,20 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (BankStorageClient.lockSlotKeyBinding.matches(keyCode, scanCode)) {
-            BankStorageClient.lockSlotKeyBinding.setDown(true);
-        }
+            this.isLockSlotKeyDown = true;
+            System.out.println("press: match");
+        } else
+            System.out.println("press: no match");
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
         if (BankStorageClient.lockSlotKeyBinding.matches(keyCode, scanCode)) {
-            BankStorageClient.lockSlotKeyBinding.setDown(false);
-        }
+            this.isLockSlotKeyDown = false;
+            System.out.println("release: match");
+        } else
+            System.out.println("release: no match");
         return super.keyReleased(keyCode, scanCode, modifiers);
     }
 

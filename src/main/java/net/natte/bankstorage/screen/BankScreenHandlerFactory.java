@@ -46,16 +46,18 @@ public class BankScreenHandlerFactory implements MenuProvider {
         ItemStack bankItem = ItemStack.STREAM_CODEC.decode(buf);
         int slot = buf.readInt();
 
-
-        return new BankScreenHandler(syncId, playerInventory, type, bankItem, slot,
-                new BankItemStorage(type, null), ContainerLevelAccess.NULL);
+        BankItemStorage bankItemStorage = new BankItemStorage(type, null);
+        bankItemStorage.initializeItems();
+        return new BankScreenHandler(syncId, playerInventory, type, bankItem, slot, bankItemStorage, ContainerLevelAccess.NULL);
     }
 
     @Override
     public Component getDisplayName() {
-        return bankItem.getDisplayName();
+        return bankItem.getHoverName();
     }
 
+
+    // called server side only
     @Nullable
     @Override
     public BankScreenHandler createMenu(int syncId, Inventory playerInventory, Player player) {

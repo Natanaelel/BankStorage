@@ -9,15 +9,14 @@ import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.item.BankItem;
 
 import java.util.Optional;
 
-public class BankRecipe extends ShapedRecipe {
+public class BankUpgradeRecipe extends ShapedRecipe {
 
-    public static final Serializer SERIALIZER = new Serializer();
-
-    public BankRecipe(ShapedRecipe recipe) {
+    public BankUpgradeRecipe(ShapedRecipe recipe) {
         super(recipe.getGroup(), recipe.category(), recipe.pattern, recipe.result);
     }
 
@@ -25,6 +24,7 @@ public class BankRecipe extends ShapedRecipe {
     public boolean isSpecial() {
         return true;
     }
+
 
     @Override
     public ItemStack assemble(CraftingContainer recipeInputInventory, HolderLookup.Provider registryLookup) {
@@ -42,20 +42,20 @@ public class BankRecipe extends ShapedRecipe {
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return SERIALIZER;
+        return BankStorage.BANK_UPGRADE_RECIPE_SERIALIZER.get();
     }
 
-    public static class Serializer implements RecipeSerializer<BankRecipe> {
-        public static final MapCodec<BankRecipe> CODEC = ShapedRecipe.Serializer.CODEC.xmap(BankRecipe::new, ShapedRecipe.class::cast);
-        public static final StreamCodec<RegistryFriendlyByteBuf, BankRecipe> STREAM_CODEC = ShapedRecipe.Serializer.STREAM_CODEC.map(BankRecipe::new, ShapedRecipe.class::cast);
+    public static class Serializer implements RecipeSerializer<BankUpgradeRecipe> {
+        public static final MapCodec<BankUpgradeRecipe> CODEC = ShapedRecipe.Serializer.CODEC.xmap(BankUpgradeRecipe::new, ShapedRecipe.class::cast);
+        public static final StreamCodec<RegistryFriendlyByteBuf, BankUpgradeRecipe> STREAM_CODEC = ShapedRecipe.Serializer.STREAM_CODEC.map(BankUpgradeRecipe::new, ShapedRecipe.class::cast);
 
         @Override
-        public MapCodec<BankRecipe> codec() {
+        public MapCodec<BankUpgradeRecipe> codec() {
             return CODEC;
         }
 
         @Override
-        public StreamCodec<RegistryFriendlyByteBuf, BankRecipe> streamCodec() {
+        public StreamCodec<RegistryFriendlyByteBuf, BankUpgradeRecipe> streamCodec() {
             return STREAM_CODEC;
         }
     }

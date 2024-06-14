@@ -22,7 +22,12 @@ public class BankLinkRecipe extends ShapedRecipe {
     }
 
     @Override
-    public ItemStack assemble(CraftingContainer recipeInputInventory,  HolderLookup.Provider registryLookup) {
+    public boolean isSpecial() {
+        return true;
+    }
+
+    @Override
+    public ItemStack assemble(CraftingContainer recipeInputInventory, HolderLookup.Provider registryLookup) {
         Optional<ItemStack> maybeBankItemStack = recipeInputInventory.getItems().stream()
                 .filter(stack -> Util.isBank(stack)).findFirst();
 
@@ -48,6 +53,11 @@ public class BankLinkRecipe extends ShapedRecipe {
                 defaultedList.set(i, stack.copyWithCount(1));
         }
         return defaultedList;
+    }
+
+    @Override
+    public RecipeSerializer<?> getSerializer() {
+        return BankStorage.BANK_LINK_RECIPE_SERIALIZER.get();
     }
 
     public static class Serializer implements RecipeSerializer<BankLinkRecipe> {

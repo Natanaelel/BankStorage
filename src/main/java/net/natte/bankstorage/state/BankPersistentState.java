@@ -68,6 +68,7 @@ public class BankPersistentState extends SavedData {
         BankItemStorage bank = this.BANK_MAP.get(uuid);
         if (bank == null) {
             bank = new BankItemStorage(type, uuid);
+            bank.initializeItems();
             set(uuid, bank);
         }
         if (bank.type != type) {

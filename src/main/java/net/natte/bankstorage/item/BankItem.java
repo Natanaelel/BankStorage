@@ -37,8 +37,8 @@ public class BankItem extends BankFunctionality {
                 tooltip.add(Component.literal(Util.getUUID(stack).toString()).withStyle(ChatFormatting.DARK_AQUA));
         }
         Component formattedStackLimit = Component.literal(NUMBER_FORMAT.format(this.type.stackLimit));
-        tooltip.add(Component.translatable("tooptip.bankstorage.stacklimit", formattedStackLimit));
-        tooltip.add(Component.translatable("tooptip.bankstorage.numslots", Component.literal(String.valueOf(this.type.size()))));
+        tooltip.add(Component.translatable("tooltip.bankstorage.stacklimit", formattedStackLimit));
+        tooltip.add(Component.translatable("tooltip.bankstorage.numslots", Component.literal(String.valueOf(this.type.size()))));
         super.appendHoverText(stack, context, tooltip, tooltipType);
     }
 }
