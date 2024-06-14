@@ -1,20 +1,20 @@
 package net.natte.bankstorage.command;
 
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.natte.bankstorage.command.BankTypeArgumentType.BankType;
+import net.natte.bankstorage.container.BankItemStorage;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.natte.bankstorage.command.BankTypeArgumentType.BankType;
-import net.natte.bankstorage.container.BankItemStorage;
-
 public class BankFilter {
 
-    private List<BankType> bankTypeFilter;
-    private List<UUID> playerFilter;
-    private List<Predicate<ItemStack>> itemFilter;
+    private final List<BankType> bankTypeFilter;
+    private final List<UUID> playerFilter;
+    private final List<Predicate<ItemStack>> itemFilter;
 
     public BankFilter() {
         bankTypeFilter = new ArrayList<>();
@@ -40,8 +40,8 @@ public class BankFilter {
         itemFilter.clear();
     }
 
-    public void addPlayer(ServerPlayerEntity player) {
-        playerFilter.add(player.getUuid());
+    public void addPlayer(ServerPlayer player) {
+        playerFilter.add(player.getUUID());
     }
 
     public void addType(BankType bankType) {
@@ -94,7 +94,7 @@ public class BankFilter {
             return true;
 
         for (Predicate<ItemStack> predicate : itemFilter) {
-            boolean hasMatchingStack = bankItemStorage.heldStacks.stream().anyMatch(predicate);
+            boolean hasMatchingStack = bankItemStorage.getItems().stream().anyMatch(predicate);
             if (!hasMatchingStack)
                 return false;
         }

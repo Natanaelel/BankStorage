@@ -40,7 +40,7 @@ import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
 import net.natte.bankstorage.util.Util;
 
-//@Environment(EnvType.CLIENT)
+
 @Mod(value = BankStorage.MOD_ID, dist = Dist.CLIENT)
 public class BankStorageClient {
 
@@ -71,6 +71,7 @@ public class BankStorageClient {
         modBus.addListener(this::registerTickEvents);
         modBus.addListener(this::registerCommands);
         modBus.addListener(this::registerItemColors);
+        modBus.addListener(MouseEvents::onScroll);
 
     }
 

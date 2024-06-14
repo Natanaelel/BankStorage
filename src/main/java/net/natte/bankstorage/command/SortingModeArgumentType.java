@@ -1,12 +1,11 @@
 package net.natte.bankstorage.command;
 
 import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.StringRepresentableArgument;
+import net.minecraft.util.StringRepresentable;
 
-import net.minecraft.command.argument.EnumArgumentType;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.StringIdentifiable;
-
-public class SortingModeArgumentType extends EnumArgumentType<SortingModeArgumentType.SortingMode> {
+public class SortingModeArgumentType extends StringRepresentableArgument<SortingModeArgumentType.SortingMode> {
 
     protected SortingModeArgumentType() {
         super(SortingMode.CODEC, SortingMode::values);
@@ -16,27 +15,27 @@ public class SortingModeArgumentType extends EnumArgumentType<SortingModeArgumen
         return new SortingModeArgumentType();
     }
 
-    public static enum SortingMode implements StringIdentifiable {
+    public static enum SortingMode implements StringRepresentable {
         DATE("date"),
         TYPE("type"),
         PLAYER("player");
 
-        private String name;
-        public static final com.mojang.serialization.Codec<SortingMode> CODEC = StringIdentifiable
-                .createCodec(SortingMode::values);
+        private final String name;
+        public static final com.mojang.serialization.Codec<SortingMode> CODEC = StringRepresentable
+                .fromEnum(SortingMode::values);
 
         SortingMode(String name) {
             this.name = name;
         }
 
         @Override
-        public String asString() {
+        public String getSerializedName() {
             return this.name;
         }
 
     }
 
-    public static SortingMode getSortingMode(CommandContext<ServerCommandSource> context, String id) {
+    public static SortingMode getSortingMode(CommandContext<CommandSourceStack> context, String id) {
         return context.getArgument(id, SortingMode.class);
 
     }

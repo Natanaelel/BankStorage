@@ -13,6 +13,7 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,7 +41,7 @@ public class CachedBankStorage {
             o -> o.revision,
             CachedBankStorage::new);
 
-    private static Map<UUID, CachedBankStorage> BANK_CACHE = new HashMap<>();
+    private static final Map<UUID, CachedBankStorage> BANK_CACHE = new HashMap<>();
 
     public static Set<UUID> bankRequestQueue = new HashSet<>();
 

@@ -3,7 +3,6 @@
 	"package": "net.natte.bankstorage.client.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"MouseMixin",
 		"ItemPickMixin",
 		"KeyBindUpdateMixin",
 		"ScreenMixin"

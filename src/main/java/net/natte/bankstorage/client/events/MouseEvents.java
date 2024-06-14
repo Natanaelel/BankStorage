@@ -1,5 +1,6 @@
 package net.natte.bankstorage.client.events;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -15,16 +16,17 @@ import net.natte.bankstorage.packet.server.UpdateBankOptionsPacketC2S;
 import net.natte.bankstorage.util.Util;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.client.event.InputEvent;
 
 @OnlyIn(Dist.CLIENT)
 public class MouseEvents {
 
-    public static boolean onScroll(Inventory playerInventory, double scroll) {
-
-        Player player = playerInventory.player;
+    //    public static boolean onScroll(Inventory playerInventory, double scroll) {
+    public static void onScroll(InputEvent.MouseScrollingEvent event) {
+        LocalPlayer player = Minecraft.getInstance().player;
 
         if (!player.isShiftKeyDown())
-            return false;
+            return;
 
         ItemStack right = player.getMainHandItem();
         ItemStack left = player.getOffhandItem();
@@ -34,22 +36,24 @@ public class MouseEvents {
         else if (Util.isBankLike(left))
             bank = left;
         else
-            return false;
+            return;
 
         if (!isNormalBuildMode(bank))
-            return false;
+            return;
 
         BuildModePreviewRenderer preview = BankStorageClient.buildModePreviewRenderer;
         BankOptions options = preview.options;
         int selectedItemSlot = options.selectedItemSlot;
-        selectedItemSlot -= (int) Math.signum(scroll);
+        int newSelectedItemSlot = selectedItemSlot - (int) Math.signum(event.getScrollDeltaY());
         CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(bank);
         if (cachedBankStorage == null)
-            return false;
-        options.selectedItemSlot = Mth.clamp(selectedItemSlot, 0, cachedBankStorage.blockItems.size() - 1);
-        ((LocalPlayer) player).connection.send(new UpdateBankOptionsPacketC2S(options));
-
-        return true;
+            return;
+        newSelectedItemSlot = Mth.clamp(newSelectedItemSlot, 0, cachedBankStorage.blockItems.size() - 1);
+        if (newSelectedItemSlot != selectedItemSlot) {
+            options.selectedItemSlot = newSelectedItemSlot;
+            player.connection.send(new UpdateBankOptionsPacketC2S(options));
+            event.setCanceled(true);
+        }
 
     }
 

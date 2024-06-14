@@ -3,15 +3,19 @@ package net.natte.bankstorage.client.screen;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -77,23 +81,25 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (!(this.hoveredSlot instanceof BankSlot bankSlot))
+            return super.mouseClicked(mouseX, mouseY, button);
+
         // middle click sorting
-        if (button == 2 && (this.hoveredSlot instanceof BankSlot)) {
-            minecraft.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f));
+        if (button == 2) {
+            minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f));
             sendSortPacket();
             return true;
         }
         // left click + lockSlot keybind
-        if (button == 0 && BankStorageClient.lockSlotKeyBinding.isPressed()) {
-            Slot slot = this.getSlotAt(mouseX, mouseY);
-            if (slot instanceof BankSlot hoveredSlot) {
-                int hoveredSlotIndex = hoveredSlot.getIndex();
-                ItemStack hoveredStack = hoveredSlot.getStack();
-                ItemStack cursorStack = this.handler.getCursorStack();
-                boolean isLocked = hoveredSlot.isLocked();
+        if (button == 0 && BankStorageClient.lockSlotKeyBinding.isDown()) {
+            {
+                int hoveredSlotIndex = bankSlot.index;
+                ItemStack hoveredStack = bankSlot.getItem();
+                ItemStack cursorStack = this.menu.getCarried();
+                boolean isLocked = bankSlot.isLocked();
 
                 Consumer<@Nullable ItemStack> lockSlot = stack -> {
-                    ClientPlayNetworking.send(new LockSlotPacketC2S(this.handler.syncId, hoveredSlotIndex,
+                    Minecraft.getInstance().getConnection().send(new LockSlotPacketC2S(this.menu.containerId, hoveredSlotIndex,
                             stack == null ? ItemStack.EMPTY : stack, stack != null));
                 };
 
@@ -107,12 +113,12 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
                     if (hoveredStack.isEmpty()) {
                         lockSlot.accept(cursorStack);
                     } else if (cursorStack.isEmpty()
-                            || ItemStack.areItemsAndComponentsEqual(hoveredStack, cursorStack)) {
+                            || ItemStack.isSameItemSameComponents(hoveredStack, cursorStack)) {
                         lockSlot.accept(hoveredStack);
                     }
 
                 }
-                this.cancelNextRelease = true;
+                this.skipNextRelease = true;
                 return true;
             }
         }
@@ -215,7 +221,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 //        }
 
         if (drawInYellow || stack.getCount() > 1)
-            drawItemCountInSlot(context, this.font, stack.getCount(), x, y, drawInYellow);
+            drawItemCount(context, this.font, stack.getCount(), x, y, drawInYellow);
 
         // copyWithCount(1) and null text to force not draw count text
         context.renderItemDecorations(this.font, stack.copyWithCount(1), x, y, null);
@@ -223,7 +229,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
     }
 
-    public void drawItemCountInSlot(GuiGraphics context, Font textRenderer, int count, int x, int y, boolean drawInYellow) {
+    public static void drawItemCount(GuiGraphics context, Font textRenderer, int count, int x, int y, boolean drawInYellow) {
 
         // TODO: this: optimize text scale and such
 
@@ -272,7 +278,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
             case VOID_OVERFLOW -> PickupModeOption.NO_PICKUP;
         };
         button.refreshTooltip();
-        ClientPlayNetworking.send(new PickupModePacketC2S());
+        Minecraft.getInstance().getConnection().send(new PickupModePacketC2S());
     }
 
     private void onSortButtonPress(SortButtonWidget button) {
@@ -290,7 +296,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
     private void sendSortPacket() {
 
-        ClientPlayNetworking.send(new SortPacketC2S(this.sortMode));
+        Minecraft.getInstance().getConnection().send(new SortPacketC2S(this.sortMode));
     }
 }
 
@@ -300,15 +306,15 @@ enum PickupModeOption implements CycleableOption {
     FILTERED("filtered", 28, 70),
     VOID_OVERFLOW("void_overflow", 42, 70);
 
-    private Text name;
-    private Text info;
+    private final Component name;
+    private final Component info;
 
-    private int uOffset;
-    private int vOffset;
+    private final int uOffset;
+    private final int vOffset;
 
     private PickupModeOption(String name, int uOffset, int vOffset) {
-        this.name = Text.translatable("title.bankstorage.pickupmode." + name);
-        this.info = Text.translatable("tooltip.bankstorage.pickupmode." + name);
+        this.name = Component.translatable("title.bankstorage.pickupmode." + name);
+        this.info = Component.translatable("tooltip.bankstorage.pickupmode." + name);
         this.uOffset = uOffset;
         this.vOffset = vOffset;
     }
@@ -332,12 +338,12 @@ enum PickupModeOption implements CycleableOption {
     }
 
     @Override
-    public Text getName() {
+    public Component getName() {
         return this.name;
     }
 
     @Override
-    public Text getInfo() {
+    public Component getInfo() {
         return this.info;
     }
 

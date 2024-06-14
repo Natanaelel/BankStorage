@@ -1,12 +1,11 @@
 package net.natte.bankstorage.command;
 
 import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.StringRepresentableArgument;
+import net.minecraft.util.StringRepresentable;
 
-import net.minecraft.command.argument.EnumArgumentType;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.StringIdentifiable;
-
-public class BankTypeArgumentType extends EnumArgumentType<BankTypeArgumentType.BankType> {
+public class BankTypeArgumentType extends StringRepresentableArgument<BankTypeArgumentType.BankType> {
 
     protected BankTypeArgumentType() {
         super(BankType.CODEC, BankType::values);
@@ -16,7 +15,7 @@ public class BankTypeArgumentType extends EnumArgumentType<BankTypeArgumentType.
         return new BankTypeArgumentType();
     }
 
-    public static enum BankType implements StringIdentifiable {
+    public static enum BankType implements StringRepresentable {
         BANK_1("bank_1"),
         BANK_2("bank_2"),
         BANK_3("bank_3"),
@@ -25,22 +24,22 @@ public class BankTypeArgumentType extends EnumArgumentType<BankTypeArgumentType.
         BANK_6("bank_6"),
         BANK_7("bank_7");
 
-        private String name;
-        public static final com.mojang.serialization.Codec<BankType> CODEC = StringIdentifiable
-                .createCodec(BankType::values);
+        private final String name;
+        public static final com.mojang.serialization.Codec<BankType> CODEC = StringRepresentable
+                .fromEnum(BankType::values);
 
         BankType(String name) {
             this.name = name;
         }
 
         @Override
-        public String asString() {
+        public String getSerializedName() {
             return this.name;
         }
 
     }
 
-    public static BankType getBankType(CommandContext<ServerCommandSource> context, String id) {
+    public static BankType getBankType(CommandContext<CommandSourceStack> context, String id) {
         return context.getArgument(id, BankType.class);
 
     }

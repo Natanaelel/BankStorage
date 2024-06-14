@@ -1,30 +1,11 @@
 package net.natte.bankstorage.util;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
-import net.minecraft.network.chat.Component;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
@@ -34,8 +15,12 @@ import net.natte.bankstorage.item.LinkItem;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.SortMode;
 import net.natte.bankstorage.screen.BankScreenHandler;
-import net.natte.bankstorage.state.BankPersistentState;
 import net.natte.bankstorage.state.BankStateManager;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class Util {
 
@@ -99,11 +84,11 @@ public class Util {
         // and clear bank
         List<HugeItemStack> collectedItems = new ArrayList<>();
         for (int i = 0; i < bankItemStorage.size(); ++i) {
-            ItemStack itemStack = bankItemStorage.heldStacks.get(i);
-            bankItemStorage.setStack(i, ItemStack.EMPTY);
+            ItemStack itemStack = bankItemStorage.getItems().get(i);
+            bankItemStorage.getItems().set(i, ItemStack.EMPTY);
             boolean didExist = false;
             for (HugeItemStack existing : collectedItems) {
-                if (ItemStack.areItemsAndComponentsEqual(itemStack, existing.stack)) {
+                if (ItemStack.isSameItemSameComponents(itemStack, existing.stack)) {
                     existing.count += itemStack.getCount();
                     didExist = true;
                     break;
@@ -130,20 +115,22 @@ public class Util {
 
         // first fill locked slots with their item
         for (HugeItemStack collectedItem : collectedItems) {
-            bankItemStorage.getlockedSlots().keySet().stream().filter(index -> ItemStack.areItemsAndComponentsEqual(collectedItem.stack, bankItemStorage.getLockedStack(index))).sorted()                       // SETSTACK
-                    .forEach(index -> bankItemStorage.setStack(index, collectedItem.split(slotSize)));
+            bankItemStorage.getlockedSlots().keySet().stream().filter(index -> ItemStack.isSameItemSameComponents(collectedItem.stack, bankItemStorage.getLockedStack(index))).sorted()                       // SETSTACK
+                    .forEach(index -> bankItemStorage.getItems().set(index, collectedItem.split(slotSize)));
         }
 
         // fill empty bank slots one at a time
         for (HugeItemStack collectedItem : collectedItems) {
 
-            if (collectedItem.count == 0) continue;
+            if (collectedItem.count == 0)
+                continue;
             for (int i = 0; i < bankItemStorage.size(); ++i) {
-                if (bankItemStorage.getLockedStack(i) != null) continue;
-                ItemStack existingStack = bankItemStorage.getStack(i);
+                if (bankItemStorage.getLockedStack(i) != null)
+                    continue;
+                ItemStack existingStack = bankItemStorage.getItems().get(i);
                 if (existingStack.isEmpty()) {
                     // SETSTACK
-                    bankItemStorage.setStack(i, collectedItem.split(slotSize));
+                    bankItemStorage.getItems().set(i, collectedItem.split(slotSize));
                 }
             }
         }
@@ -153,7 +140,7 @@ public class Util {
 
             while (collectedItem.count > 0) {
                 BankStorage.LOGGER.warn("Item does not fit in bank after sort. This *should* be impossible. item: " + collectedItem.stack + " count: " + collectedItem.count);
-                player.getInventory().offerOrDrop(collectedItem.split(collectedItem.stack.getMaxCount()));
+                player.getInventory().placeItemBackInInventory(collectedItem.split(collectedItem.stack.getMaxStackSize()));
             }
         }
     }
@@ -162,12 +149,8 @@ public class Util {
      * Doesn't Upgrade {@link BankType}.
      * Assumes {@link BankItemStorage} with this uuid already exists.
      */
-    public static BankItemStorage getBankItemStorage(UUID uuid, Level world) {
-
-        BankPersistentState serverState = BankStateManager.getState(world.getServer());
-        BankItemStorage bankItemStorage = serverState.get(uuid);
-
-        return bankItemStorage;
+    public static BankItemStorage getBankItemStorage(UUID uuid) {
+        return BankStateManager.getState().get(uuid);
     }
 
     /**
@@ -176,11 +159,12 @@ public class Util {
      * Upgrades {@link BankType} if needed
      */
     @Nullable
-    public static BankItemStorage getBankItemStorage(ItemStack bank, Level world) {
+    public static BankItemStorage getBankItemStorage(ItemStack bank) {
 
         if (Util.isLink(bank)) {
-            if (!Util.hasUUID(bank)) return null;
-            BankItemStorage bankItemStorage = getBankItemStorage(Util.getUUID(bank), world);
+            if (!Util.hasUUID(bank))
+                return null;
+            BankItemStorage bankItemStorage = getBankItemStorage(Util.getUUID(bank));
             if (bankItemStorage.type != bank.get(BankStorage.BankTypeComponentType)) {
                 bank.set(BankStorage.BankTypeComponentType, bankItemStorage.type);
             }
@@ -188,12 +172,11 @@ public class Util {
         }
 
         UUID uuid = hasUUID(bank) ? getUUID(bank) : UUID.randomUUID();
-        if (!hasUUID(bank)) bank.set(BankStorage.UUIDComponentType, uuid);
+        if (!hasUUID(bank))
+            bank.set(BankStorage.UUIDComponentType, uuid);
 
         BankType type = ((BankItem) bank.getItem()).getType();
-        BankPersistentState serverState = BankStateManager.getState(world.getServer());
-        BankItemStorage bankItemStorage = serverState.getOrCreate(uuid, type);
-        return bankItemStorage;
+        return BankStateManager.getState().getOrCreate(uuid, type);
     }
 
     public static ResourceLocation ID(String path) {
@@ -201,25 +184,11 @@ public class Util {
     }
 
     public static @Nullable UUID getUUIDFromScreenHandler(AbstractContainerMenu screenHandler) {
-        if (!(screenHandler instanceof BankScreenHandler bankScreenHandler)) return null;
-        if (!(bankScreenHandler.inventory instanceof BankItemStorage bankItemStorage)) return null;
+        if (!(screenHandler instanceof BankScreenHandler bankScreenHandler))
+            return null;
+        if (!(bankScreenHandler.inventory instanceof BankItemStorage bankItemStorage))
+            return null;
         return bankItemStorage.uuid;
-    }
-
-    public static void invalid(PlayerEntity playerEntity) {
-        playerEntity.sendMessage(invalid());
-    }
-
-    public static Component invalid() {
-        ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.OPEN_URL, Text.translatable("github_url.bankstorage").getString());
-
-        HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.translatable("open_github_url.bankstorage"));
-
-        return Text.translatable("invalid.bankstorage").append(Text.literal("\n§r")).append(Text.translatable("github_url.bankstorage").styled(style -> style.withHoverEvent(hoverEvent).withClickEvent(clickEvent).withUnderline(true).withColor(Formatting.BLUE)));
-    }
-
-    public static Component invalid(String context) {
-        return invalid().copy().append(Component.literal(" context: " + context));
     }
 }
 
@@ -238,13 +207,11 @@ class HugeItemStack {
     }
 
     public String getName() {
-        return this.stack.getName().getString();
+        return this.stack.getHoverName().getString();
     }
 
     public String getModName() {
-        if (id == null) return "";
-        ResourceLocation id = Registries.ITEM.getId(this.stack.getItem());
-        return id.getNamespace();
+        return BuiltInRegistries.ITEM.getKey(this.stack.getItem()).getNamespace();
     }
 
     public ItemStack split(int count) {

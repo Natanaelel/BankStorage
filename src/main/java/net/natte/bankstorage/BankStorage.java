@@ -1,8 +1,10 @@
 package net.natte.bankstorage;
 
+import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -20,15 +22,12 @@ import net.natte.bankstorage.block.BankDockBlock;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.command.RestoreBankCommands;
 import net.natte.bankstorage.container.BankType;
-import net.natte.bankstorage.inventory.ItemPickupHandler;
 import net.natte.bankstorage.item.LinkItem;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
 import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.packet.client.SyncedRandomPacketS2C;
 import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
-// import net.natte.bankstorage.packet.screensync.SyncContainerPacketS2C;
-// import net.natte.bankstorage.packet.screensync.SyncLargeSlotPacketS2C;
 import net.natte.bankstorage.packet.server.KeyBindUpdatePacketC2S;
 import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
 import net.natte.bankstorage.packet.server.OpenBankFromKeyBindPacketC2S;
@@ -37,7 +36,6 @@ import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
 import net.natte.bankstorage.packet.server.SelectedSlotPacketC2S;
 import net.natte.bankstorage.packet.server.SortPacketC2S;
 import net.natte.bankstorage.packet.server.UpdateBankOptionsPacketC2S;
-import net.natte.bankstorage.recipe.BankLinkRecipe;
 import net.natte.bankstorage.recipe.BankRecipe;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.screen.BankScreenHandlerFactory;
@@ -46,9 +44,7 @@ import net.natte.bankstorage.util.Util;
 
 import java.util.Random;
 import java.util.UUID;
-import java.util.function.Supplier;
 
-import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -57,9 +53,7 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.entity.EntityEvent;
-import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.server.ServerLifecycleEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
@@ -99,6 +93,8 @@ public class BankStorage {
     public static final DataComponentType<BankType> BankTypeComponentType = DataComponentType.<BankType>builder().persistent(BankType.CODEC).networkSynchronized(BankType.STREAM_CODEC).build();
 
     public static final MenuType<BankScreenHandler> MENU_TYPE = IMenuTypeExtension.create(BankScreenHandlerFactory::createClientScreenHandler);
+    public static final AttachmentType<Random> SYNCED_RANDOM_ATTACHMENT = AttachmentType.builder(() -> new Random()).build();
+
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MOD_ID);
     public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(MOD_ID);
@@ -107,9 +103,8 @@ public class BankStorage {
     public static final DeferredRegister<MenuType<?>> SCREEN_HANDLERS = DeferredRegister.create(Registries.MENU, MOD_ID);
     private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MOD_ID);
     private static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(Registries.RECIPE_SERIALIZER, MOD_ID);
+    public static final DeferredRegister<ArgumentTypeInfo<?, ?>> COMMAND_ARGUMENT_TYPES = DeferredRegister.create(BuiltInRegistries.COMMAND_ARGUMENT_TYPE, BankStorage.MOD_ID);
 
-
-    public static final Supplier<AttachmentType<Random>> SYNCED_RANDOM_ATTACHMENT = ATTACHMENT_TYPES.register("random", () -> AttachmentType.<Random>builder(() -> new Random()).build());
 
     public BankStorage(IEventBus modBus) {
 
@@ -117,7 +112,7 @@ public class BankStorage {
         registerDock();
         registerLink();
         registerRecipes();
-        registerCommands();
+        registerCommands(modBus);
         registerScreenHandlers();
 
         registerPlayerSyncedRandom(modBus);
@@ -130,6 +125,7 @@ public class BankStorage {
         SCREEN_HANDLERS.register(modBus);
         ATTACHMENT_TYPES.register(modBus);
         RECIPE_SERIALIZERS.register(modBus);
+        COMMAND_ARGUMENT_TYPES.register(modBus);
 
         modBus.addListener(this::addItemsToCreativeTab);
         modBus.addListener(this::registerCapabilities);
@@ -154,6 +150,7 @@ public class BankStorage {
 
 
     private void registerPlayerSyncedRandom(IEventBus modBus) {
+        ATTACHMENT_TYPES.register("random", () -> SYNCED_RANDOM_ATTACHMENT);
 
         // create and send random (seed) on join
         modBus.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> {
@@ -224,8 +221,9 @@ public class BankStorage {
 //                new BankLinkRecipe.Serializer());
     }
 
-    public void registerCommands() {
-        RestoreBankCommands.register();
+    public void registerCommands(IEventBus modBus) {
+        RestoreBankCommands.registerArgumentTypes();
+        modBus.addListener(RestoreBankCommands::registerCommands);
     }
 
     private void registerPackets(RegisterPayloadHandlersEvent event) {

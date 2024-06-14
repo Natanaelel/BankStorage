@@ -46,6 +46,7 @@ public class BankItemStorage {
 
         this.lockedSlots = new HashMap<>();
 
+        // crash? TODO
         this.items = NonNullList.createWithCapacity(type.size());
 
     }

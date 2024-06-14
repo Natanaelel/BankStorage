@@ -19,11 +19,7 @@ import net.natte.bankstorage.container.BankType;
 public class BankPersistentState extends SavedData {
 
     private static final String BANK_DATA_KEY = "bank_data";
-    private final Map<UUID, BankItemStorage> BANK_MAP;
-
-    public BankPersistentState() {
-        BANK_MAP = new HashMap<>();
-    }
+    private final Map<UUID, BankItemStorage> BANK_MAP = new HashMap<>();
 
     public static BankPersistentState createFromNbt(CompoundTag nbtCompound, HolderLookup.Provider registryLookup) {
 
