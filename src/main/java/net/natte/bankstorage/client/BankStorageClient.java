@@ -20,8 +20,10 @@ import net.natte.bankstorage.client.tooltip.BankTooltipComponent;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
+import net.neoforged.neoforge.common.NeoForge;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,24 +64,24 @@ public class BankStorageClient {
     public BankStorageClient(IEventBus modBus) {
 
         registerHandledScreens(modBus);
-        registerModelPredicates();
         registerRenderers(modBus);
         registerEventListeners(modBus);
+        registerKeyBindListeners();
 
-        modBus.addListener(this::registerKeyBindListeners);
+        modBus.addListener(this::registerModelPredicates);
         modBus.addListener(this::registerKeyBinds);
-        modBus.addListener(this::registerTickEvents);
-        modBus.addListener(this::registerCommands);
+        NeoForge.EVENT_BUS.addListener(this::registerTickEvents);
+        NeoForge.EVENT_BUS.addListener(this::registerCommands);
         modBus.addListener(this::registerItemColors);
-        modBus.addListener(MouseEvents::onScroll);
+        NeoForge.EVENT_BUS.addListener(MouseEvents::onScroll);
 
     }
 
     private void registerItemColors(RegisterColorHandlersEvent.Item event) {
         for (BankType type : BankStorage.BANK_TYPES) {
-            event.register((stack, tintIndex) -> DyedItemColor.getOrDefault(stack, 0), type.item);
+            event.register((stack, tintIndex) -> DyedItemColor.getOrDefault(stack, 0), type.item.get());
         }
-        event.register((stack, tintIndex) -> DyedItemColor.getOrDefault(stack, 0), BankStorage.BANK_LINK);
+        event.register((stack, tintIndex) -> DyedItemColor.getOrDefault(stack, 0), BankStorage.BANK_LINK.get());
 
     }
 
@@ -95,7 +97,7 @@ public class BankStorageClient {
     }
 
     private void registerEventListeners(IEventBus modBus) {
-        modBus.addListener(ClientPlayerNetworkEvent.LoggingIn.class, event -> {
+        NeoForge.EVENT_BUS.addListener(ClientPlayerNetworkEvent.LoggingIn.class, event -> {
             KeyBindUpdateEvents.onKeyBindChange();
         });
         modBus.addListener(RegisterClientTooltipComponentFactoriesEvent.class, event -> {
@@ -104,24 +106,24 @@ public class BankStorageClient {
 
     }
 
-    private void registerModelPredicates() {
-        Minecraft.getInstance().execute(() -> {
+    private void registerModelPredicates(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> {
             for (BankType type : BankStorage.BANK_TYPES) {
-                ItemProperties.register(type.item, new ResourceLocation("has_color"), (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1 : 0);
+                ItemProperties.register(type.item.get(), new ResourceLocation("has_color"), (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1 : 0);
             }
-            ItemProperties.register(BankStorage.BANK_LINK, new ResourceLocation("has_color"), (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1 : 0);
+            ItemProperties.register(BankStorage.BANK_LINK.get(), new ResourceLocation("has_color"), (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1 : 0);
 
         });
     }
 
     private void registerRenderers(IEventBus modBus) {
 
-        modBus.addListener(RenderGuiEvent.Post.class, event -> {
+        NeoForge.EVENT_BUS.addListener(RenderGuiEvent.Post.class, event -> {
             buildModePreviewRenderer.render(event.getGuiGraphics(), event.getPartialTick());
         });
 
         modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, event -> {
-            event.registerBlockEntityRenderer(BankStorage.BANK_DOCK_BLOCK_ENTITY, BankDockBlockEntityRenderer::new);
+            event.registerBlockEntityRenderer(BankStorage.BANK_DOCK_BLOCK_ENTITY.get(), BankDockBlockEntityRenderer::new);
         });
     }
 
@@ -143,7 +145,7 @@ public class BankStorageClient {
         event.register(openBankFromKeyBinding);
     }
 
-    public void registerKeyBindListeners(ClientTickEvent.Post event) {
+    public void registerKeyBindListeners() {
         Minecraft client = Minecraft.getInstance();
 
         while (toggleBuildModeKeyBinding.consumeClick()) {

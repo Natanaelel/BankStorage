@@ -32,7 +32,7 @@ public class BankDockBlockEntity extends BlockEntity {
     private BankItemHandler bankItemHandler = null;
 
     public BankDockBlockEntity(BlockPos pos, BlockState state) {
-        super(BankStorage.BANK_DOCK_BLOCK_ENTITY, pos, state);
+        super(BankStorage.BANK_DOCK_BLOCK_ENTITY.get(), pos, state);
     }
 
     public boolean hasBank() {

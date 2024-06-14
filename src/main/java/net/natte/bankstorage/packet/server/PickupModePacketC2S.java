@@ -40,7 +40,7 @@ public record PickupModePacketC2S() implements CustomPacketPayload {
         // dock.markDirty if has dock pos
         bankScreenHandler.getContext().execute(
                 (world, blockPos) -> world
-                        .getBlockEntity(blockPos, BankStorage.BANK_DOCK_BLOCK_ENTITY)
+                        .getBlockEntity(blockPos, BankStorage.BANK_DOCK_BLOCK_ENTITY.get())
                         .ifPresent(dock -> {
                             if (dock.hasBank()) {
                                 Util.setOptions(dock.getBank(), options);

@@ -12,7 +12,7 @@
 		"sources": "https://github.com/Natanaelel/BankStorage"
 	},
 	"license": "MIT",
-	"icon": "assets/bankstorage/icon.png",
+	"icon": "icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [

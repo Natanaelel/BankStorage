@@ -49,7 +49,8 @@ public class BankScreenHandler extends AbstractContainerMenu {
     public BankScreenHandler(int syncId, Inventory playerInventory,
                              BankType type, ItemStack bankItem, int slot, BankItemStorage bankItemStorage,
                              ContainerLevelAccess context) {
-        super(type.getScreenHandlerType(), syncId);
+//        super(type.getScreenHandlerType(), syncId);
+        super(BankStorage.MENU_TYPE, syncId);
         this.context = context;
 
         this.bankLikeItem = bankItem;
@@ -102,7 +103,7 @@ public class BankScreenHandler extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        if (!AbstractContainerMenu.stillValid(this.context, player, BankStorage.BANK_DOCK_BLOCK))
+        if (!AbstractContainerMenu.stillValid(this.context, player, BankStorage.BANK_DOCK_BLOCK.get()))
             return false;
 
         return this.context.evaluate((world, pos) -> {

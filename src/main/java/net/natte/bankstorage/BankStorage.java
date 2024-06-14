@@ -45,21 +45,28 @@ import net.natte.bankstorage.util.Util;
 
 import java.util.Random;
 import java.util.UUID;
+import java.util.function.Supplier;
 
+import net.neoforged.bus.EventBus;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import net.neoforged.neoforge.registries.RegisterEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,20 +89,6 @@ public class BankStorage {
 
     public static final BankType[] BANK_TYPES = {BANK_1, BANK_2, BANK_3, BANK_4, BANK_5, BANK_6, BANK_7};
 
-    public static final LinkItem BANK_LINK = new LinkItem(new Item.Properties().stacksTo(1));
-
-    public static final Block BANK_DOCK_BLOCK = new BankDockBlock(BlockBehaviour.Properties.of().strength(5.0f, 6.0f)
-            .mapColor(MapColor.COLOR_BLACK).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
-
-    public static final BlockEntityType<BankDockBlockEntity> BANK_DOCK_BLOCK_ENTITY = BlockEntityType.Builder.of(BankDockBlockEntity::new, BANK_DOCK_BLOCK).build(null);
-
-    public static final DataComponentType<UUID> UUIDComponentType = DataComponentType.<UUID>builder().persistent(UUIDUtil.CODEC).networkSynchronized(UUIDUtil.STREAM_CODEC).build();
-    public static final DataComponentType<BankOptions> OptionsComponentType = DataComponentType.<BankOptions>builder().persistent(BankOptions.CODEC).networkSynchronized(BankOptions.STREAM_CODEC).build();
-    public static final DataComponentType<BankType> BankTypeComponentType = DataComponentType.<BankType>builder().persistent(BankType.CODEC).networkSynchronized(BankType.STREAM_CODEC).build();
-
-    public static final MenuType<BankScreenHandler> MENU_TYPE = IMenuTypeExtension.create(BankScreenHandlerFactory::createClientScreenHandler);
-    public static final AttachmentType<Random> SYNCED_RANDOM_ATTACHMENT = AttachmentType.builder(() -> new Random()).build();
-
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MOD_ID);
     public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(MOD_ID);
@@ -107,16 +100,31 @@ public class BankStorage {
     public static final DeferredRegister<ArgumentTypeInfo<?, ?>> COMMAND_ARGUMENT_TYPES = DeferredRegister.create(BuiltInRegistries.COMMAND_ARGUMENT_TYPE, BankStorage.MOD_ID);
 
 
-    public BankStorage(IEventBus modBus) {
+    public static final DeferredHolder<Block, BankDockBlock> BANK_DOCK_BLOCK = BLOCKS.register("bank_dock", () -> new BankDockBlock(BlockBehaviour.Properties.of().strength(5.0f, 6.0f)
+            .mapColor(MapColor.COLOR_BLACK).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion()));
+    private static final DeferredHolder<Item, BlockItem> BANK_DOCK_ITEM = ITEMS.register("bank_dock", () -> new BlockItem(BANK_DOCK_BLOCK.get(), new Item.Properties()));
 
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BankDockBlockEntity>> BANK_DOCK_BLOCK_ENTITY = BLOCK_ENTITIES.register("bank_dock_block_entity", () -> BlockEntityType.Builder.of(BankDockBlockEntity::new, BANK_DOCK_BLOCK.get()).build(null));
+
+    public static final DataComponentType<UUID> UUIDComponentType = DataComponentType.<UUID>builder().persistent(UUIDUtil.CODEC).networkSynchronized(UUIDUtil.STREAM_CODEC).build();
+    public static final DataComponentType<BankOptions> OptionsComponentType = DataComponentType.<BankOptions>builder().persistent(BankOptions.CODEC).networkSynchronized(BankOptions.STREAM_CODEC).build();
+    public static final DataComponentType<BankType> BankTypeComponentType = DataComponentType.<BankType>builder().persistent(BankType.CODEC).networkSynchronized(BankType.STREAM_CODEC).build();
+
+    public static final MenuType<BankScreenHandler> MENU_TYPE = IMenuTypeExtension.create(BankScreenHandlerFactory::createClientScreenHandler);
+    public static final AttachmentType<Random> SYNCED_RANDOM_ATTACHMENT = AttachmentType.builder(() -> new Random()).build();
+
+
+    public static final DeferredHolder<Item, LinkItem> BANK_LINK = BankStorage.ITEMS.register("bank_link", () -> new LinkItem(new Item.Properties().stacksTo(1)));
+
+
+    public BankStorage(IEventBus modBus) {
         registerBanks();
-        registerDock();
-        registerLink();
         registerRecipes();
-        registerCommands(modBus);
+        registerCommands();
         registerScreenHandlers();
 
-        registerPlayerSyncedRandom(modBus);
+        registerPlayerSyncedRandom();
         registerItemComponentTypes();
 
         ITEMS.register(modBus);
@@ -131,10 +139,19 @@ public class BankStorage {
         modBus.addListener(this::addItemsToCreativeTab);
         modBus.addListener(this::registerCapabilities);
         modBus.addListener(this::registerPackets);
-        modBus.addListener(ServerStartedEvent.class, BankStateManager::initialize);
-        modBus.addListener(EntityEvent.EntityConstructing.class, entityConstructing -> {
+        NeoForge.EVENT_BUS.addListener(ServerStartedEvent.class, BankStateManager::initialize);
+        NeoForge.EVENT_BUS.addListener(EntityEvent.EntityConstructing.class, entityConstructing -> {
             if ((entityConstructing.getEntity() instanceof ItemEntity itemEntity) && Util.isBankLike(itemEntity.getItem()))
                 itemEntity.setUnlimitedLifetime();
+        });
+        modBus.addListener(FMLCommonSetupEvent.class, this::registerCauldronInteractions);
+    }
+
+    private void registerCauldronInteractions(FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> {
+            CauldronInteraction.WATER.map().put(BANK_LINK.get(), CauldronInteraction.DYED_ITEM);
+            for (BankType type : BANK_TYPES)
+                CauldronInteraction.WATER.map().put(type.item.get(), CauldronInteraction.DYED_ITEM);
         });
     }
 
@@ -150,11 +167,11 @@ public class BankStorage {
     }
 
 
-    private void registerPlayerSyncedRandom(IEventBus modBus) {
+    private void registerPlayerSyncedRandom() {
         ATTACHMENT_TYPES.register("random", () -> SYNCED_RANDOM_ATTACHMENT);
 
         // create and send random (seed) on join
-        modBus.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> {
+        NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> {
             if (event.getEntity() instanceof ServerPlayer player) {
                 long randomSeed = player.getRandom().nextLong();
                 Random random = new Random(randomSeed);
@@ -164,14 +181,9 @@ public class BankStorage {
         });
 
         // copy random on clone
-        modBus.addListener(PlayerEvent.Clone.class, event -> {
+        NeoForge.EVENT_BUS.addListener(PlayerEvent.Clone.class, event -> {
             event.getEntity().setData(SYNCED_RANDOM_ATTACHMENT, event.getOriginal().getData(SYNCED_RANDOM_ATTACHMENT));
         });
-    }
-
-    private void registerLink() {
-        BankStorage.ITEMS.register("bank_link", () -> BANK_LINK);
-        CauldronInteraction.WATER.map().put(BANK_LINK, CauldronInteraction.DYED_ITEM);
     }
 
     private void registerBanks() {
@@ -182,50 +194,38 @@ public class BankStorage {
         BANK_4.register();
         BANK_5.register();
         BANK_6.register();
-        BANK_7.register(new Item.Properties().fireResistant());
+        BANK_7.register(() -> new Item.Properties().fireResistant());
     }
 
     private void addItemsToCreativeTab(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() != CreativeModeTabs.FUNCTIONAL_BLOCKS)
             return;
 
-        event.accept(BANK_1.item);
-        event.accept(BANK_2.item);
-        event.accept(BANK_3.item);
-        event.accept(BANK_4.item);
-        event.accept(BANK_5.item);
-        event.accept(BANK_6.item);
-        event.accept(BANK_7.item);
-        event.accept(BANK_LINK);
-        event.accept(BANK_DOCK_BLOCK);
+        event.accept(BANK_1.item.get());
+        event.accept(BANK_2.item.get());
+        event.accept(BANK_3.item.get());
+        event.accept(BANK_4.item.get());
+        event.accept(BANK_5.item.get());
+        event.accept(BANK_6.item.get());
+        event.accept(BANK_7.item.get());
+        event.accept(BANK_LINK.get());
+        event.accept(BANK_DOCK_BLOCK.get());
 
     }
 
-    private void registerDock() {
-        BLOCKS.register("bank_dock", () -> BANK_DOCK_BLOCK);
-        ITEMS.register("bank_dock", () -> new BlockItem(BANK_DOCK_BLOCK, new Item.Properties()));
-
-        BLOCK_ENTITIES.register("bank_dock_block_entity", () -> BANK_DOCK_BLOCK_ENTITY);
-
-
-    }
 
     private void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BANK_DOCK_BLOCK_ENTITY, (dock, side) -> dock.getItemHandler());
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BANK_DOCK_BLOCK_ENTITY.get(), (dock, side) -> dock.getItemHandler());
     }
 
     private void registerRecipes() {
         RECIPE_SERIALIZERS.register("bank_update", BankRecipe.Serializer::new);
         RECIPE_SERIALIZERS.register("bank_link", BankLinkRecipe.Serializer::new);
-//        Registry.register(Registries.RECIPE_SERIALIZER, Util.ID("bank_upgrade"),
-//                new BankRecipe.Serializer());
-//        Registry.register(Registries.RECIPE_SERIALIZER, Util.ID("bank_link"),
-//                new BankLinkRecipe.Serializer());
     }
 
-    public void registerCommands(IEventBus modBus) {
+    public void registerCommands() {
         RestoreBankCommands.registerArgumentTypes();
-        modBus.addListener(RestoreBankCommands::registerCommands);
+        NeoForge.EVENT_BUS.addListener(RegisterCommandsEvent.class, RestoreBankCommands::registerCommands);
     }
 
     private void registerPackets(RegisterPayloadHandlersEvent event) {

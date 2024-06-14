@@ -2,18 +2,16 @@ package net.natte.bankstorage.container;
 
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.item.BankItem;
-import net.natte.bankstorage.screen.BankScreenHandler;
-import net.natte.bankstorage.screen.BankScreenHandlerFactory;
 import net.natte.bankstorage.util.Util;
-import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
+import net.neoforged.neoforge.registries.DeferredHolder;
+
+import java.util.function.Supplier;
 
 public class BankType {
 
@@ -26,13 +24,11 @@ public class BankType {
     public int guiTextureWidth;
     public int guiTextureHeight;
 
-    private MenuType<BankScreenHandler> screenHandlerType;
-
     public int stackLimit;
-    public BankItem item;
+    public DeferredHolder<Item, BankItem> item;
 
     public BankType(String name, int stackLimit, int rows, int cols, int guiTextureWidth,
-            int guiTextureHeight) {
+                    int guiTextureHeight) {
         this.name = name;
         this.rows = rows;
         this.cols = cols;
@@ -45,19 +41,11 @@ public class BankType {
     }
 
     public void register() {
-        register(new Item.Properties());
+        register(Item.Properties::new);
     }
 
-    public void register(Item.Properties settings) {
-        this.item = new BankItem(settings.stacksTo(1), this);
-        ResourceLocation identifier = Util.ID(this.name);
-        BankStorage.ITEMS.register(this.name, id -> this.item);
-
-//        this.screenHandlerType = IMenuTypeExtension.create(BankScreenHandler.fromType(this));
-        this.screenHandlerType = IMenuTypeExtension.create(BankScreenHandlerFactory::createClientScreenHandler);
-//        Registry.register(Registries.MENU, identifier, screenHandlerType);
-
-        CauldronInteraction.WATER.map().put(this.item, CauldronInteraction.DYED_ITEM);
+    public void register(Supplier<Item.Properties> settings) {
+        this.item = BankStorage.ITEMS.register(this.name, () -> new BankItem(settings.get().stacksTo(1), this));
     }
 
     public int size() {
@@ -66,10 +54,6 @@ public class BankType {
 
     public String getName() {
         return this.name;
-    }
-
-    public MenuType<BankScreenHandler> getScreenHandlerType() {
-        return this.screenHandlerType;
     }
 
     public ResourceLocation getGuiTexture() {
