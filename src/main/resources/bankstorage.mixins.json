@@ -4,8 +4,7 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 		"PlayerInventoryMixin",
-		"ScreenHandlerMixin",
-		"ServerPlayerEntityMixin"
+		"ScreenHandlerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

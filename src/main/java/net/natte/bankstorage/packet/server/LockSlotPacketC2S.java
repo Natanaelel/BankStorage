@@ -32,6 +32,7 @@ public record LockSlotPacketC2S(int syncId, int slot, ItemStack stack,
     }
 
     public static void handle(LockSlotPacketC2S packet, IPayloadContext context) {
+        System.out.println("handle LockSlotPacketC2S");
         ServerPlayer player = (ServerPlayer) context.player();
         AbstractContainerMenu screenHandler = player.containerMenu;
         if (!(screenHandler instanceof BankScreenHandler bankScreenHandler)) return;

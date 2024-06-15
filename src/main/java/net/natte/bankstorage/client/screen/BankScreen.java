@@ -12,12 +12,14 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.client.BankStorageClient;
 import net.natte.bankstorage.client.rendering.ItemCountUtils;
@@ -188,43 +190,23 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
     private void renderBankSlot(GuiGraphics context, BankSlot slot, ItemStack stack, boolean drawInYellow) {
 
-        // TODO:
-        // () render locked texture
-        // render item
-        // (transparency hack): render transparent overlay
-        // render count
-        // render decorations without count
-
         int x = slot.x;
         int y = slot.y;
+        int seed = x + y * this.imageWidth;
 
-        if (slot.isLocked()) {
+        if (slot.isLocked())
             // locked slot texture
-            context.blit(WIDGETS_TEXTURE, x, y, 0, 46, 16, 16);
-        }
+            context.blit(WIDGETS_TEXTURE, x, y, stack.isEmpty() ? 16 : 0, 46, 16, 16);
 
+        context.renderItem(slot.isLocked() ? slot.getLockedStack() : stack, x, y, seed);
 
         if (slot.isLocked() && stack.isEmpty()) {
-            // draw transparent item
-            // TODO: make transparent
-            int seed = x + y * this.imageWidth;
-            context.renderItem(stack, x, y, seed);
-        } else {
-            // draw opaque item
-            int seed = x + y * this.imageWidth;
-            context.renderItem(stack, x, y, seed);
+            // overlay transparent texture with background color to trick everyone into
+            // thinking the item is transparent
+            RenderSystem.enableBlend();
+            context.blit(WIDGETS_TEXTURE, x, y, 200, 32, 46, 16, 16, 256, 256);
+            RenderSystem.disableBlend();
         }
-
-//        if (itemStack.isEmpty() && slot.isEnabled() && slot.isLocked()) {
-//            // transparent item (not transparent)
-//            context.drawItem(slot.getLockedStack(), i, j);
-//
-//            // overlay transparent texture with backgroud color to trick everyone into
-//            // thinking the item is transparent
-//            RenderSystem.enableBlend();
-//            context.drawTexture(WIDGETS_TEXTURE, i, j, 200, 32, 46, 16, 16, 256, 256);
-//            RenderSystem.disableBlend();
-//        }
 
         if (drawInYellow || stack.getCount() > 1)
             drawItemCount(context, this.font, stack.getCount(), x, y, drawInYellow);
@@ -235,7 +217,8 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
     }
 
-    public static void drawItemCount(GuiGraphics context, Font textRenderer, int count, int x, int y, boolean drawInYellow) {
+    public static void drawItemCount(GuiGraphics context, Font textRenderer, int count, int x, int y,
+                                     boolean drawInYellow) {
 
         // TODO: this: optimize text scale and such
 

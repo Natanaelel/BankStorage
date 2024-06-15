@@ -182,14 +182,6 @@ public class Util {
     public static ResourceLocation ID(String path) {
         return new ResourceLocation(BankStorage.MOD_ID, path);
     }
-
-    public static @Nullable UUID getUUIDFromScreenHandler(AbstractContainerMenu screenHandler) {
-        if (!(screenHandler instanceof BankScreenHandler bankScreenHandler))
-            return null;
-        if (!(bankScreenHandler.inventory instanceof BankItemStorage bankItemStorage))
-            return null;
-        return bankItemStorage.uuid;
-    }
 }
 
 // if somehow one bank has more than Integer.MAX_VALUE total of one item

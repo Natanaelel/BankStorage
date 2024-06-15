@@ -3,6 +3,7 @@ package net.natte.bankstorage.screen;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -48,7 +49,7 @@ public class BankScreenHandlerFactory implements MenuProvider {
 
         BankItemStorage bankItemStorage = new BankItemStorage(type, null);
         bankItemStorage.initializeItems();
-        return new BankScreenHandler(syncId, playerInventory, type, bankItem, slot, bankItemStorage, ContainerLevelAccess.NULL);
+        return new BankScreenHandler(syncId, null, playerInventory, type, bankItem, slot, bankItemStorage, ContainerLevelAccess.NULL);
     }
 
     @Override
@@ -61,6 +62,6 @@ public class BankScreenHandlerFactory implements MenuProvider {
     @Nullable
     @Override
     public BankScreenHandler createMenu(int syncId, Inventory playerInventory, Player player) {
-        return new BankScreenHandler(syncId, playerInventory, type, bankItem, slot, bank, screenHandlerContext);
+        return new BankScreenHandler(syncId, ((ServerPlayer) player), playerInventory, type, bankItem, slot, bank, screenHandlerContext);
     }
 }

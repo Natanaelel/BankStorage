@@ -1,5 +1,7 @@
 package net.natte.bankstorage.inventory;
 
+import com.mojang.datafixers.util.Pair;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
@@ -44,7 +46,6 @@ public class BankSlot extends Slot {
         return this.lockedStack;
     }
 
-
     @Override
     public boolean mayPlace(ItemStack stack) {
         if (this.lockedStack != null && !ItemStack.isSameItemSameComponents(stack, this.lockedStack))
@@ -54,6 +55,7 @@ public class BankSlot extends Slot {
 
         return super.mayPlace(stack);
     }
+
 
     @Override
     public int getMaxStackSize() {

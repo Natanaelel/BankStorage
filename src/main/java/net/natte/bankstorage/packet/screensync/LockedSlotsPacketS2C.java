@@ -37,8 +37,6 @@ public record LockedSlotsPacketS2C(int containerId,
             return;
         if (!(player.containerMenu instanceof BankScreenHandler bankScreenHandler))
             return;
-        if (!(bankScreenHandler.inventory instanceof BankItemStorage))
-            return;
         bankScreenHandler.setLockedSlotsNoSync(packet.lockedSlots());
     }
 }

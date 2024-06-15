@@ -4,10 +4,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ClickType;
-import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
@@ -38,6 +35,7 @@ public class BankScreenHandler extends AbstractContainerMenu {
 
     private ItemStack bankLikeItem;
     private final int slotWithOpenedBank;
+    private ServerPlayer player;
 
     public ItemStack getBankLikeItem() {
         return this.bankLikeItem;
@@ -45,10 +43,11 @@ public class BankScreenHandler extends AbstractContainerMenu {
 
     private short lockedSlotsRevision = 0;
 
-    public BankScreenHandler(int syncId, Inventory playerInventory,
+    public BankScreenHandler(int syncId, @Nullable ServerPlayer player, Inventory playerInventory,
                              BankType type, ItemStack bankItem, int slot, BankItemStorage bankItemStorage,
                              ContainerLevelAccess context) {
         super(BankStorage.MENU_TYPE, syncId);
+        this.player = player;
         this.context = context;
 
         this.bankLikeItem = bankItem;
@@ -358,16 +357,25 @@ public class BankScreenHandler extends AbstractContainerMenu {
         }
     }
 
-    public void setBankScreenSync(BankScreenHandlerSyncHandler bankScreenSync) {
-        this.bankScreenSync = bankScreenSync;
+//    public void setBankScreenSync(BankScreenHandlerSyncHandler bankScreenSync) {
+//        this.bankScreenSync = bankScreenSync;
+//    }
+
+    @Override
+    public void setSynchronizer(ContainerSynchronizer synchronizer) {
+
+        this.bankScreenSync = new BankScreenHandlerSyncHandler(synchronizer, this.player);
+        super.setSynchronizer(this.bankScreenSync);
     }
 
     public void lockSlot(int index, ItemStack stack) {
+        System.out.println("BankScreenHandler lockSlot " + index + " " + stack);
         ((BankSlot) this.slots.get(index)).lock(stack);
         bankItemStorage.lockSlot(index, stack);
     }
 
     public void unlockSlot(int index) {
+        System.out.println("BankScreenHandler uulockSlot " + index);
         ((BankSlot) this.slots.get(index)).unlock();
         bankItemStorage.unlockSlot(index);
     }
