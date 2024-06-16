@@ -7,6 +7,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.natte.bankstorage.BankStorage;
@@ -27,9 +28,9 @@ public class BankLinkRecipe extends ShapedRecipe {
     }
 
     @Override
-    public ItemStack assemble(CraftingContainer recipeInputInventory, HolderLookup.Provider registryLookup) {
-        Optional<ItemStack> maybeBankItemStack = recipeInputInventory.getItems().stream()
-                .filter(stack -> Util.isBank(stack)).findFirst();
+    public ItemStack assemble(CraftingInput recipeInputInventory, HolderLookup.Provider registryLookup) {
+        Optional<ItemStack> maybeBankItemStack = recipeInputInventory.items().stream()
+                .filter(Util::isBankLike).findFirst();
 
         if (maybeBankItemStack.isEmpty()) {
             return ItemStack.EMPTY;
@@ -40,13 +41,13 @@ public class BankLinkRecipe extends ShapedRecipe {
         }
         ItemStack result = super.assemble(recipeInputInventory, registryLookup);
         result.applyComponents(bank.getComponentsPatch());
-        result.set(BankStorage.BankTypeComponentType, ((BankItem) bank.getItem()).getType());
+        result.set(BankStorage.BankTypeComponentType, Util.getType(bank));
         return result;
     }
 
     @Override
-    public NonNullList<ItemStack> getRemainingItems(CraftingContainer recipeInputInventory) {
-        NonNullList<ItemStack> defaultedList = NonNullList.withSize(recipeInputInventory.getContainerSize(), ItemStack.EMPTY);
+    public NonNullList<ItemStack> getRemainingItems(CraftingInput recipeInputInventory) {
+        NonNullList<ItemStack> defaultedList = NonNullList.withSize(recipeInputInventory.size(), ItemStack.EMPTY);
         for (int i = 0; i < defaultedList.size(); ++i) {
             ItemStack stack = recipeInputInventory.getItem(i);
             if (Util.isBank(stack))

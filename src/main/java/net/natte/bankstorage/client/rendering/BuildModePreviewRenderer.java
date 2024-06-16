@@ -6,6 +6,7 @@ import java.util.UUID;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -121,7 +122,7 @@ public class BuildModePreviewRenderer {
         this.stackInHand = ItemStack.EMPTY;
     }
 
-    public void render(GuiGraphics context, float tickDelta) {
+    public void render(GuiGraphics context, DeltaTracker deltaTracker) {
         if (this.client == null)
             return;
 
@@ -136,16 +137,16 @@ public class BuildModePreviewRenderer {
                 // renderNothingLol();
                 return;
             case NORMAL:
-                renderBlockPreview(context, tickDelta);
+                renderBlockPreview(context, deltaTracker);
                 break;
             case RANDOM:
-                renderRandomPreview(context, tickDelta);
+                renderRandomPreview(context, deltaTracker);
                 break;
         }
 
     }
 
-    private void renderRandomPreview(GuiGraphics context, float tickDelta) {
+    private void renderRandomPreview(GuiGraphics context, DeltaTracker deltaTracker) {
 
         if (this.bankStorage.blockItems.isEmpty())
             return;
@@ -171,7 +172,7 @@ public class BuildModePreviewRenderer {
         int y = scaledHeight - 19;
         int x = scaledWidth / 2 + 3 + handXOffset;
 
-        renderHotbarItem(context, x, y, tickDelta, this.client.player, itemStack, 0);
+        renderHotbarItem(context, x, y, deltaTracker, this.client.player, itemStack, 0);
 
         // draw selection square
         context.blit(WIDGET_TEXTURE, scaledWidth / 2 - 1 + handXOffset, scaledHeight - 22 - 1, 0, 22, 24, 22);
@@ -180,7 +181,7 @@ public class BuildModePreviewRenderer {
         RenderSystem.disableBlend();
     }
 
-    private void renderBlockPreview(GuiGraphics context, float tickDelta) {
+    private void renderBlockPreview(GuiGraphics context, DeltaTracker deltaTracker) {
         if (this.bankStorage.blockItems.isEmpty())
             return;
 
@@ -218,7 +219,7 @@ public class BuildModePreviewRenderer {
             int y = scaledHeight - 19;
             int x = scaledWidth / 2 - i * 20 + 3 + handXOffset;
 
-            renderHotbarItem(context, x, y, tickDelta, this.client.player, itemStack, 0);
+            renderHotbarItem(context, x, y, deltaTracker, this.client.player, itemStack, 0);
         }
 
         context.blit(WIDGET_TEXTURE,
@@ -228,13 +229,14 @@ public class BuildModePreviewRenderer {
         RenderSystem.disableBlend();
     }
 
-    private void renderHotbarItem(GuiGraphics context, int x, int y, float f, Player player, ItemStack stack,
+    // TODO: replace with vanilla methods
+    private void renderHotbarItem(GuiGraphics context, int x, int y, DeltaTracker deltaTracker, Player player, ItemStack stack,
                                   int seed) {
         if (stack.isEmpty()) {
             return;
         }
 
-        float g = (float) stack.getPopTime() - f;
+        float g = (float) stack.getPopTime() - deltaTracker.getGameTimeDeltaPartialTick(false);
         if (g > 0.0f) {
             float h = 1.0f + g / 5.0f;
             context.pose().pushPose();

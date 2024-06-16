@@ -109,9 +109,9 @@ public class BankStorageClient {
     private void registerModelPredicates(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             for (BankType type : BankStorage.BANK_TYPES) {
-                ItemProperties.register(type.item.get(), new ResourceLocation("has_color"), (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1 : 0);
+                ItemProperties.register(type.item.get(), ResourceLocation.withDefaultNamespace("has_color"), (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1 : 0);
             }
-            ItemProperties.register(BankStorage.BANK_LINK.get(), new ResourceLocation("has_color"), (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1 : 0);
+            ItemProperties.register(BankStorage.BANK_LINK.get(), ResourceLocation.withDefaultNamespace("has_color"), (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1 : 0);
 
         });
     }

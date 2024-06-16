@@ -1,16 +1,15 @@
 package net.natte.bankstorage.recipe;
 
 import com.mojang.serialization.MapCodec;
-
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.natte.bankstorage.BankStorage;
-import net.natte.bankstorage.item.BankItem;
+import net.natte.bankstorage.util.Util;
 
 import java.util.Optional;
 
@@ -27,9 +26,9 @@ public class BankUpgradeRecipe extends ShapedRecipe {
 
 
     @Override
-    public ItemStack assemble(CraftingContainer recipeInputInventory, HolderLookup.Provider registryLookup) {
-        Optional<ItemStack> maybeBankItemStack = recipeInputInventory.getItems().stream()
-                .filter(stack -> (stack.getItem() instanceof BankItem)).findFirst();
+    public ItemStack assemble(CraftingInput recipeInputInventory, HolderLookup.Provider registryLookup) {
+        Optional<ItemStack> maybeBankItemStack = recipeInputInventory.items().stream()
+                .filter(Util::isBank).findFirst();
 
         if (maybeBankItemStack.isEmpty()) {
             return ItemStack.EMPTY;

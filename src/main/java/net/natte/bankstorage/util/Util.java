@@ -57,6 +57,8 @@ public class Util {
     }
 
     public static BankType getType(ItemStack stack) {
+        if (stack.getItem() instanceof BankItem bankItem)
+            return bankItem.getType();
         return stack.getOrDefault(BankStorage.BankTypeComponentType, BankStorage.BANK_TYPES[0]);
     }
 
@@ -180,7 +182,7 @@ public class Util {
     }
 
     public static ResourceLocation ID(String path) {
-        return new ResourceLocation(BankStorage.MOD_ID, path);
+        return ResourceLocation.fromNamespaceAndPath(BankStorage.MOD_ID, path);
     }
 }
 

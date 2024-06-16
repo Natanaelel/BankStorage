@@ -130,8 +130,8 @@ public class BankStorage {
         modBus.addListener(this::addItemsToCreativeTab);
         modBus.addListener(this::registerCapabilities);
         modBus.addListener(this::registerPackets);
-        NeoForge.EVENT_BUS.addListener(ServerStartedEvent.class, BankStateManager::initialize);
-        NeoForge.EVENT_BUS.addListener(EntityEvent.EntityConstructing.class, entityConstructing -> {
+        NeoForge.EVENT_BUS.addListener(BankStateManager::initialize);
+        NeoForge.EVENT_BUS.<EntityEvent.EntityConstructing>addListener(entityConstructing -> {
             if ((entityConstructing.getEntity() instanceof ItemEntity itemEntity) && Util.isBankLike(itemEntity.getItem()))
                 itemEntity.setUnlimitedLifetime();
         });
@@ -162,7 +162,7 @@ public class BankStorage {
         ATTACHMENT_TYPES.register("random", () -> SYNCED_RANDOM_ATTACHMENT);
 
         // create and send random (seed) on join
-        NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> {
+        NeoForge.EVENT_BUS.<PlayerEvent.PlayerLoggedInEvent>addListener(event -> {
             if (event.getEntity() instanceof ServerPlayer player) {
                 long randomSeed = player.getRandom().nextLong();
                 Random random = new Random(randomSeed);
