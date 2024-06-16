@@ -48,6 +48,8 @@ public class BankStorageClient {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(BankStorage.MOD_ID);
 
+    public static final ResourceLocation WIDGETS_TEXTURE = Util.ID("textures/gui/widgets.png");
+
     public static final KeyMapping toggleBuildModeKeyBinding = new KeyMapping("key.bankstorage.togglebuildmode", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.bankstorage");
     public static final KeyMapping togglePickupModeKeyBinding = new KeyMapping("key.bankstorage.togglepickupmode", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_P, "category.bankstorage");
     public static final KeyMapping lockSlotKeyBinding = new KeyMapping("key.bankstorage.lockslot", KeyConflictContext.GUI, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, "category.bankstorage");
@@ -97,10 +99,10 @@ public class BankStorageClient {
     }
 
     private void registerEventListeners(IEventBus modBus) {
-        NeoForge.EVENT_BUS.addListener(ClientPlayerNetworkEvent.LoggingIn.class, event -> {
+        NeoForge.EVENT_BUS.<ClientPlayerNetworkEvent.LoggingIn>addListener(event -> {
             KeyBindUpdateEvents.onKeyBindChange();
         });
-        modBus.addListener(RegisterClientTooltipComponentFactoriesEvent.class, event -> {
+        modBus.<RegisterClientTooltipComponentFactoriesEvent>addListener(event -> {
             event.register(BankTooltipData.class, BankTooltipComponent::of);
         });
 
@@ -118,11 +120,11 @@ public class BankStorageClient {
 
     private void registerRenderers(IEventBus modBus) {
 
-        NeoForge.EVENT_BUS.addListener(RenderGuiEvent.Post.class, event -> {
+        NeoForge.EVENT_BUS.<RenderGuiEvent.Post>addListener(event -> {
             buildModePreviewRenderer.render(event.getGuiGraphics(), event.getPartialTick());
         });
 
-        modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, event -> {
+        modBus.<EntityRenderersEvent.RegisterRenderers>addListener(event -> {
             event.registerBlockEntityRenderer(BankStorage.BANK_DOCK_BLOCK_ENTITY.get(), BankDockBlockEntityRenderer::new);
         });
     }
@@ -133,7 +135,7 @@ public class BankStorageClient {
     }
 
     private void registerHandledScreens(IEventBus modBus) {
-        modBus.addListener(RegisterMenuScreensEvent.class, event -> {
+        modBus.<RegisterMenuScreensEvent>addListener(event -> {
             event.register(BankStorage.MENU_TYPE, BankScreen::new);
         });
     }

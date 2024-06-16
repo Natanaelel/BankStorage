@@ -47,7 +47,7 @@ public class CachedBankStorage {
 
     private static Consumer<UUID> requestCacheUpdate = uuid -> {};
 
-    private List<ItemStack> items;
+    private final List<ItemStack> items;
     public List<ItemStack> nonEmptyItems;
     public List<ItemStack> blockItems;
     public UUID uuid;

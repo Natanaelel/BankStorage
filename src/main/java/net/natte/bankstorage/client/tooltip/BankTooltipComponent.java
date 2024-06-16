@@ -23,11 +23,9 @@ public class BankTooltipComponent implements ClientTooltipComponent {
     public static final ResourceLocation TEXTURE = Util.ID("textures/gui/widgets.png");
 
     private final List<ItemStack> items;
-    private final Minecraft client;
 
     private BankTooltipComponent(List<ItemStack> items) {
         this.items = items;
-        this.client = Minecraft.getInstance();
     }
 
     public static BankTooltipComponent of(BankTooltipData tooltipData) {

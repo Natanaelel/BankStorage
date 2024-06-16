@@ -11,6 +11,7 @@ import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -20,18 +21,19 @@ import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.screen.BankScreenHandlerFactory;
 import net.natte.bankstorage.util.Util;
+import org.jetbrains.annotations.Nullable;
 
-public class BankDockBlock extends Block implements BlockEntityType.BlockEntitySupplier {
+public class BankDockBlock extends Block implements EntityBlock {
 
     public BankDockBlock(BlockBehaviour.Properties settings) {
         super(settings);
     }
 
+    @Nullable
     @Override
-    public BlockEntity create(BlockPos blockPos, BlockState blockState) {
-        return new BankDockBlockEntity(blockPos, blockState);
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new BankDockBlockEntity(pos, state);
     }
-
     @Override
     public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
 

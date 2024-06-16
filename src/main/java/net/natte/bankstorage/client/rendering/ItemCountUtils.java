@@ -26,21 +26,16 @@ public class ItemCountUtils {
      * How big or small to render the item count text
      * 1 == vanilla
      */
-    public static float scale(String string) {
-        Minecraft client = Minecraft.getInstance();
-        int guiScale = (int) client.getWindow().getGuiScale();
-//        float width = client.font.width(string);
-//        if (guiScale == 1)
-        return Math.max(1f, (int) ((string.length() >= 3 ? 0.7f : 1f) * guiScale)) / guiScale;
+    private static float scale = 1f;
+    private static int i = 0;
 
-//        if (width == 0) // *should* tm never be 0 but why not
-//            return 1f;
-//        float scale = 16f / width;
-//        float step = Math.max(3, guiScale);
-//        return Math.min(1f, scaledFloor(scale, step));
-    }
-
-    private static float scaledFloor(float value, float step) {
-        return ((float) (int) (value * step)) / step;
+    public static float scale() {
+        // cache "expensive" calculation because why not
+        if (i++ % 1000 == 0) {
+            Minecraft client = Minecraft.getInstance();
+            int guiScale = (int) client.getWindow().getGuiScale();
+            scale = Math.max(1f, (int) (0.7f * guiScale)) / guiScale;
+        }
+        return scale;
     }
 }

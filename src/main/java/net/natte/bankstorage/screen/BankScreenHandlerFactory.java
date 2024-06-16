@@ -17,12 +17,12 @@ import org.jetbrains.annotations.Nullable;
 
 public class BankScreenHandlerFactory implements MenuProvider {
 
-    private BankType type;
-    private @Nullable BankItemStorage bank;
-    private ItemStack bankItem;
+    private final BankType type;
+    private final @Nullable BankItemStorage bank;
+    private final ItemStack bankItem;
     //    // which inventoryslot bank is in, or -1
-    private int slot;
-    private ContainerLevelAccess screenHandlerContext;
+    private final int slot;
+    private final ContainerLevelAccess screenHandlerContext;
 
 
     public BankScreenHandlerFactory(BankType type, @Nullable BankItemStorage bank, ItemStack bankItem, int slot, ContainerLevelAccess screenHandlerContext) {

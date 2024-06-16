@@ -7,21 +7,19 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.natte.bankstorage.BankStorage;
+import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.storage.BankItemHandler;
+import net.natte.bankstorage.util.Util;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.natte.bankstorage.BankStorage;
-import net.natte.bankstorage.container.BankItemStorage;
-import net.natte.bankstorage.util.Util;
 
 public class BankDockBlockEntity extends BlockEntity {
 

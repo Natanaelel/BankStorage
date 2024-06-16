@@ -20,11 +20,12 @@ import java.util.UUID;
 
 
 public class BankScreenHandler extends AbstractContainerMenu {
+
     public Container inventory;
 
-    private BankType type;
+    private final BankType type;
     // barebones on client
-    private BankItemStorage bankItemStorage;
+    private final BankItemStorage bankItemStorage;
     // null on client
     @Nullable
     UUID uuid;
@@ -33,9 +34,9 @@ public class BankScreenHandler extends AbstractContainerMenu {
 
     public BankScreenHandlerSyncHandler bankScreenSync;
 
-    private ItemStack bankLikeItem;
+    private final ItemStack bankLikeItem;
     private final int slotWithOpenedBank;
-    private ServerPlayer player;
+    private final ServerPlayer player;
 
     public ItemStack getBankLikeItem() {
         return this.bankLikeItem;
@@ -104,7 +105,7 @@ public class BankScreenHandler extends AbstractContainerMenu {
         return this.context.evaluate((world, pos) -> {
             if (!(world.getBlockEntity(pos) instanceof BankDockBlockEntity blockEntity))
                 return false;
-            if (blockEntity.hasBank())
+            if (!blockEntity.hasBank())
                 return false;
             if (!blockEntity.getBank().has(BankStorage.UUIDComponentType))
                 return false;
@@ -356,10 +357,6 @@ public class BankScreenHandler extends AbstractContainerMenu {
             this.lockedSlotsRevision = bankItemStorage.getLockedSlotsRevision();
         }
     }
-
-//    public void setBankScreenSync(BankScreenHandlerSyncHandler bankScreenSync) {
-//        this.bankScreenSync = bankScreenSync;
-//    }
 
     @Override
     public void setSynchronizer(ContainerSynchronizer synchronizer) {

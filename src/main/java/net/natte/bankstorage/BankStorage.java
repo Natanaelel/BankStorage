@@ -135,7 +135,7 @@ public class BankStorage {
             if ((entityConstructing.getEntity() instanceof ItemEntity itemEntity) && Util.isBankLike(itemEntity.getItem()))
                 itemEntity.setUnlimitedLifetime();
         });
-        modBus.addListener(FMLCommonSetupEvent.class, this::registerCauldronInteractions);
+        modBus.addListener(this::registerCauldronInteractions);
     }
 
     private void registerCauldronInteractions(FMLCommonSetupEvent event) {
@@ -172,7 +172,7 @@ public class BankStorage {
         });
 
         // copy random on clone
-        NeoForge.EVENT_BUS.addListener(PlayerEvent.Clone.class, event -> {
+        NeoForge.EVENT_BUS.<PlayerEvent.Clone>addListener(event -> {
             event.getEntity().setData(SYNCED_RANDOM_ATTACHMENT, event.getOriginal().getData(SYNCED_RANDOM_ATTACHMENT));
         });
     }
@@ -211,7 +211,7 @@ public class BankStorage {
 
     public void registerCommands() {
         RestoreBankCommands.registerArgumentTypes();
-        NeoForge.EVENT_BUS.addListener(RegisterCommandsEvent.class, RestoreBankCommands::registerCommands);
+        NeoForge.EVENT_BUS.addListener(RestoreBankCommands::registerCommands);
     }
 
     private void registerPackets(RegisterPayloadHandlersEvent event) {

@@ -19,8 +19,8 @@ public record SortPacketC2S(SortMode sortMode) implements CustomPacketPayload {
 
     public static final Type<SortPacketC2S> TYPE = new Type<>(Util.ID("sort_c2s"));
     public static final StreamCodec<ByteBuf, SortPacketC2S> STREAM_CODEC = ByteBufCodecs.BYTE.map(
-            b -> new SortPacketC2S(SortMode.from(b)),
-            p -> p.sortMode().number);
+            b -> new SortPacketC2S(SortMode.values()[b]),
+            p -> (byte) p.sortMode().ordinal());
 
     @Override
     public Type<SortPacketC2S> type() {

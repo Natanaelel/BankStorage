@@ -19,7 +19,7 @@ public class BankItem extends BankFunctionality {
 
     private static final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance(Locale.US);
 
-    private BankType type;
+    private final BankType type;
 
     public BankItem(Item.Properties settings, BankType type) {
         super(settings);

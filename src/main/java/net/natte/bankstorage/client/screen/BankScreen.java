@@ -36,12 +36,10 @@ import net.natte.bankstorage.util.Util;
 
 public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
-    private static final ResourceLocation WIDGETS_TEXTURE = Util.ID("textures/gui/widgets.png");
-
     private static final NumberFormat FORMAT = NumberFormat.getNumberInstance(Locale.US);
 
-    private BankType type;
-    private ResourceLocation texture;
+    private final BankType type;
+    private final ResourceLocation texture;
 
     private SortMode sortMode;
 
@@ -58,7 +56,6 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
         this.imageHeight = this.type.guiTextureHeight;
 
         this.inventoryLabelY += this.type.rows * 18 - 52;
-
     }
 
     @Override
@@ -70,12 +67,12 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
         this.addRenderableWidget(
                 new TexturedCyclingButtonWidget<PickupModeOption>(initialPickupMode,
                         leftPos + titleLabelX + this.type.guiTextureWidth - 49, topPos + titleLabelY - 4, 14, 14,
-                        WIDGETS_TEXTURE, this::onPickupModeButtonPress));
+                        BankStorageClient.WIDGETS_TEXTURE, this::onPickupModeButtonPress));
 
         this.addRenderableWidget(
                 new SortButtonWidget(options.sortMode,
                         leftPos + titleLabelX + this.type.guiTextureWidth - 31, topPos + titleLabelY - 4,
-                        14, 14, WIDGETS_TEXTURE, this::onSortButtonPress));
+                        14, 14, BankStorageClient.WIDGETS_TEXTURE, this::onSortButtonPress));
     }
 
     @Override
@@ -186,7 +183,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
         if (slot.isLocked())
             // locked slot texture
-            context.blit(WIDGETS_TEXTURE, x, y, stack.isEmpty() ? 16 : 0, 46, 16, 16);
+            context.blit(BankStorageClient.WIDGETS_TEXTURE, x, y, stack.isEmpty() ? 16 : 0, 46, 16, 16);
 
         context.renderItem(slot.isLocked() ? slot.getLockedStack() : stack, x, y, seed);
 
@@ -194,7 +191,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
             // overlay transparent texture with background color to trick everyone into
             // thinking the item is transparent
             RenderSystem.enableBlend();
-            context.blit(WIDGETS_TEXTURE, x, y, 200, 32, 46, 16, 16, 256, 256);
+            context.blit(BankStorageClient.WIDGETS_TEXTURE, x, y, 200, 32, 46, 16, 16, 256, 256);
             RenderSystem.disableBlend();
         }
 
@@ -210,7 +207,6 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
     public static void drawItemCount(GuiGraphics context, Font textRenderer, int count, int x, int y,
                                      boolean drawInYellow) {
 
-        // TODO: this: optimize text scale and such
 
         PoseStack poseStack = context.pose();
 
@@ -219,9 +215,9 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
         String countString = ItemCountUtils.toConsiseString(count);
         String formattedString = drawInYellow ? ChatFormatting.YELLOW + countString : countString;
-        float scale = ItemCountUtils.scale(countString);
+        float scale = ItemCountUtils.scale();
 
-        int textWidth = (int) (textRenderer.width(countString));
+        int textWidth = textRenderer.width(countString);
 
         int xOffset = x + 18 - 2;
         int yOffset = y + 18 - 2;
@@ -262,11 +258,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
     private void onSortButtonPress(SortButtonWidget button) {
         if (button.timeSinceLastPressed() < 1000) {
-            button.sortMode = switch (button.sortMode) {
-                case COUNT -> SortMode.NAME;
-                case NAME -> SortMode.MOD;
-                case MOD -> SortMode.COUNT;
-            };
+            button.sortMode = button.sortMode.next();
         }
         this.sortMode = button.sortMode;
         button.refreshTooltip();
