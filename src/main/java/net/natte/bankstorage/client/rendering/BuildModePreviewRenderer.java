@@ -17,6 +17,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.natte.bankstorage.client.screen.BankScreen;
 import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
@@ -270,21 +271,22 @@ public class BuildModePreviewRenderer {
             context.fill(RenderType.guiOverlay(), k, l, k + i, l + 1, j | 0xFF000000);
         }
         if (stack.getCount() != 1) {
-            String count = ItemCountUtils.toConsiseString(stack.getCount());
-            String string = count;
-            matrices.translate(0.0f, 0.0f, 200.0f);
-            float scale = ItemCountUtils.scale(string);
-
-            int textWidth = (int) (textRenderer.width(string));
-
-            int xOffset = x + 18 - 2;
-            int yOffset = y + 18 - 2;
-            matrices.pushPose();
-            matrices.translate(xOffset, yOffset, 0);
-            matrices.scale(scale, scale, 1);
-            matrices.translate(-xOffset, -yOffset, 0);
-            context.drawString(textRenderer, string, x + 18 - 1 - textWidth, y + 9, 0xFFFFFF, true);
-            matrices.popPose();
+            BankScreen.drawItemCount(context, textRenderer, stack.getCount(), x, y, false);
+//            String count = ItemCountUtils.toConsiseString(stack.getCount());
+//            String string = count;
+//            matrices.translate(0.0f, 0.0f, 200.0f);
+//            float scale = ItemCountUtils.scale(string);
+//
+//            int textWidth = (int) (textRenderer.width(string));
+//
+//            int xOffset = x + 18 - 2;
+//            int yOffset = y + 18 - 2;
+//            matrices.pushPose();
+//            matrices.translate(xOffset, yOffset, 0);
+//            matrices.scale(scale, scale, 1);
+//            matrices.translate(-xOffset, -yOffset, 0);
+//            context.drawString(textRenderer, string, x + 18 - 1 - textWidth, y + 9, 0xFFFFFF, true);
+//            matrices.popPose();
         }
 
         matrices.popPose();

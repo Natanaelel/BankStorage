@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 
 public class ItemCountUtils {
 
-    private static final String[] POWER = { "K", "M", "B", "T" };
+    private static final String[] POWER = {"k", "M", "B", "T"};
 
     public static String toConsiseString(int count) {
         int index = 0;
@@ -29,15 +29,15 @@ public class ItemCountUtils {
     public static float scale(String string) {
         Minecraft client = Minecraft.getInstance();
         int guiScale = (int) client.getWindow().getGuiScale();
-        float width = client.font.width(string);
-        if (guiScale == 1)
-            return width / 6.0 >= 4 ? 0.7f : 1f;
+//        float width = client.font.width(string);
+//        if (guiScale == 1)
+        return Math.max(1f, (int) ((string.length() >= 3 ? 0.7f : 1f) * guiScale)) / guiScale;
 
-        if (width == 0) // *should* tm never be 0 but why not
-            return 1f;
-        float scale = 16f / width;
-        float step = Math.max(3, guiScale);
-        return Math.min(1f, scaledFloor(scale, step));
+//        if (width == 0) // *should* tm never be 0 but why not
+//            return 1f;
+//        float scale = 16f / width;
+//        float step = Math.max(3, guiScale);
+//        return Math.min(1f, scaledFloor(scale, step));
     }
 
     private static float scaledFloor(float value, float step) {

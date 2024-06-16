@@ -3,7 +3,6 @@ package net.natte.bankstorage.client.screen;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Consumer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
@@ -11,15 +10,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.client.BankStorageClient;
 import net.natte.bankstorage.client.rendering.ItemCountUtils;
@@ -95,33 +91,8 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
         }
         // left click + lockSlot keybind
         if (button == 0 && this.isLockSlotKeyDown) {
+            handleSlotLock(bankSlot);
 
-            System.out.println("locking some slot now frfr");
-            int hoveredSlotIndex = bankSlot.index;
-            ItemStack hoveredStack = bankSlot.getItem();
-            ItemStack cursorStack = this.menu.getCarried();
-            boolean isLocked = bankSlot.isLocked();
-
-            Consumer<@Nullable ItemStack> lockSlot = stack -> {
-                Minecraft.getInstance().getConnection().send(new LockSlotPacketC2S(this.menu.containerId, hoveredSlotIndex,
-                        stack == null ? ItemStack.EMPTY : stack, stack != null));
-            };
-
-            if (isLocked) {
-                if (cursorStack.isEmpty()) {
-                    lockSlot.accept(null);
-                } else if (hoveredStack.isEmpty()) {
-                    lockSlot.accept(cursorStack);
-                }
-            } else {
-                if (hoveredStack.isEmpty()) {
-                    lockSlot.accept(cursorStack);
-                } else if (cursorStack.isEmpty()
-                        || ItemStack.isSameItemSameComponents(hoveredStack, cursorStack)) {
-                    lockSlot.accept(hoveredStack);
-                }
-
-            }
             this.skipNextRelease = true;
             return true;
 
@@ -129,6 +100,25 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
         return super.mouseClicked(mouseX, mouseY, button);
 
+    }
+
+    private void handleSlotLock(BankSlot bankSlot) {
+
+        int hoveredSlotIndex = bankSlot.index;
+        ItemStack hoveredStack = bankSlot.getItem();
+        ItemStack cursorStack = this.menu.getCarried();
+
+        boolean isSlotEmpty = hoveredStack.isEmpty();
+        ItemStack lockedStack = bankSlot.getLockedStack();
+
+        boolean shouldUnLock = bankSlot.isLocked() && (cursorStack.isEmpty() || !isSlotEmpty || ItemStack.isSameItemSameComponents(cursorStack, lockedStack));
+
+        minecraft.getConnection().send(
+                new LockSlotPacketC2S(
+                        this.menu.containerId,
+                        hoveredSlotIndex,
+                        isSlotEmpty ? cursorStack : hoveredStack,
+                        !shouldUnLock));
     }
 
     @Override
