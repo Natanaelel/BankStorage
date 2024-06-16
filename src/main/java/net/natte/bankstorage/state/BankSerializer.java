@@ -2,10 +2,12 @@ package net.natte.bankstorage.state;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.util.ExtraCodecs;
 
 import net.minecraft.world.item.ItemStack;
@@ -15,6 +17,13 @@ import net.natte.bankstorage.container.BankType;
 
 public class BankSerializer {
 
+    private static final Codec<ItemStack> OPTIONAL_LARGE_STACK_CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                    ItemStack.ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
+                    Codec.INT.fieldOf("count").forGetter(ItemStack::getCount),
+                    DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(ItemStack::getComponentsPatch)
+            ).apply(instance, ItemStack::new)
+    );
+
     private static final Codec<BankItemStorage> BANK_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             UUIDUtil.STRING_CODEC
                     .fieldOf("uuid")
@@ -22,7 +31,7 @@ public class BankSerializer {
             BankType.CODEC
                     .fieldOf("type")
                     .forGetter(b -> b.type),
-            ItemStack.OPTIONAL_CODEC.listOf()
+            OPTIONAL_LARGE_STACK_CODEC.listOf()
                     .fieldOf("items")
                     .forGetter(b -> b.getItems()),
             // maps must have string keys
