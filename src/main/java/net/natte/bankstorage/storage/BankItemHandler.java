@@ -129,9 +129,10 @@ public class BankItemHandler implements IItemHandler {
 
         int inserted = 0;
         for (int slot = 0; slot < items.size(); ++slot) {
+            ItemStack lockedStack = lockedSlots.get(slot);
             ItemStack stackInSlot = items.get(slot);
             int count = stackInSlot.getCount();
-            if (stackInSlot.isEmpty() || ItemStack.isSameItemSameComponents(stackInSlot, stack)) {
+            if (lockedStack != null ? ItemStack.isSameItemSameComponents(lockedStack, stack) : stackInSlot.isEmpty() || ItemStack.isSameItemSameComponents(stackInSlot, stack)) {
                 int spaceLeft = slotCapacity - count;
                 int toInsert = amount - inserted;
                 int gotInserted = Math.min(spaceLeft, toInsert);

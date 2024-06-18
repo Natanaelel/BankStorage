@@ -53,14 +53,9 @@ public class BankFilter {
     }
 
     public boolean matchesBank(BankItemStorage bankItemStorage) {
-        if (!matchesType(bankItemStorage))
-            return false;
-        if (!matchesPlayer(bankItemStorage))
-            return false;
-        if (!matchesItems(bankItemStorage))
-            return false;
-
-        return true;
+        return matchesType(bankItemStorage)
+                && matchesPlayer(bankItemStorage)
+                && matchesItems(bankItemStorage);
     }
 
     private boolean matchesType(BankItemStorage bankItemStorage) {

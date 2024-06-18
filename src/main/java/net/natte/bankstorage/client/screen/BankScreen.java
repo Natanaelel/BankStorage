@@ -63,9 +63,8 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
         super.init();
         BankOptions options = Util.getOrCreateOptions(this.menu.getBankLikeItem());
         this.sortMode = options.sortMode();
-        PickupModeOption initialPickupMode = PickupModeOption.from(options.pickupMode());
         this.addRenderableWidget(
-                new TexturedCyclingButtonWidget(initialPickupMode,
+                new TexturedCyclingButtonWidget(options.pickupMode(),
                         leftPos + titleLabelX + this.imageWidth - 49, topPos + titleLabelY - 4, 14, 14,
                         BankStorageClient.WIDGETS_TEXTURE, this::onPickupModeButtonPress));
 

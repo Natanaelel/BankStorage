@@ -38,4 +38,12 @@ public class ScreenHandlerMixin {
         }
         return result;
     }
+
+    // right clicking a stack picks up half of the stack. this makes the half max 32
+    @ModifyExpressionValue(method = "doClick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getCount()I", ordinal = 6))
+    private int getStackCount(int stackCount, @Local Slot slot) {
+        if (slot instanceof BankSlot)
+            return Math.min(stackCount, slot.getItem().getMaxStackSize());
+        return stackCount;
+    }
 }

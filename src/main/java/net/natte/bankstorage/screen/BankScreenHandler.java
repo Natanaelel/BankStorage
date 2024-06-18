@@ -13,6 +13,7 @@ import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.inventory.LockedSlot;
+import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.packet.NetworkUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -120,12 +121,11 @@ public class BankScreenHandler extends AbstractContainerMenu {
         return this.context;
     }
 
-    // Shift + Player Inv Slot
     @Override
     public ItemStack quickMoveStack(Player player, int invSlot) {
         ItemStack newStack = ItemStack.EMPTY;
         Slot slot = this.slots.get(invSlot);
-        if (slot != null && slot.hasItem()) {
+        if (slot.hasItem()) {
             ItemStack originalStack = slot.getItem();
             newStack = originalStack.copy();
             if (invSlot < this.inventory.getContainerSize()) {
@@ -135,7 +135,7 @@ public class BankScreenHandler extends AbstractContainerMenu {
                 }
 
             } // move from player to bank
-            else if (!this.moveItemStackTo(originalStack, 0, this.inventory.getContainerSize(), false)) {
+            else if (!this.insertIntoBank(originalStack)) {
                 return ItemStack.EMPTY;
             }
 
@@ -149,98 +149,91 @@ public class BankScreenHandler extends AbstractContainerMenu {
         return newStack;
     }
 
-    @Override
-    protected boolean moveItemStackTo(ItemStack stack, int startIndex, int endIndex, boolean fromLast) {
-        ItemStack itemStack;
-        Slot slot;
-        boolean bl = false;
-        int i = startIndex;
-        if (fromLast) {
-            i = endIndex - 1;
-        }
-        // add to locked stack
-        while (!stack.isEmpty() && (fromLast ? i >= startIndex : i < endIndex)) {
-            slot = this.slots.get(i);
-            int slotSize = slot.getMaxStackSize(stack);
-            itemStack = slot.getItem();
+    // returns true if something got inserted
+    private boolean insertIntoBank(ItemStack stack) {
+        // must modify input stack
+        ItemStack notInserted = this.bankItemStorage.getItemHandler(PickupMode.ALL).insertItem(stack);
+        stack.setCount(notInserted.getCount());
+        return notInserted.getCount() != stack.getCount();
 
-            if (slot instanceof BankSlot bankSlot && bankSlot.isLocked() && bankSlot.mayPlace(stack)) {
-                if (itemStack.isEmpty()) {
-                    slot.setByPlayer(stack.split(slotSize));
-                    slot.setChanged();
-                    bl = true;
-                } else {
-                    int toMove = Math.min(slotSize - itemStack.getCount(), Math.min(slotSize, stack.getCount()));
-                    if (toMove > 0) {
-                        itemStack.grow(toMove);
-                        stack.shrink(toMove);
-                        slot.setChanged();
-                        bl = true;
-
-                    }
-
-                }
-            }
-            if (fromLast) {
-                --i;
-                continue;
-            }
-            ++i;
-        }
-
-        // add to existing stack
-        i = fromLast ? endIndex - 1 : startIndex;
-        while (!stack.isEmpty() && (fromLast ? i >= startIndex : i < endIndex)) {
-            slot = this.slots.get(i);
-            int maxStackCount = slot.getMaxStackSize(stack);
-            itemStack = slot.getItem();
-            if (!itemStack.isEmpty() && ItemStack.isSameItemSameComponents(stack, itemStack)
-                    && ((slot instanceof BankSlot bankSlot) ? bankSlot.mayPlace(stack) : true)) {
-                int j = itemStack.getCount() + stack.getCount();
-                if (j <= maxStackCount) {
-                    stack.setCount(0);
-                    itemStack.setCount(j);
-                    slot.setChanged();
-                    bl = true;
-                } else if (itemStack.getCount() < maxStackCount) {
-                    stack.shrink(maxStackCount - itemStack.getCount());
-                    itemStack.setCount(maxStackCount);
-                    slot.setChanged();
-                    bl = true;
-                }
-            }
-            if (fromLast) {
-                --i;
-                continue;
-            }
-            ++i;
-        }
-
-        // add to new stack
-        if (!stack.isEmpty()) {
-            i = fromLast ? endIndex - 1 : startIndex;
-            while (fromLast ? i >= startIndex : i < endIndex) {
-                slot = this.slots.get(i);
-                itemStack = slot.getItem();
-                if (itemStack.isEmpty() && slot.mayPlace(stack)
-                        && ((slot instanceof BankSlot bankSlot) ? bankSlot.mayPlace(stack) : true)) {
-                    if (stack.getCount() > slot.getMaxStackSize()) {
-                        slot.setByPlayer(stack.split(slot.getMaxStackSize()));
-                    } else {
-                        slot.setByPlayer(stack.split(Math.min(stack.getCount(), stack.getMaxStackSize())));
-                    }
-                    slot.setChanged();
-                    bl = true;
-                    // break;
-                }
-                if (fromLast) {
-                    --i;
-                    continue;
-                }
-                ++i;
-            }
-        }
-        return bl;
+//
+//        int startIndex = 0;
+//        int endIndex = this.inventory.getContainerSize();
+//        ItemStack itemStack;
+//        Slot slot;
+//        boolean bl = false;
+//        int i = startIndex;
+//        // add to locked stack
+//        while (!stack.isEmpty() && i < endIndex) {
+//            slot = this.slots.get(i);
+//            int slotSize = slot.getMaxStackSize(stack);
+//            itemStack = slot.getItem();
+//
+//            if (slot instanceof BankSlot bankSlot && bankSlot.isLocked() && bankSlot.mayPlace(stack)) {
+//                if (itemStack.isEmpty()) {
+//                    slot.setByPlayer(stack.split(slotSize));
+//                    slot.setChanged();
+//                    bl = true;
+//                } else {
+//                    int toMove = Math.min(slotSize - itemStack.getCount(), Math.min(slotSize, stack.getCount()));
+//                    if (toMove > 0) {
+//                        itemStack.grow(toMove);
+//                        stack.shrink(toMove);
+//                        slot.setChanged();
+//                        bl = true;
+//
+//                    }
+//
+//                }
+//            }
+//            ++i;
+//        }
+//
+//        // add to existing stack
+//        i = startIndex;
+//        while (!stack.isEmpty() && i < endIndex) {
+//            slot = this.slots.get(i);
+//            int maxStackCount = slot.getMaxStackSize(stack);
+//            itemStack = slot.getItem();
+//            if (!itemStack.isEmpty() && ItemStack.isSameItemSameComponents(stack, itemStack)
+//                    && (!(slot instanceof BankSlot bankSlot) || bankSlot.mayPlace(stack))) {
+//                int j = itemStack.getCount() + stack.getCount();
+//                if (j <= maxStackCount) {
+//                    stack.setCount(0);
+//                    itemStack.setCount(j);
+//                    slot.setChanged();
+//                    bl = true;
+//                } else if (itemStack.getCount() < maxStackCount) {
+//                    stack.shrink(maxStackCount - itemStack.getCount());
+//                    itemStack.setCount(maxStackCount);
+//                    slot.setChanged();
+//                    bl = true;
+//                }
+//            }
+//            ++i;
+//        }
+//
+//        // add to new stack
+//        if (!stack.isEmpty()) {
+//            i = startIndex;
+//            while (i < endIndex) {
+//                slot = this.slots.get(i);
+//                itemStack = slot.getItem();
+//                if (itemStack.isEmpty() && slot.mayPlace(stack)
+//                        && (!(slot instanceof BankSlot bankSlot) || bankSlot.mayPlace(stack))) {
+//                    if (stack.getCount() > slot.getMaxStackSize()) {
+//                        slot.setByPlayer(stack.split(slot.getMaxStackSize()));
+//                    } else {
+//                        slot.setByPlayer(stack.split(Math.min(stack.getCount(), stack.getMaxStackSize())));
+//                    }
+//                    slot.setChanged();
+//                    bl = true;
+//                    // break;
+//                }
+//                ++i;
+//            }
+//        }
+//        return bl;
     }
 
     protected boolean insertItemToPlayer(ItemStack stack, int startIndex, int endIndex, boolean fromLast) {

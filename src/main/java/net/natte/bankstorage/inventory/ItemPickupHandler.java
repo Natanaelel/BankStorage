@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
+import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.packet.NetworkUtil;
 import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
@@ -45,7 +46,7 @@ public class ItemPickupHandler {
                 if (bankItemStorage == null)
                     continue;
 
-                PickupMode mode = Util.getOrCreateOptions(itemStack).pickupMode;
+                PickupMode mode = itemStack.getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT).pickupMode();
 
                 ItemStack notPickedUp = bankItemStorage.getItemHandler(mode).insertItem(pickedUpStack);
 

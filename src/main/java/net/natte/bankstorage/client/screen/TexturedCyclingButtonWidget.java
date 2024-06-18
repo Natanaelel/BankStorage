@@ -17,22 +17,23 @@ import net.neoforged.api.distmarker.OnlyIn;
 @OnlyIn(Dist.CLIENT)
 public class TexturedCyclingButtonWidget extends Button {
 
-    PickupModeOption state;
+    PickupMode pickupMode;
 
     private static final int textureWidth = 256;
     private static final int textureHeight = 256;
 
     private final ResourceLocation texture;
+    private int uOffset;
 
-    TexturedCyclingButtonWidget(PickupModeOption state, int x, int y, int width, int height,
-            ResourceLocation texture,
-            Consumer<TexturedCyclingButtonWidget> pressAction) {
+    TexturedCyclingButtonWidget(PickupMode pickupMode, int x, int y, int width, int height,
+                                ResourceLocation texture,
+                                Consumer<TexturedCyclingButtonWidget> pressAction) {
         super(x, y, width, height, CommonComponents.EMPTY,
                 button -> pressAction.accept((TexturedCyclingButtonWidget) button), DEFAULT_NARRATION);
 
         this.texture = texture;
 
-        this.state = state;
+        this.pickupMode = pickupMode;
         this.refreshTooltip();
         this.setTooltipDelay(Duration.ofMillis(700));
     }
@@ -41,83 +42,36 @@ public class TexturedCyclingButtonWidget extends Button {
     public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
         context.blit(this.texture,
                 this.getX(), this.getY(), 0,
-                this.state.uOffset(), this.state.vOffset() + (this.isHoveredOrFocused() ? this.height : 0),
+                this.uOffset, 70 + (this.isHoveredOrFocused() ? this.height : 0),
                 this.width, this.height, textureWidth, textureHeight);
     }
 
     public void refreshTooltip() {
-        this.setTooltip(state.getTooltip());
+        String name = switch (this.pickupMode) {
+            case NONE -> "no_pickup";
+            case ALL -> "pickup_all";
+            case FILTERED -> "filtered";
+            case VOID -> "void_overflow";
+        };
+
+        this.setTooltip(
+                Tooltip.create(
+                        Component.translatable("title.bankstorage.pickupmode." + name)
+                                .append("\n")
+                                .append(
+                                        Component.translatable("tooltip.bankstorage.pickupmode." + name)
+                                                .withStyle(ChatFormatting.DARK_GRAY)
+                                )));
     }
+
 
     public void nextState() {
-         this.state = this.state.next();
-    }
-}
-
-@OnlyIn(Dist.CLIENT)
-enum PickupModeOption {
-    NO_PICKUP("no_pickup", 0, 70),
-    ALL("pickup_all", 14, 70),
-    FILTERED("filtered", 28, 70),
-    VOID_OVERFLOW("void_overflow", 42, 70);
-
-    private final Component name;
-    private final Component info;
-
-    private final int uOffset;
-    private final int vOffset;
-
-    PickupModeOption(String name, int uOffset, int vOffset) {
-        this.name = Component.translatable("title.bankstorage.pickupmode." + name);
-        this.info = Component.translatable("tooltip.bankstorage.pickupmode." + name);
-        this.uOffset = uOffset;
-        this.vOffset = vOffset;
-    }
-
-    public static PickupModeOption from(PickupMode pickupMode) {
-        return switch (pickupMode) {
-            case NONE -> NO_PICKUP;
-            case ALL -> ALL;
-            case FILTERED -> FILTERED;
-            case VOID -> VOID_OVERFLOW;
-        };
-    }
-
-    public PickupMode toPickupMode() {
-        return switch (this) {
-            case NO_PICKUP -> PickupMode.NONE;
-            case ALL -> PickupMode.ALL;
-            case FILTERED -> PickupMode.FILTERED;
-            case VOID_OVERFLOW -> PickupMode.VOID;
-        };
-    }
-
-    public Component getName() {
-        return this.name;
-    }
-
-    public Component getInfo() {
-        return this.info;
-    }
-
-    public int uOffset() {
-        return this.uOffset;
-    }
-
-    public int vOffset() {
-        return this.vOffset;
-    }
-
-    public Tooltip getTooltip() {
-        return Tooltip.create(getName().copy().append(Component.empty().append("\n").append(getInfo()).withStyle(ChatFormatting.DARK_GRAY)));
-    }
-
-    public PickupModeOption next() {
-        return switch (this) {
-            case NO_PICKUP -> ALL;
-            case ALL -> FILTERED;
-            case FILTERED -> VOID_OVERFLOW;
-            case VOID_OVERFLOW -> NO_PICKUP;
+        this.pickupMode = this.pickupMode.next();
+        this.uOffset = switch (this.pickupMode) {
+            case NONE -> 0;
+            case ALL -> 14;
+            case FILTERED -> 28;
+            case VOID -> 42;
         };
     }
 }

@@ -69,4 +69,8 @@ public record BankOptions(PickupMode pickupMode, BuildMode buildMode, SortMode s
     public BankOptions withSortMode(SortMode newSortMode) {
         return new BankOptions(pickupMode, buildMode, newSortMode);
     }
+
+    public BankOptions nextPickupMode() {
+        return new BankOptions(pickupMode.next(), buildMode, sortMode);
+    }
 }

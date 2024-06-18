@@ -5,12 +5,15 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.BankStorage;
+import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+import org.jetbrains.annotations.Nullable;
 
 public record PickupModePacketC2S() implements CustomPacketPayload {
 
@@ -27,43 +30,42 @@ public record PickupModePacketC2S() implements CustomPacketPayload {
     public static void handle(PickupModePacketC2S packet, IPayloadContext context) {
         ServerPlayer player = (ServerPlayer) context.player();
         if (player.containerMenu instanceof BankScreenHandler bankScreenHandler)
-            togglePickupModeOfScreenHandler(player, bankScreenHandler);
+            togglePickupModeOfScreenHandler(bankScreenHandler);
         else
             togglePickupModeOfHeldBank(player);
 
     }
 
-    private static void togglePickupModeOfScreenHandler(ServerPlayer player, BankScreenHandler bankScreenHandler) {
+    private static void togglePickupModeOfScreenHandler(BankScreenHandler bankScreenHandler) {
+
         ItemStack bank = bankScreenHandler.getBankLikeItem();
-        BankOptions options = Util.getOrCreateOptions(bank);
-        options.pickupMode = options.pickupMode.next();
-        Util.setOptions(bank, options);
+
+        bank.update(BankStorage.OptionsComponentType, BankOptions.DEFAULT, BankOptions::nextPickupMode);
 
         // dock.markDirty if has dock pos
         bankScreenHandler.getContext().execute(
                 (world, blockPos) -> world
                         .getBlockEntity(blockPos, BankStorage.BANK_DOCK_BLOCK_ENTITY.get())
-                        .ifPresent(dock -> {
-                            if (dock.hasBank()) {
-                                Util.setOptions(dock.getBank(), options);
-                                dock.setChanged();
-                            }
-                        }));
+                        .ifPresent(BankDockBlockEntity::setChanged));
     }
 
     private static void togglePickupModeOfHeldBank(ServerPlayer player) {
-        ItemStack stack;
-        if (Util.isBankLike(player.getMainHandItem()))
-            stack = player.getOffhandItem();
-        else if (Util.isBankLike(player.getOffhandItem()))
-            stack = player.getOffhandItem();
-        else
+        ItemStack bank = getBankLike(player);
+        if (bank == null)
             return;
 
-        BankOptions options = Util.getOrCreateOptions(stack);
-        options.pickupMode = options.pickupMode.next();
-        Util.setOptions(stack, options);
+        bank.update(BankStorage.OptionsComponentType, BankOptions.DEFAULT, BankOptions::nextPickupMode);
+
         player.displayClientMessage(Component.translatable("popup.bankstorage.pickupmode."
-                + options.pickupMode.toString().toLowerCase()), true);
+                + bank.get(BankStorage.OptionsComponentType).pickupMode().toString().toLowerCase()), true);
+    }
+
+    @Nullable
+    private static ItemStack getBankLike(Player player) {
+        if (Util.isBankLike(player.getMainHandItem()))
+            return player.getMainHandItem();
+        if (Util.isBankLike(player.getOffhandItem()))
+            return player.getOffhandItem();
+        return null;
     }
 }
