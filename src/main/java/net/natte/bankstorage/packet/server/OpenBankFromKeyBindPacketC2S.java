@@ -18,8 +18,10 @@ import net.natte.bankstorage.util.Util;
 
 public record OpenBankFromKeyBindPacketC2S() implements CustomPacketPayload {
 
+    public static final OpenBankFromKeyBindPacketC2S INSTANCE = new OpenBankFromKeyBindPacketC2S();
+
     public static final Type<OpenBankFromKeyBindPacketC2S> TYPE = new Type<>(Util.ID("open_bank_from_keybind_c2s"));
-    public static final StreamCodec<RegistryFriendlyByteBuf, OpenBankFromKeyBindPacketC2S> STREAM_CODEC = StreamCodec.unit(new OpenBankFromKeyBindPacketC2S());
+    public static final StreamCodec<RegistryFriendlyByteBuf, OpenBankFromKeyBindPacketC2S> STREAM_CODEC = StreamCodec.unit(INSTANCE);
 
 
     @Override

@@ -29,8 +29,6 @@ public class Util {
     public static Random clientSyncedRandom;
 
     public static boolean isDebugMode = false;
-    public static Consumer<Player> onToggleBuildMode = e -> {
-    };
 
     public static boolean isBank(ItemStack itemStack) {
         return itemStack.getItem() instanceof BankItem;
@@ -69,7 +67,7 @@ public class Util {
     public static BankOptions getOrCreateOptions(ItemStack itemStack) {
         BankOptions options = itemStack.get(BankStorage.OptionsComponentType);
         if (options == null) {
-            options = new BankOptions();
+            options = BankOptions.DEFAULT;
             setOptions(itemStack, options);
         }
         return options;

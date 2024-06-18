@@ -126,11 +126,11 @@ public class BankItemStorage {
         return items.isEmpty() ? ItemStack.EMPTY : items.get(random.nextInt(items.size()));
     }
 
-    public ItemStack chooseItemToPlace(BankOptions options, Random random) {
+    public ItemStack chooseItemToPlace(BankOptions options, Random random, int selectedSlot) {
 
-        return switch (options.buildMode) {
+        return switch (options.buildMode()) {
             case NONE -> ItemStack.EMPTY;
-            case NORMAL -> getSelectedItem(options.selectedItemSlot);
+            case NORMAL -> getSelectedItem(selectedSlot);
             case RANDOM -> getRandomItem(random);
         };
     }

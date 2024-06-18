@@ -5,9 +5,11 @@ import java.util.Optional;
 import java.util.Random;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
@@ -17,6 +19,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.natte.bankstorage.BankStorage;
+import net.natte.bankstorage.packet.server.ToggleBuildModePacetC2S;
 import net.natte.bankstorage.screen.BankScreenHandlerFactory;
 import org.jetbrains.annotations.Nullable;
 
@@ -69,7 +72,7 @@ public abstract class BankFunctionality extends Item {
 
         ItemStack bank = player.getItemInHand(hand);
         Level world = player.level();
-        boolean isBuildMode = Util.getOrCreateOptions(bank).buildMode != BuildMode.NONE;
+        boolean isBuildMode = Util.getOrCreateOptions(bank).buildMode() != BuildMode.NONE;
         boolean hasBoundKey = !Util.isBuildModeKeyUnBound;
 
         if (bank.getCount() != 1)
@@ -78,8 +81,8 @@ public abstract class BankFunctionality extends Item {
         boolean shouldToggleBuildMode = !usedOnBlock && player.isShiftKeyDown() && Util.isBuildModeKeyUnBound;
 
         if (shouldToggleBuildMode) { // animate
-            if (world.isClientSide)
-                Util.onToggleBuildMode.accept(player);
+            if (!world.isClientSide)
+                ((ServerPlayer) player).connection.send(ToggleBuildModePacetC2S.INSTANCE);
             return InteractionResult.CONSUME;
         }
 
@@ -134,6 +137,7 @@ public abstract class BankFunctionality extends Item {
         Random random = world.isClientSide ? Util.clientSyncedRandom : player.getData(BankStorage.SYNCED_RANDOM_ATTACHMENT);
 
         BankOptions options = Util.getOrCreateOptions(bank);
+        int selectedSlot = bank.getOrDefault(BankStorage.SelectedSlotComponentType, 0);
 
         BankItemStorage bankItemStorage = null;
         ItemStack blockToPlace;
@@ -145,7 +149,7 @@ public abstract class BankFunctionality extends Item {
                     player.displayClientMessage(Component.translatable("popup.bankstorage.unlinked"), true);
                 return InteractionResult.FAIL;
             }
-            blockToPlace = cachedBankStorage.chooseItemToPlace(options, random);
+            blockToPlace = cachedBankStorage.chooseItemToPlace(options, random, selectedSlot);
         } else {
             bankItemStorage = Util.getBankItemStorage(bank);
             if (bankItemStorage == null) {
@@ -156,7 +160,7 @@ public abstract class BankFunctionality extends Item {
             bankItemStorage.usedByPlayerUUID = player.getUUID();
             bankItemStorage.usedByPlayerName = player.getName().getString();
 
-            blockToPlace = bankItemStorage.chooseItemToPlace(options, random);
+            blockToPlace = bankItemStorage.chooseItemToPlace(options, random, selectedSlot);
         }
 
         // prevent ae2wtlib restock dupe by placing from stack with count 1
@@ -210,11 +214,16 @@ public abstract class BankFunctionality extends Item {
         if (cachedBankStorage == null)
             return Optional.empty();
 
-        List<ItemStack> items = cachedBankStorage.nonEmptyItems;
+        List<ItemStack> nonEmptyItems = cachedBankStorage.getNonEmptyItems();
 
-        if (items.isEmpty())
+        if (nonEmptyItems.isEmpty())
             return Optional.empty();
 
-        return Optional.of(new BankTooltipData(cachedBankStorage.nonEmptyItems));
+        return Optional.of(new BankTooltipData(nonEmptyItems));
+    }
+
+    @Override
+    public boolean isNotReplaceableByPickAction(ItemStack stack, Player player, int inventorySlot) {
+        return true;
     }
 }

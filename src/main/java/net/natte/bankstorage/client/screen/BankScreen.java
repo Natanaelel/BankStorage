@@ -1,9 +1,6 @@
 package net.natte.bankstorage.client.screen;
 
-import java.text.NumberFormat;
-import java.util.List;
-import java.util.Locale;
-
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -19,21 +16,24 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.client.BankStorageClient;
 import net.natte.bankstorage.client.rendering.ItemCountUtils;
-import net.natte.bankstorage.screen.BankScreenHandler;
-import org.jetbrains.annotations.Nullable;
-
-import com.mojang.blaze3d.systems.RenderSystem;
-
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.options.BankOptions;
-import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.options.SortMode;
 import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
 import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.SortPacketC2S;
+import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.Nullable;
 
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.Locale;
+
+@OnlyIn(Dist.CLIENT)
 public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
     private static final NumberFormat FORMAT = NumberFormat.getNumberInstance(Locale.US);
@@ -52,8 +52,8 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
         this.type = screenHandler.getBankType();
         this.texture = this.type.getGuiTexture();
-        this.imageWidth = this.type.guiTextureWidth;
-        this.imageHeight = this.type.guiTextureHeight;
+        this.imageWidth = this.type.guiImageWidth;
+        this.imageHeight = this.type.guiImageHeight;
 
         this.inventoryLabelY += this.type.rows * 18 - 52;
     }
@@ -62,16 +62,16 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
     protected void init() {
         super.init();
         BankOptions options = Util.getOrCreateOptions(this.menu.getBankLikeItem());
-        this.sortMode = options.sortMode;
-        PickupModeOption initialPickupMode = PickupModeOption.from(options.pickupMode);
+        this.sortMode = options.sortMode();
+        PickupModeOption initialPickupMode = PickupModeOption.from(options.pickupMode());
         this.addRenderableWidget(
-                new TexturedCyclingButtonWidget<PickupModeOption>(initialPickupMode,
-                        leftPos + titleLabelX + this.type.guiTextureWidth - 49, topPos + titleLabelY - 4, 14, 14,
+                new TexturedCyclingButtonWidget(initialPickupMode,
+                        leftPos + titleLabelX + this.imageWidth - 49, topPos + titleLabelY - 4, 14, 14,
                         BankStorageClient.WIDGETS_TEXTURE, this::onPickupModeButtonPress));
 
         this.addRenderableWidget(
-                new SortButtonWidget(options.sortMode,
-                        leftPos + titleLabelX + this.type.guiTextureWidth - 31, topPos + titleLabelY - 4,
+                new SortButtonWidget(options.sortMode(),
+                        leftPos + titleLabelX + this.imageWidth - 31, topPos + titleLabelY - 4,
                         14, 14, BankStorageClient.WIDGETS_TEXTURE, this::onSortButtonPress));
     }
 
@@ -122,9 +122,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (BankStorageClient.lockSlotKeyBinding.matches(keyCode, scanCode)) {
             this.isLockSlotKeyDown = true;
-            System.out.println("press: match");
-        } else
-            System.out.println("press: no match");
+        }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
@@ -132,9 +130,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
         if (BankStorageClient.lockSlotKeyBinding.matches(keyCode, scanCode)) {
             this.isLockSlotKeyDown = false;
-            System.out.println("release: match");
-        } else
-            System.out.println("release: no match");
+        }
         return super.keyReleased(keyCode, scanCode, modifiers);
     }
 
@@ -148,12 +144,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
     @Override
     protected void renderBg(GuiGraphics drawContext, float timeDelta, int mouseX, int mouseY) {
-
-        int x = (width - imageWidth) / 2;
-        int y = (height - imageHeight) / 2;
-        // wtf?? TODO! fix
-        drawContext.blit(this.texture, x, y, 0, 0, imageWidth, imageHeight,
-                (int) Math.ceil(imageWidth / 256d) * 256, (int) Math.ceil(imageHeight / 256d) * 256);
+        drawContext.blit(this.texture, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.type.guiTextureWidth, this.type.guiTextureHeight);
     }
 
     @Override
@@ -245,13 +236,8 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
         return tooltip;
     }
 
-    private void onPickupModeButtonPress(TexturedCyclingButtonWidget<PickupModeOption> button) {
-        button.state = switch (button.state) {
-            case NO_PICKUP -> PickupModeOption.ALL;
-            case ALL -> PickupModeOption.FILTERED;
-            case FILTERED -> PickupModeOption.VOID_OVERFLOW;
-            case VOID_OVERFLOW -> PickupModeOption.NO_PICKUP;
-        };
+    private void onPickupModeButtonPress(TexturedCyclingButtonWidget button) {
+        button.nextState();
         button.refreshTooltip();
         Minecraft.getInstance().getConnection().send(new PickupModePacketC2S());
     }
@@ -266,65 +252,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
     }
 
     private void sendSortPacket() {
-
         Minecraft.getInstance().getConnection().send(new SortPacketC2S(this.sortMode));
     }
 }
 
-enum PickupModeOption implements CycleableOption {
-    NO_PICKUP("no_pickup", 0, 70),
-    ALL("pickup_all", 14, 70),
-    FILTERED("filtered", 28, 70),
-    VOID_OVERFLOW("void_overflow", 42, 70);
-
-    private final Component name;
-    private final Component info;
-
-    private final int uOffset;
-    private final int vOffset;
-
-    private PickupModeOption(String name, int uOffset, int vOffset) {
-        this.name = Component.translatable("title.bankstorage.pickupmode." + name);
-        this.info = Component.translatable("tooltip.bankstorage.pickupmode." + name);
-        this.uOffset = uOffset;
-        this.vOffset = vOffset;
-    }
-
-    public static PickupModeOption from(PickupMode pickupMode) {
-        return switch (pickupMode) {
-            case NONE -> NO_PICKUP;
-            case ALL -> ALL;
-            case FILTERED -> FILTERED;
-            case VOID -> VOID_OVERFLOW;
-        };
-    }
-
-    public PickupMode toPickupMode() {
-        return switch (this) {
-            case NO_PICKUP -> PickupMode.NONE;
-            case ALL -> PickupMode.ALL;
-            case FILTERED -> PickupMode.FILTERED;
-            case VOID_OVERFLOW -> PickupMode.VOID;
-        };
-    }
-
-    @Override
-    public Component getName() {
-        return this.name;
-    }
-
-    @Override
-    public Component getInfo() {
-        return this.info;
-    }
-
-    @Override
-    public int uOffset() {
-        return this.uOffset;
-    }
-
-    @Override
-    public int vOffset() {
-        return this.vOffset;
-    }
-}

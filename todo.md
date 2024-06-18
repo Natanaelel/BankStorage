@@ -1,4 +1,4 @@
-font size that always look good?
+[x] font size that always look good?
 
 [x] colored banks
 [x] show content in tooltip

@@ -3,29 +3,32 @@ package net.natte.bankstorage.client.screen;
 import java.time.Duration;
 import java.util.function.Consumer;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.natte.bankstorage.options.PickupMode;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
-public class TexturedCyclingButtonWidget<T extends CycleableOption> extends Button {
+public class TexturedCyclingButtonWidget extends Button {
 
-    public T state;
+    PickupModeOption state;
 
     private static final int textureWidth = 256;
     private static final int textureHeight = 256;
 
-    private ResourceLocation texture;
+    private final ResourceLocation texture;
 
-    @SuppressWarnings("unchecked") // cast to TexturedCyclingButtonWidget<T> line 27,
-    public TexturedCyclingButtonWidget(T state, int x, int y, int width, int height,
+    TexturedCyclingButtonWidget(PickupModeOption state, int x, int y, int width, int height,
             ResourceLocation texture,
-            Consumer<TexturedCyclingButtonWidget<T>> pressAction) {
+            Consumer<TexturedCyclingButtonWidget> pressAction) {
         super(x, y, width, height, CommonComponents.EMPTY,
-                button -> pressAction.accept((TexturedCyclingButtonWidget<T>) button), DEFAULT_NARRATION);
+                button -> pressAction.accept((TexturedCyclingButtonWidget) button), DEFAULT_NARRATION);
 
         this.texture = texture;
 
@@ -44,5 +47,77 @@ public class TexturedCyclingButtonWidget<T extends CycleableOption> extends Butt
 
     public void refreshTooltip() {
         this.setTooltip(state.getTooltip());
+    }
+
+    public void nextState() {
+         this.state = this.state.next();
+    }
+}
+
+@OnlyIn(Dist.CLIENT)
+enum PickupModeOption {
+    NO_PICKUP("no_pickup", 0, 70),
+    ALL("pickup_all", 14, 70),
+    FILTERED("filtered", 28, 70),
+    VOID_OVERFLOW("void_overflow", 42, 70);
+
+    private final Component name;
+    private final Component info;
+
+    private final int uOffset;
+    private final int vOffset;
+
+    PickupModeOption(String name, int uOffset, int vOffset) {
+        this.name = Component.translatable("title.bankstorage.pickupmode." + name);
+        this.info = Component.translatable("tooltip.bankstorage.pickupmode." + name);
+        this.uOffset = uOffset;
+        this.vOffset = vOffset;
+    }
+
+    public static PickupModeOption from(PickupMode pickupMode) {
+        return switch (pickupMode) {
+            case NONE -> NO_PICKUP;
+            case ALL -> ALL;
+            case FILTERED -> FILTERED;
+            case VOID -> VOID_OVERFLOW;
+        };
+    }
+
+    public PickupMode toPickupMode() {
+        return switch (this) {
+            case NO_PICKUP -> PickupMode.NONE;
+            case ALL -> PickupMode.ALL;
+            case FILTERED -> PickupMode.FILTERED;
+            case VOID_OVERFLOW -> PickupMode.VOID;
+        };
+    }
+
+    public Component getName() {
+        return this.name;
+    }
+
+    public Component getInfo() {
+        return this.info;
+    }
+
+    public int uOffset() {
+        return this.uOffset;
+    }
+
+    public int vOffset() {
+        return this.vOffset;
+    }
+
+    public Tooltip getTooltip() {
+        return Tooltip.create(getName().copy().append(Component.empty().append("\n").append(getInfo()).withStyle(ChatFormatting.DARK_GRAY)));
+    }
+
+    public PickupModeOption next() {
+        return switch (this) {
+            case NO_PICKUP -> ALL;
+            case ALL -> FILTERED;
+            case FILTERED -> VOID_OVERFLOW;
+            case VOID_OVERFLOW -> NO_PICKUP;
+        };
     }
 }

@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.item.BankItem;
@@ -22,6 +23,8 @@ public class BankType {
     private String name;
     public int rows;
     public int cols;
+    public int guiImageWidth;
+    public int guiImageHeight;
     public int guiTextureWidth;
     public int guiTextureHeight;
 
@@ -34,8 +37,11 @@ public class BankType {
         this.rows = rows;
         this.cols = cols;
 
-        this.guiTextureWidth = guiTextureWidth;
-        this.guiTextureHeight = guiTextureHeight;
+        this.guiImageWidth = guiTextureWidth;
+        this.guiImageHeight = guiTextureHeight;
+
+        this.guiTextureWidth = Mth.ceil(this.guiImageWidth / 256d) * 256;
+        this.guiTextureHeight = Mth.ceil(this.guiImageHeight / 256d) * 256;
 
         this.stackLimit = stackLimit;
 

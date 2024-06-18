@@ -3,11 +3,7 @@ package net.natte.bankstorage.packet.client;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.util.Mth;
-import net.natte.bankstorage.client.BankStorageClient;
 import net.natte.bankstorage.container.CachedBankStorage;
-import net.natte.bankstorage.options.BankOptions;
-import net.natte.bankstorage.packet.server.UpdateBankOptionsPacketC2S;
 import net.natte.bankstorage.util.Util;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
@@ -29,16 +25,16 @@ public record RequestBankStoragePacketS2C(CachedBankStorage cachedBankStorage) i
         CachedBankStorage bankStorage = packet.cachedBankStorage();
         CachedBankStorage.setBankStorage(bankStorage.uuid, bankStorage);
 
-        if (bankStorage.uuid.equals(BankStorageClient.buildModePreviewRenderer.uuid)) {
-            BankStorageClient.buildModePreviewRenderer.setBankStorage(bankStorage);
+//        if (bankStorage.uuid.equals(BankStorageClient.buildModePreviewRenderer.uuid)) {
+//            BankStorageClient.buildModePreviewRenderer.setBankStorage(bankStorage);
 
-            int selectedSlot = BankStorageClient.buildModePreviewRenderer.options.selectedItemSlot;
-            int newSelectedSlot = Mth.clamp(selectedSlot, 0, bankStorage.blockItems.size() - 1);
-            if (newSelectedSlot != selectedSlot) {
-                BankOptions options = BankStorageClient.buildModePreviewRenderer.options;
-                options.selectedItemSlot = newSelectedSlot;
-                context.listener().send(new UpdateBankOptionsPacketC2S(options));
-            }
-        }
+//            int selectedSlot = BankStorageClient.buildModePreviewRenderer.optimisticOptions.selectedSlot();
+//            int newSelectedSlot = Mth.clamp(selectedSlot, 0, bankStorage.blockItems.size() - 1);
+//            if (newSelectedSlot != selectedSlot) {
+//                BankOptions options = BankStorageClient.buildModePreviewRenderer.options;
+//                options.selectedItemSlot = newSelectedSlot;
+//                context.listener().send(new UpdateBankOptionsPacketC2S(options));
+//            }
+//        }
     }
 }

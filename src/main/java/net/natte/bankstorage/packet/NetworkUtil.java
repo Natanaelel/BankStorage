@@ -21,9 +21,9 @@ public class NetworkUtil {
                 new CachedBankStorage(items, uuid, bankItemStorage.getRevision())));
     }
 
-    public static void syncCachedBankIfBuildModeS2C(UUID uuid, ServerPlayer player, ItemStack bankItem) {
-        if (Util.getOrCreateOptions(bankItem).buildMode == BuildMode.NONE)
-            return;
-        syncCachedBankS2C(uuid, player);
-    }
+//    public static void syncCachedBankIfBuildModeS2C(UUID uuid, ServerPlayer player, ItemStack bankItem) {
+//        if (Util.getOrCreateOptions(bankItem).buildMode == BuildMode.NONE)
+//            return;
+//        syncCachedBankS2C(uuid, player);
+//    }
 }

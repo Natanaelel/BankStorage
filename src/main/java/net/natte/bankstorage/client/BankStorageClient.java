@@ -6,8 +6,10 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.natte.bankstorage.BankStorage;
@@ -17,6 +19,7 @@ import net.natte.bankstorage.client.rendering.BankDockBlockEntityRenderer;
 import net.natte.bankstorage.client.rendering.BuildModePreviewRenderer;
 import net.natte.bankstorage.client.screen.BankScreen;
 import net.natte.bankstorage.client.tooltip.BankTooltipComponent;
+import net.natte.bankstorage.packet.server.ToggleBuildModePacetC2S;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -59,7 +62,6 @@ public class BankStorageClient {
 
     static {
         Util.isShiftDown = Screen::hasShiftDown;
-        Util.onToggleBuildMode = MouseEvents::onToggleBuildMode;
         CachedBankStorage.setCacheUpdater(CachedBankStorage.bankRequestQueue::add);
     }
 
@@ -120,9 +122,7 @@ public class BankStorageClient {
 
     private void registerRenderers(IEventBus modBus) {
 
-        NeoForge.EVENT_BUS.<RenderGuiEvent.Post>addListener(event -> {
-            buildModePreviewRenderer.render(event.getGuiGraphics(), event.getPartialTick());
-        });
+        NeoForge.EVENT_BUS.<RenderGuiEvent.Post>addListener(event -> buildModePreviewRenderer.render(event.getGuiGraphics()));
 
         modBus.<EntityRenderersEvent.RegisterRenderers>addListener(event -> {
             event.registerBlockEntityRenderer(BankStorage.BANK_DOCK_BLOCK_ENTITY.get(), BankDockBlockEntityRenderer::new);
@@ -148,19 +148,20 @@ public class BankStorageClient {
     }
 
     public void registerKeyBindListeners() {
-        Minecraft client = Minecraft.getInstance();
+        while (toggleBuildModeKeyBinding.consumeClick())
+            send(ToggleBuildModePacetC2S.INSTANCE);
 
-        while (toggleBuildModeKeyBinding.consumeClick()) {
-            Util.onToggleBuildMode.accept(client.player);
-        }
+        while (togglePickupModeKeyBinding.consumeClick())
+            send(PickupModePacketC2S.INSTANCE);
 
-        while (togglePickupModeKeyBinding.consumeClick()) {
-            client.getConnection().send(new PickupModePacketC2S());
-        }
+        while (openBankFromKeyBinding.consumeClick())
+            send(OpenBankFromKeyBindPacketC2S.INSTANCE);
+    }
 
-        while (openBankFromKeyBinding.consumeClick()) {
-            client.getConnection().send(new OpenBankFromKeyBindPacketC2S());
-        }
+    private static void send(CustomPacketPayload payload) {
+        ClientPacketListener connection = Minecraft.getInstance().getConnection();
+        if (connection != null)
+            connection.send(payload);
     }
 
     private void sendQueuedUpdateRequests() {

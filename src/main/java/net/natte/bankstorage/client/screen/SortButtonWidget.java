@@ -12,12 +12,17 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.natte.bankstorage.options.SortMode;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
+@OnlyIn(Dist.CLIENT)
 public class SortButtonWidget extends Button {
 
     public SortMode sortMode;
     private long lastPressedTime;
     private final ResourceLocation texture;
+    private int uOffset;
+    private int vOffset;
 
     public SortButtonWidget(SortMode sortMode, int x, int y, int width, int height, ResourceLocation texture,
                             Consumer<SortButtonWidget> pressAction) {
@@ -34,6 +39,7 @@ public class SortButtonWidget extends Button {
     @Override
     public void onPress() {
         super.onPress();
+        this.uOffset = getUOffset();
         this.lastPressedTime = Util.getMillis();
     }
 
@@ -44,22 +50,18 @@ public class SortButtonWidget extends Button {
     @Override
     public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
         context.blit(this.texture, this.getX(), this.getY(),
-                uOffset(), vOffset() + (this.isHoveredOrFocused() ? this.height : 0),
+                uOffset, 98 + (this.isHoveredOrFocused() ? this.height : 0),
                 this.width, this.height, 256, 256);
     }
 
-    private int uOffset() {
+    private int getUOffset() {
         return switch (sortMode) {
             case COUNT -> 0;
             case NAME -> 14;
             case MOD -> 28;
         };
     }
-
-    private int vOffset() {
-        return 98;
-    }
-
+    
     public void refreshTooltip() {
         this.setTooltip(Tooltip.create(Component.translatable("title.bankstorage.sortmode." + sortMode.name().toLowerCase())
                 .append(Component.empty().append("\n").append(

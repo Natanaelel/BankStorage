@@ -1,5 +1,6 @@
 package net.natte.bankstorage.screen;
 
+import net.minecraft.core.component.DataComponentHolder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;

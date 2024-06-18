@@ -1,24 +1,18 @@
 package net.natte.bankstorage.container;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Consumer;
-
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
-
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.util.Util;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * a client-side only representation of a bank storage containing:
@@ -45,20 +39,22 @@ public class CachedBankStorage {
 
     public static Set<UUID> bankRequestQueue = new HashSet<>();
 
-    private static Consumer<UUID> requestCacheUpdate = uuid -> {};
+    private static Consumer<UUID> requestCacheUpdate = uuid -> {
+    };
 
     private final List<ItemStack> items;
-    public List<ItemStack> nonEmptyItems;
-    public List<ItemStack> blockItems;
+    private final List<ItemStack> nonEmptyItems;
+    private final List<ItemStack> blockItems;
     public UUID uuid;
     public short revision;
 
     public CachedBankStorage(List<ItemStack> items, UUID uuid, short revision) {
         this.items = items;
-        this.nonEmptyItems = items.stream().filter(stack -> !stack.isEmpty()).toList();
-        this.blockItems = nonEmptyItems.stream().filter(stack -> stack.getItem() instanceof BlockItem).toList();
         this.uuid = uuid;
         this.revision = revision;
+
+        this.blockItems = items.stream().filter(stack -> stack.getItem() instanceof BlockItem).toList();
+        this.nonEmptyItems = items.stream().filter(stack -> !stack.isEmpty()).toList();
     }
 
     public static void requestCacheUpdate(UUID uuid) {
@@ -70,21 +66,21 @@ public class CachedBankStorage {
     }
 
     public ItemStack getSelectedItem(int selectedItemSlot) {
-        if (this.blockItems.isEmpty())
+        if (getBlockItems().isEmpty())
             return ItemStack.EMPTY;
-        return this.blockItems.get(selectedItemSlot % this.blockItems.size());
+        return getBlockItems().get(Mth.clamp(selectedItemSlot, 0, getBlockItems().size() - 1));
     }
 
     public ItemStack getRandomItem(Random random) {
-        if (this.blockItems.isEmpty())
+        if (getBlockItems().isEmpty())
             return ItemStack.EMPTY;
-        return this.blockItems.get(random.nextInt(this.blockItems.size()));
+        return getBlockItems().get(random.nextInt(getBlockItems().size()));
     }
 
-    public ItemStack chooseItemToPlace(BankOptions options, Random random) {
-        return switch (options.buildMode) {
+    public ItemStack chooseItemToPlace(BankOptions options, Random random, int selectedSlot) {
+        return switch (options.buildMode()) {
             case NONE -> ItemStack.EMPTY;
-            case NORMAL -> getSelectedItem(options.selectedItemSlot);
+            case NORMAL -> getSelectedItem(selectedSlot);
             case RANDOM -> getRandomItem(random);
         };
     }
@@ -112,5 +108,14 @@ public class CachedBankStorage {
 
     public static void setBankStorage(UUID uuid, CachedBankStorage bankStorage) {
         BANK_CACHE.put(uuid, bankStorage);
+    }
+
+
+    public List<ItemStack> getBlockItems() {
+        return this.blockItems;
+    }
+
+    public List<ItemStack> getNonEmptyItems() {
+        return this.nonEmptyItems;
     }
 }

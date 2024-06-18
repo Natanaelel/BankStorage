@@ -1,11 +1,13 @@
 package net.natte.bankstorage;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.inventory.MenuType;
@@ -101,6 +103,7 @@ public class BankStorage {
 
     public static final DataComponentType<UUID> UUIDComponentType = DataComponentType.<UUID>builder().persistent(UUIDUtil.CODEC).networkSynchronized(UUIDUtil.STREAM_CODEC).build();
     public static final DataComponentType<BankOptions> OptionsComponentType = DataComponentType.<BankOptions>builder().persistent(BankOptions.CODEC).networkSynchronized(BankOptions.STREAM_CODEC).build();
+    public static final DataComponentType<Integer> SelectedSlotComponentType = DataComponentType.<Integer>builder().persistent(Codec.INT).networkSynchronized(ByteBufCodecs.INT).build();
     public static final DataComponentType<BankType> BankTypeComponentType = DataComponentType.<BankType>builder().persistent(BankType.CODEC).networkSynchronized(BankType.STREAM_CODEC).build();
 
     public static final MenuType<BankScreenHandler> MENU_TYPE = IMenuTypeExtension.create(BankScreenHandlerFactory::createClientScreenHandler);
@@ -154,6 +157,7 @@ public class BankStorage {
     private void registerItemComponentTypes() {
         DATA_COMPONENTS.register("uuid", () -> UUIDComponentType);
         DATA_COMPONENTS.register("options", () -> OptionsComponentType);
+        DATA_COMPONENTS.register("selected_slot", () -> SelectedSlotComponentType);
         DATA_COMPONENTS.register("type", () -> BankTypeComponentType);
     }
 
@@ -230,6 +234,7 @@ public class BankStorage {
         registrar.playToServer(SelectedSlotPacketC2S.TYPE, SelectedSlotPacketC2S.STREAM_CODEC, SelectedSlotPacketC2S::handle);
         registrar.playToServer(LockSlotPacketC2S.TYPE, LockSlotPacketC2S.STREAM_CODEC, LockSlotPacketC2S::handle);
         registrar.playToServer(KeyBindUpdatePacketC2S.TYPE, KeyBindUpdatePacketC2S.STREAM_CODEC, KeyBindUpdatePacketC2S::handle);
+        registrar.playToServer(ToggleBuildModePacetC2S.TYPE, ToggleBuildModePacetC2S.STREAM_CODEC, ToggleBuildModePacetC2S::handle);
 
     }
 }
