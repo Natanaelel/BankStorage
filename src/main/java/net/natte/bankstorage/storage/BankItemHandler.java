@@ -15,14 +15,20 @@ public class BankItemHandler implements IItemHandler {
     private final PickupMode pickupMode;
     private final BankType type;
     private final int slotCapacity;
+    private final Runnable setChanged;
 
 
-    public BankItemHandler(List<ItemStack> items, Map<Integer, ItemStack> lockedSlots, BankType type, PickupMode pickupMode) {
+    public BankItemHandler(List<ItemStack> items, Map<Integer, ItemStack> lockedSlots, BankType type, PickupMode pickupMode, Runnable setChanged) {
         this.items = items;
         this.lockedSlots = lockedSlots;
         this.pickupMode = pickupMode;
         this.type = type;
         this.slotCapacity = type.stackLimit;
+        this.setChanged = setChanged;
+    }
+
+    private void setChanged() {
+        this.setChanged.run();
     }
 
     @Override
@@ -72,6 +78,8 @@ public class BankItemHandler implements IItemHandler {
                 }
             }
         }
+        if (inserted > 0)
+            setChanged();
         return inserted == 0 ? stack : inserted == maxAmount ? ItemStack.EMPTY : stack.copyWithCount(maxAmount - inserted);
     }
 

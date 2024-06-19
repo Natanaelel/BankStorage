@@ -83,7 +83,7 @@ public class BankItemStorage {
     }
 
     public BankItemHandler getItemHandler(PickupMode pickupMode) {
-        return new BankItemHandler(items, lockedSlots, type, pickupMode);
+        return new BankItemHandler(items, lockedSlots, type, pickupMode, this::markDirty);
     }
 
     public Container getContainer() {
