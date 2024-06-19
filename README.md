@@ -28,6 +28,9 @@ Adds Banks of 7 increasing sizes. A portable storage device that can store from 
 - Right click with the Bank to dock it.
 - Right click while crouching to pick up the Bank.
 
+### Bank Link
+- Link to another Bank to access the contents in multiple places at the same time.
+
 ### How to craft
 - Surround a barrel with 8 blocks of coal to craft the Bank 1.
 - To craft higher tiers, surround the previous tier with 8 block of. the next material
