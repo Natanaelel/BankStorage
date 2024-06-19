@@ -46,10 +46,8 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -234,7 +232,7 @@ public class BankStorage {
         registrar.playToServer(SelectedSlotPacketC2S.TYPE, SelectedSlotPacketC2S.STREAM_CODEC, SelectedSlotPacketC2S::handle);
         registrar.playToServer(LockSlotPacketC2S.TYPE, LockSlotPacketC2S.STREAM_CODEC, LockSlotPacketC2S::handle);
         registrar.playToServer(KeyBindUpdatePacketC2S.TYPE, KeyBindUpdatePacketC2S.STREAM_CODEC, KeyBindUpdatePacketC2S::handle);
-        registrar.playToServer(ToggleBuildModePacetC2S.TYPE, ToggleBuildModePacetC2S.STREAM_CODEC, ToggleBuildModePacetC2S::handle);
+        registrar.playToServer(ToggleBuildModePacketC2S.TYPE, ToggleBuildModePacketC2S.STREAM_CODEC, ToggleBuildModePacketC2S::handle);
 
     }
 }

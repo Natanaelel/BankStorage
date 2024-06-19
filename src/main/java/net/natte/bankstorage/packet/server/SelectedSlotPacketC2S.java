@@ -14,7 +14,6 @@ import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.util.Util;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-// TODO: remove? or create another component for only selected slot
 public record SelectedSlotPacketC2S(boolean isRight, int slot) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<SelectedSlotPacketC2S> TYPE = new CustomPacketPayload.Type<>(Util.ID("selected_slot_c2s"));

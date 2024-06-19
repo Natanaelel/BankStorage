@@ -9,7 +9,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record KeyBindUpdatePacketC2S(boolean isUnbound) implements CustomPacketPayload {
 
-    public static final Type<KeyBindUpdatePacketC2S> TYPE = new Type<>(Util.ID("keybindupdate"));
+    public static final Type<KeyBindUpdatePacketC2S> TYPE = new Type<>(Util.ID("keybindupdate_c2s"));
     public static final StreamCodec<RegistryFriendlyByteBuf, KeyBindUpdatePacketC2S> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.BOOL,
             KeyBindUpdatePacketC2S::isUnbound,

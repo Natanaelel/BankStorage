@@ -19,7 +19,7 @@ public record PickupModePacketC2S() implements CustomPacketPayload {
 
     public static final PickupModePacketC2S INSTANCE = new PickupModePacketC2S();
 
-    public static final CustomPacketPayload.Type<PickupModePacketC2S> TYPE = new Type<>(Util.ID("pickupmode"));
+    public static final CustomPacketPayload.Type<PickupModePacketC2S> TYPE = new Type<>(Util.ID("toggle_pickupmode_c2s"));
     public static final StreamCodec<RegistryFriendlyByteBuf, PickupModePacketC2S> STREAM_CODEC = StreamCodec.unit(INSTANCE);
 
     @Override

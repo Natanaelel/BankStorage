@@ -27,7 +27,6 @@ public class PickBlockEvents {
             return false;
 
         BankOptions options = bankItem.getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT);
-        int selectedSlot = bankItem.getOrDefault(BankStorage.SelectedSlotComponentType, 0);
         if (options.buildMode() != BuildMode.NORMAL)
             return false;
 
@@ -35,6 +34,7 @@ public class PickBlockEvents {
         if (cachedBankStorage == null)
             return false;
 
+        int selectedSlot = bankItem.getOrDefault(BankStorage.SelectedSlotComponentType, 0);
         ItemStack currentSelected = cachedBankStorage.getSelectedItem(selectedSlot);
         if (!currentSelected.isEmpty() && ItemStack.isSameItemSameComponents(pickedStack, currentSelected)) {
             return true;
@@ -50,8 +50,8 @@ public class PickBlockEvents {
 
         if (slot == -1)
             return false;
-
-        bankItem.set(BankStorage.SelectedSlotComponentType, slot);
+        
+        BankStorageClient.buildModePreviewRenderer.selectedSlot = slot;
 
         client.getConnection().send(new SelectedSlotPacketC2S(hand == InteractionHand.MAIN_HAND, slot));
         return true;

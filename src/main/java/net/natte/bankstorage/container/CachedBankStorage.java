@@ -41,6 +41,7 @@ public class CachedBankStorage {
 
     private static Consumer<UUID> requestCacheUpdate = uuid -> {
     };
+    public static boolean markDirtyForPreview = false;
 
     private final List<ItemStack> items;
     private final List<ItemStack> nonEmptyItems;
@@ -108,6 +109,7 @@ public class CachedBankStorage {
 
     public static void setBankStorage(UUID uuid, CachedBankStorage bankStorage) {
         BANK_CACHE.put(uuid, bankStorage);
+        markDirtyForPreview = true;
     }
 
 

@@ -21,20 +21,7 @@ public record RequestBankStoragePacketS2C(CachedBankStorage cachedBankStorage) i
     }
 
     public static void handle(RequestBankStoragePacketS2C packet, IPayloadContext context) {
-
         CachedBankStorage bankStorage = packet.cachedBankStorage();
         CachedBankStorage.setBankStorage(bankStorage.uuid, bankStorage);
-
-//        if (bankStorage.uuid.equals(BankStorageClient.buildModePreviewRenderer.uuid)) {
-//            BankStorageClient.buildModePreviewRenderer.setBankStorage(bankStorage);
-
-//            int selectedSlot = BankStorageClient.buildModePreviewRenderer.optimisticOptions.selectedSlot();
-//            int newSelectedSlot = Mth.clamp(selectedSlot, 0, bankStorage.blockItems.size() - 1);
-//            if (newSelectedSlot != selectedSlot) {
-//                BankOptions options = BankStorageClient.buildModePreviewRenderer.options;
-//                options.selectedItemSlot = newSelectedSlot;
-//                context.listener().send(new UpdateBankOptionsPacketC2S(options));
-//            }
-//        }
     }
 }

@@ -14,6 +14,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.client.BankStorageClient;
 import net.natte.bankstorage.client.rendering.ItemCountUtils;
 import net.natte.bankstorage.container.BankType;
@@ -24,7 +25,6 @@ import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
 import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.SortPacketC2S;
 import net.natte.bankstorage.screen.BankScreenHandler;
-import net.natte.bankstorage.util.Util;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
@@ -61,10 +61,10 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
     @Override
     protected void init() {
         super.init();
-        BankOptions options = Util.getOrCreateOptions(this.menu.getBankLikeItem());
+        BankOptions options = this.menu.getBankLikeItem().getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT);
         this.sortMode = options.sortMode();
         this.addRenderableWidget(
-                new TexturedCyclingButtonWidget(options.pickupMode(),
+                new PickupModeButtonWidget(options.pickupMode(),
                         leftPos + titleLabelX + this.imageWidth - 49, topPos + titleLabelY - 4, 14, 14,
                         BankStorageClient.WIDGETS_TEXTURE, this::onPickupModeButtonPress));
 
@@ -235,7 +235,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
         return tooltip;
     }
 
-    private void onPickupModeButtonPress(TexturedCyclingButtonWidget button) {
+    private void onPickupModeButtonPress(PickupModeButtonWidget button) {
         button.nextState();
         button.refreshTooltip();
         Minecraft.getInstance().getConnection().send(new PickupModePacketC2S());

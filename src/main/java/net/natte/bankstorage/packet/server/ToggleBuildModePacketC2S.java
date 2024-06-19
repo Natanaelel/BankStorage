@@ -12,19 +12,19 @@ import net.natte.bankstorage.util.Util;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.Nullable;
 
-public record ToggleBuildModePacetC2S() implements CustomPacketPayload {
+public record ToggleBuildModePacketC2S() implements CustomPacketPayload {
 
-    public static final ToggleBuildModePacetC2S INSTANCE = new ToggleBuildModePacetC2S();
+    public static final ToggleBuildModePacketC2S INSTANCE = new ToggleBuildModePacketC2S();
 
-    public static final Type<ToggleBuildModePacetC2S> TYPE = new Type<>(Util.ID("toggle_buildmode_c2s"));
-    public static final StreamCodec<RegistryFriendlyByteBuf, ToggleBuildModePacetC2S> STREAM_CODEC = StreamCodec.unit(INSTANCE);
+    public static final Type<ToggleBuildModePacketC2S> TYPE = new Type<>(Util.ID("toggle_buildmode_c2s"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, ToggleBuildModePacketC2S> STREAM_CODEC = StreamCodec.unit(INSTANCE);
 
     @Override
-    public Type<ToggleBuildModePacetC2S> type() {
+    public Type<ToggleBuildModePacketC2S> type() {
         return TYPE;
     }
 
-    public static void handle(ToggleBuildModePacetC2S packet, IPayloadContext context) {
+    public static void handle(ToggleBuildModePacketC2S packet, IPayloadContext context) {
         ItemStack bankItem = getBankLike(context.player());
         if (bankItem == null)
             return;

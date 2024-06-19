@@ -58,7 +58,7 @@ public class BuildModePreviewRenderer {
     }
 
     private void updateBank() {
-
+        boolean hadBank = this.hasBank;
         if (canRenderFrom(this.client.player.getMainHandItem())) {
             this.renderingFromHand = InteractionHand.MAIN_HAND;
             this.hasBank = true;
@@ -71,11 +71,16 @@ public class BuildModePreviewRenderer {
         if (this.hasBank) {
             this.bankItem = this.client.player.getItemInHand(this.renderingFromHand);
             this.uuid = Util.getUUID(this.bankItem);
-            this.selectedSlot = this.bankItem.getOrDefault(BankStorage.SelectedSlotComponentType, 0);
             this.buildMode = this.bankItem.getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT).buildMode();
-            this.bankStorage = CachedBankStorage.getBankStorage(uuid);
             this.mainArm = this.client.player.getMainArm();
             this.arm = this.renderingFromHand == InteractionHand.MAIN_HAND ? mainArm : mainArm.getOpposite();
+            if (CachedBankStorage.markDirtyForPreview) {
+                this.bankStorage = CachedBankStorage.getBankStorage(uuid);
+                CachedBankStorage.markDirtyForPreview = false;
+            }
+            if (!hadBank) {
+                this.selectedSlot = this.bankItem.getOrDefault(BankStorage.SelectedSlotComponentType, 0);
+            }
         }
     }
 

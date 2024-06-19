@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.natte.bankstorage.inventory.BankSlot;
@@ -45,5 +46,13 @@ public class ScreenHandlerMixin {
         if (slot instanceof BankSlot)
             return Math.min(stackCount, slot.getItem().getMaxStackSize());
         return stackCount;
+    }
+
+    // cannot pickup item if it is larger than max item stack size. for example clicking a stack with 2+ swords with another item to swap: this cancels the invalid swap.
+    @Inject(method = "doClick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/inventory/AbstractContainerMenu;setCarried(Lnet/minecraft/world/item/ItemStack;)V", ordinal = 4), cancellable = true)
+    private void beforeSetCarried(CallbackInfo ci, @Local Slot slot) {
+        ItemStack item = slot.getItem();
+        if (item.getCount() > item.getMaxStackSize())
+            ci.cancel();
     }
 }

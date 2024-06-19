@@ -1,7 +1,5 @@
 package net.natte.bankstorage.client;
 
-import java.util.UUID;
-
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -19,7 +17,14 @@ import net.natte.bankstorage.client.rendering.BankDockBlockEntityRenderer;
 import net.natte.bankstorage.client.rendering.BuildModePreviewRenderer;
 import net.natte.bankstorage.client.screen.BankScreen;
 import net.natte.bankstorage.client.tooltip.BankTooltipComponent;
-import net.natte.bankstorage.packet.server.ToggleBuildModePacetC2S;
+import net.natte.bankstorage.container.BankType;
+import net.natte.bankstorage.container.CachedBankStorage;
+import net.natte.bankstorage.item.tooltip.BankTooltipData;
+import net.natte.bankstorage.packet.server.OpenBankFromKeyBindPacketC2S;
+import net.natte.bankstorage.packet.server.PickupModePacketC2S;
+import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
+import net.natte.bankstorage.packet.server.ToggleBuildModePacketC2S;
+import net.natte.bankstorage.util.Util;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -31,19 +36,12 @@ import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.UUID;
 
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
-
-import net.natte.bankstorage.container.BankType;
-import net.natte.bankstorage.container.CachedBankStorage;
-import net.natte.bankstorage.item.tooltip.BankTooltipData;
-import net.natte.bankstorage.packet.server.OpenBankFromKeyBindPacketC2S;
-import net.natte.bankstorage.packet.server.PickupModePacketC2S;
-import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
-import net.natte.bankstorage.util.Util;
 
 
 @Mod(value = BankStorage.MOD_ID, dist = Dist.CLIENT)
@@ -70,7 +68,7 @@ public class BankStorageClient {
         registerHandledScreens(modBus);
         registerRenderers(modBus);
         registerEventListeners(modBus);
-        registerKeyBindListeners();
+
 
         modBus.addListener(this::registerModelPredicates);
         modBus.addListener(this::registerKeyBinds);
@@ -130,6 +128,7 @@ public class BankStorageClient {
     }
 
     private void registerTickEvents(ClientTickEvent.Post event) {
+        handleInputs();
         buildModePreviewRenderer.tick();
         sendQueuedUpdateRequests();
     }
@@ -147,9 +146,9 @@ public class BankStorageClient {
         event.register(openBankFromKeyBinding);
     }
 
-    public void registerKeyBindListeners() {
+    public void handleInputs() {
         while (toggleBuildModeKeyBinding.consumeClick())
-            send(ToggleBuildModePacetC2S.INSTANCE);
+            send(ToggleBuildModePacketC2S.INSTANCE);
 
         while (togglePickupModeKeyBinding.consumeClick())
             send(PickupModePacketC2S.INSTANCE);

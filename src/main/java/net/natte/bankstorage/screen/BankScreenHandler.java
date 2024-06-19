@@ -316,21 +316,15 @@ public class BankScreenHandler extends AbstractContainerMenu {
     }
 
 
-//    @Override
-//    public boolean tryItemClickBehaviourOverride(Player player, ClickAction clickAction, Slot slot, ItemStack stack, ItemStack cursorStack) {
-//
-//        // is v needed anymore? TODO: check
-//        // prevent dupe by putting item inside multiple bundles at the same time
-//        FeatureFlagSet featureSet = player.level().enabledFeatures();
-//        if (cursorStack.isItemEnabled(featureSet) && cursorStack.overrideStackedOnOther(slot, clickAction, player)) {
-//            return true;
-//        }
-//        if (stack.getCount() > stack.getMaxStackSize()) {
-//            return false;
-//        }
-//        slotsChanged(this.inventory);
-//        return super.tryItemClickBehaviourOverride(player, clickAction, slot, stack, cursorStack);
-//    }
+    @Override
+    public boolean tryItemClickBehaviourOverride(Player player, ClickAction clickAction, Slot slot, ItemStack stack, ItemStack cursorStack) {
+        // prevent dupe by putting item inside multiple item-storing items at the same time
+        // for mods not checking stack size
+        if (stack.getCount() > stack.getMaxStackSize())
+            return false;
+
+        return super.tryItemClickBehaviourOverride(player, clickAction, slot, stack, cursorStack);
+    }
 
     @Override
     public void removed(Player player) {
@@ -360,13 +354,11 @@ public class BankScreenHandler extends AbstractContainerMenu {
     }
 
     public void lockSlot(int index, ItemStack stack) {
-        System.out.println("BankScreenHandler lockSlot " + index + " " + stack);
         ((BankSlot) this.slots.get(index)).lock(stack);
         bankItemStorage.lockSlot(index, stack);
     }
 
     public void unlockSlot(int index) {
-        System.out.println("BankScreenHandler uulockSlot " + index);
         ((BankSlot) this.slots.get(index)).unlock();
         bankItemStorage.unlockSlot(index);
     }

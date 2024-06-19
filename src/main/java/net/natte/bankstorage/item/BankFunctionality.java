@@ -1,15 +1,10 @@
 package net.natte.bankstorage.item;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
@@ -19,16 +14,19 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.natte.bankstorage.BankStorage;
-import net.natte.bankstorage.packet.server.ToggleBuildModePacetC2S;
-import net.natte.bankstorage.screen.BankScreenHandlerFactory;
-import org.jetbrains.annotations.Nullable;
-
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.item.tooltip.BankTooltipData;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
+import net.natte.bankstorage.packet.server.ToggleBuildModePacketC2S;
+import net.natte.bankstorage.screen.BankScreenHandlerFactory;
 import net.natte.bankstorage.util.Util;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 
 public abstract class BankFunctionality extends Item {
 
@@ -82,7 +80,7 @@ public abstract class BankFunctionality extends Item {
 
         if (shouldToggleBuildMode) { // animate
             if (!world.isClientSide)
-                ((ServerPlayer) player).connection.send(ToggleBuildModePacetC2S.INSTANCE);
+                toggleBuildMode(bank, (ServerPlayer) player);
             return InteractionResult.CONSUME;
         }
 
@@ -101,6 +99,13 @@ public abstract class BankFunctionality extends Item {
         }
 
         return build(new UseOnContext(world, player, hand, bank, hitResult));
+    }
+
+    private void toggleBuildMode(ItemStack bankItem, ServerPlayer player) {
+        bankItem.update(BankStorage.OptionsComponentType, BankOptions.DEFAULT, BankOptions::nextBuildMode);
+
+        player.displayClientMessage(Component.translatable("popup.bankstorage.buildmode."
+                + bankItem.get(BankStorage.OptionsComponentType).buildMode().toString().toLowerCase()), true);
     }
 
     private InteractionResult tryOpenBank(Level world, Player player, InteractionHand hand, ItemStack bank) {

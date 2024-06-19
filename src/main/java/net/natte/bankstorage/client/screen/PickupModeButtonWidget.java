@@ -15,7 +15,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
-public class TexturedCyclingButtonWidget extends Button {
+public class PickupModeButtonWidget extends Button {
 
     PickupMode pickupMode;
 
@@ -25,16 +25,17 @@ public class TexturedCyclingButtonWidget extends Button {
     private final ResourceLocation texture;
     private int uOffset;
 
-    TexturedCyclingButtonWidget(PickupMode pickupMode, int x, int y, int width, int height,
-                                ResourceLocation texture,
-                                Consumer<TexturedCyclingButtonWidget> pressAction) {
+    PickupModeButtonWidget(PickupMode pickupMode, int x, int y, int width, int height,
+                           ResourceLocation texture,
+                           Consumer<PickupModeButtonWidget> pressAction) {
         super(x, y, width, height, CommonComponents.EMPTY,
-                button -> pressAction.accept((TexturedCyclingButtonWidget) button), DEFAULT_NARRATION);
+                button -> pressAction.accept((PickupModeButtonWidget) button), DEFAULT_NARRATION);
 
         this.texture = texture;
 
         this.pickupMode = pickupMode;
         this.refreshTooltip();
+        updateUOffset();
         this.setTooltipDelay(Duration.ofMillis(700));
     }
 
@@ -67,6 +68,9 @@ public class TexturedCyclingButtonWidget extends Button {
 
     public void nextState() {
         this.pickupMode = this.pickupMode.next();
+        updateUOffset();
+    }
+    private void updateUOffset(){
         this.uOffset = switch (this.pickupMode) {
             case NONE -> 0;
             case ALL -> 14;
