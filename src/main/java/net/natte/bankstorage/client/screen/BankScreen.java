@@ -109,6 +109,12 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
         boolean shouldUnLock = bankSlot.isLocked() && (cursorStack.isEmpty() || !isSlotEmpty || ItemStack.isSameItemSameComponents(cursorStack, lockedStack));
 
+        // optimistically lock slot on client, will be synced later
+        if (shouldUnLock)
+            this.menu.unlockSlot(bankSlot.index);
+        else
+            this.menu.lockSlot(bankSlot.index, isSlotEmpty ? cursorStack : hoveredStack);
+
         minecraft.getConnection().send(
                 new LockSlotPacketC2S(
                         this.menu.containerId,

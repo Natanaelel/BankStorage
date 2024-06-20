@@ -353,13 +353,32 @@ public class BankScreenHandler extends AbstractContainerMenu {
         super.setSynchronizer(this.bankScreenSync);
     }
 
+    // will reject invalid locks. for example lock a nonempty slot with another item
     public void lockSlot(int index, ItemStack stack) {
-        ((BankSlot) this.slots.get(index)).lock(stack);
+        if (index < 0 || index >= this.slots.size())
+            return;
+
+        Slot slot = this.slots.get(index);
+        if (!(slot instanceof BankSlot bankSlot))
+            return;
+
+        boolean canLock = slot.getItem().isEmpty() || ItemStack.isSameItemSameComponents(slot.getItem(), stack);
+        if (!canLock)
+            return;
+
+        bankSlot.lock(stack);
         bankItemStorage.lockSlot(index, stack);
     }
 
     public void unlockSlot(int index) {
-        ((BankSlot) this.slots.get(index)).unlock();
+        if (index < 0 || index >= this.slots.size())
+            return;
+
+        Slot slot = this.slots.get(index);
+        if (!(slot instanceof BankSlot bankSlot))
+            return;
+
+        bankSlot.unlock();
         bankItemStorage.unlockSlot(index);
     }
 
