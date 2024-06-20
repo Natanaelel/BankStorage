@@ -22,10 +22,7 @@ repositories {
     mavenLocal()
 
     // emi
-    maven {
-        name = "TerraformersMC"
-        url = "https://maven.terraformersmc.com/"
-    }
+    maven { url "https://maven.terraformersmc.com/" }
 
     // rei
     maven { url "https://maven.shedaniel.me/" }
@@ -125,17 +122,12 @@ dependencies {
     compileOnly "dev.emi:emi-neoforge:${project.emi_version}"
     // optional rei dep
     compileOnly "me.shedaniel:RoughlyEnoughItems-neoforge:${project.rei_version}"
-    // optional jei dep TODO
-//    compileOnly "dev.emi:emi-neoforge:${project.emi_version}"
 
 //    localRuntimeOnly "dev.emi:emi-neoforge:${project.emi_version}"
-    localRuntimeOnly "me.shedaniel:RoughlyEnoughItems-neoforge:${project.rei_version}"
-        // Add JEI so that we can use EMI's builtin compat layer
-//    localRuntimeOnly "mezz.jei:jei-${project.jei_minecraft_version}-neoforge:${project.jei_version}"
+//    localRuntimeOnly "me.shedaniel:RoughlyEnoughItems-neoforge:${project.rei_version}"
 
 
-
-        // Example mod dependency using a mod jar from ./libs with a flat dir repository
+    // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"
     // implementation "blank:coolmod-${mc_version}:${coolmod_version}"
