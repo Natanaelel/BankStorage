@@ -21,10 +21,14 @@ group = mod_group_id
 repositories {
     mavenLocal()
 
+    // emi
     maven {
         name = "TerraformersMC"
         url = "https://maven.terraformersmc.com/"
     }
+
+    // rei
+    maven { url "https://maven.shedaniel.me/" }
 }
 
 base {
@@ -119,7 +123,13 @@ dependencies {
 
     // optional emi dep
     compileOnly "dev.emi:emi-neoforge:${project.emi_version}"
-    localRuntimeOnly "dev.emi:emi-neoforge:${project.emi_version}"
+    // optional rei dep
+    compileOnly "me.shedaniel:RoughlyEnoughItems-neoforge:${project.rei_version}"
+    // optional jei dep TODO
+//    compileOnly "dev.emi:emi-neoforge:${project.emi_version}"
+
+//    localRuntimeOnly "dev.emi:emi-neoforge:${project.emi_version}"
+    localRuntimeOnly "me.shedaniel:RoughlyEnoughItems-neoforge:${project.rei_version}"
         // Add JEI so that we can use EMI's builtin compat layer
 //    localRuntimeOnly "mezz.jei:jei-${project.jei_minecraft_version}-neoforge:${project.jei_version}"
 
