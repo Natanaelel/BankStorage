@@ -24,6 +24,7 @@ import net.natte.bankstorage.block.BankDockBlock;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.command.RestoreBankCommands;
 import net.natte.bankstorage.container.BankType;
+import net.natte.bankstorage.item.BankFunctionality;
 import net.natte.bankstorage.item.LinkItem;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
@@ -209,6 +210,11 @@ public class BankStorage {
 
     private void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BANK_DOCK_BLOCK_ENTITY.get(), (dock, side) -> dock.getItemHandler());
+        for (BankType type : BANK_TYPES) {
+            event.registerItem(Capabilities.ItemHandler.ITEM, Util::getItemHandlerFromItem, type.item.get());
+        }
+        event.registerItem(Capabilities.ItemHandler.ITEM, Util::getItemHandlerFromItem, BANK_LINK.get());
+
     }
 
     public void registerCommands() {

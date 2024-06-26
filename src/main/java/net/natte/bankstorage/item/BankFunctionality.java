@@ -21,6 +21,7 @@ import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.screen.BankScreenHandlerFactory;
 import net.natte.bankstorage.util.Util;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;

@@ -32,6 +32,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,7 +173,7 @@ public class BankStorageClient {
             CachedBankStorage storage = CachedBankStorage.getBankStorage(uuid);
             if (storage != null)
                 cachedRevision = storage.revision;
-            client.player.connection.send(new RequestBankStoragePacketC2S(uuid, cachedRevision));
+            PacketDistributor.sendToServer(new RequestBankStoragePacketC2S(uuid, cachedRevision));
         }
         CachedBankStorage.bankRequestQueue.clear();
     }

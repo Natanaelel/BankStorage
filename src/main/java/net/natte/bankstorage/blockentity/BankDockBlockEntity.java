@@ -98,7 +98,6 @@ public class BankDockBlockEntity extends BlockEntity {
     }
 
     public IItemHandler getItemHandler() {
-
         if (!this.hasBank())
             return null;
 

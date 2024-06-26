@@ -178,6 +178,7 @@ public class BankItemHandler implements IItemHandler {
             return ItemStack.EMPTY;
         if (!simulate)
             items.set(slot, stackInSlot.copyWithCount(count - extracted));
+        setChanged();
         return stackInSlot.copyWithCount(extracted);
     }
 

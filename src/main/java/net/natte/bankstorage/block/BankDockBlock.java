@@ -33,6 +33,7 @@ public class BankDockBlock extends Block implements EntityBlock {
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new BankDockBlockEntity(pos, state);
     }
+
     @Override
     public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
 

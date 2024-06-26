@@ -9,6 +9,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.util.Util;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -119,5 +120,52 @@ public class CachedBankStorage {
 
     public List<ItemStack> getNonEmptyItems() {
         return this.nonEmptyItems;
+    }
+
+    public IItemHandler getReadOnlyItemHandler() {
+        return new ClientReadOnlyItemHandler(this);
+    }
+}
+
+// used for building gadgets preview etc
+class ClientReadOnlyItemHandler implements IItemHandler {
+
+    private final CachedBankStorage cachedBankStorage;
+
+    public ClientReadOnlyItemHandler(CachedBankStorage cachedBankStorage) {
+        this.cachedBankStorage = cachedBankStorage;
+    }
+
+    @Override
+    public int getSlots() {
+        return cachedBankStorage.getBlockItems().size();
+    }
+
+    @Override
+    public ItemStack getStackInSlot(int slot) {
+        return cachedBankStorage.getBlockItems().get(slot);
+    }
+
+    // can't insert: remainder = input
+    @Override
+    public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+        return stack;
+    }
+
+    // can't extract: extracted = empty
+    @Override
+    public ItemStack extractItem(int slot, int amount, boolean simulate) {
+        return ItemStack.EMPTY;
+    }
+
+    @Override
+    public int getSlotLimit(int slot) {
+        return 0; // Hello this maybe works :)
+    }
+
+    // nothing is valid lol
+    @Override
+    public boolean isItemValid(int slot, ItemStack stack) {
+        return false;
     }
 }

@@ -7,11 +7,14 @@ import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
+import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.item.BankItem;
 import net.natte.bankstorage.item.LinkItem;
 import net.natte.bankstorage.options.BankOptions;
+import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.options.SortMode;
 import net.natte.bankstorage.state.BankStateManager;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -176,6 +179,33 @@ public class Util {
 
     public static ResourceLocation ID(String path) {
         return ResourceLocation.fromNamespaceAndPath(BankStorage.MOD_ID, path);
+    }
+
+    public static IItemHandler getItemHandlerFromItem(ItemStack itemStack, Void unused) {
+        boolean isClient = Thread.currentThread().getName().equals("Render thread");
+        if (isClient)
+            return getClientItemHandlerFromItem(itemStack);
+        else
+            return getServerItemHandlerFromItem(itemStack);
+
+    }
+
+    private static IItemHandler getClientItemHandlerFromItem(ItemStack itemStack) {
+        CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(itemStack);
+        if (cachedBankStorage == null)
+            return null;
+        return cachedBankStorage.getReadOnlyItemHandler();
+    }
+
+    private static IItemHandler getServerItemHandlerFromItem(ItemStack itemStack) {
+        BankItemStorage bankItemStorage = getBankItemStorage(itemStack);
+        if (bankItemStorage == null)
+            return null;
+        return bankItemStorage.getItemHandler(getPickupMode(itemStack));
+    }
+
+    private static PickupMode getPickupMode(ItemStack itemStack) {
+        return itemStack.getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT).pickupMode();
     }
 }
 
