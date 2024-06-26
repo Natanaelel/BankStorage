@@ -34,23 +34,17 @@ public class MouseEvents {
 
         BuildModePreviewRenderer preview = BankStorageClient.buildModePreviewRenderer;
 
-
-        ItemStack bank = preview.getItem();
-
-        if (bank == null)
+        if (!preview.hasBank())
             return;
 
-        if (!Util.isBankLike(bank))
+        if (!isNormalBuildMode(preview.getItem()))
             return;
 
-        if (!isNormalBuildMode(bank))
-            return;
 
-        CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(bank);
+        CachedBankStorage cachedBankStorage = preview.getStorage();
 
         if (cachedBankStorage == null)
             return;
-
         
         int selectedItemSlot = preview.selectedSlot;
 
