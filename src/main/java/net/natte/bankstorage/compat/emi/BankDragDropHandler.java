@@ -2,10 +2,8 @@ package net.natte.bankstorage.compat.emi;
 
 import dev.emi.emi.api.EmiDragDropHandler;
 import dev.emi.emi.api.stack.EmiIngredient;
-import dev.emi.emi.api.stack.EmiStack;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.client.screen.BankScreen;
 import net.natte.bankstorage.inventory.BankSlot;

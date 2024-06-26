@@ -1,15 +1,13 @@
 package net.natte.bankstorage.screen;
 
-import java.util.Map;
-
 import net.minecraft.core.NonNullList;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerSynchronizer;
 import net.minecraft.world.item.ItemStack;
-import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
+
+import java.util.Map;
 
 public class BankScreenHandlerSyncHandler implements ContainerSynchronizer {
     private final ContainerSynchronizer screenHandlerSyncHandler;

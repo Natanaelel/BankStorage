@@ -1,13 +1,10 @@
 package net.natte.bankstorage.state;
 
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.natte.bankstorage.BankStorage;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
-
-import java.util.UUID;
 
 public class BankStateManager {
 

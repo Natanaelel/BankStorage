@@ -1,6 +1,5 @@
 package net.natte.bankstorage.options;
 
-
 public enum PickupMode {
     NONE,
     ALL,

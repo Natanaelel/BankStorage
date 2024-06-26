@@ -1,20 +1,16 @@
 package net.natte.bankstorage.packet.server;
 
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
-import net.natte.bankstorage.item.LinkItem;
-import net.natte.bankstorage.screen.BankScreenHandlerFactory;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
-import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.network.codec.StreamCodec;
 import net.natte.bankstorage.container.BankItemStorage;
+import net.natte.bankstorage.screen.BankScreenHandlerFactory;
 import net.natte.bankstorage.util.Util;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record OpenBankFromKeyBindPacketC2S() implements CustomPacketPayload {
 

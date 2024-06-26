@@ -1,18 +1,17 @@
 package net.natte.bankstorage.packet.screensync;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.item.ItemStack;
-import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.util.Util;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public record LockedSlotsPacketS2C(int containerId,
                                    Map<Integer, ItemStack> lockedSlots) implements CustomPacketPayload {

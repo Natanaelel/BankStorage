@@ -1,15 +1,14 @@
 package net.natte.bankstorage.packet;
 
-import java.util.List;
-import java.util.UUID;
-
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.CachedBankStorage;
-import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.packet.client.RequestBankStoragePacketS2C;
 import net.natte.bankstorage.util.Util;
+
+import java.util.List;
+import java.util.UUID;
 
 public class NetworkUtil {
 

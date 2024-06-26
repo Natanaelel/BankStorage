@@ -1,17 +1,10 @@
 package net.natte.bankstorage.client.tooltip;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
-import net.natte.bankstorage.client.rendering.ItemCountUtils;
 import net.natte.bankstorage.client.screen.BankScreen;
 import net.natte.bankstorage.item.tooltip.BankTooltipData;
 import net.natte.bankstorage.util.Util;
