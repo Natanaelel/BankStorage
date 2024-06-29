@@ -151,6 +151,9 @@ public class BankScreenHandler extends AbstractContainerMenu {
     // returns true if something got inserted
     private boolean insertIntoBank(ItemStack stack) {
         // must modify input stack
+        if (!stack.getItem().canFitInsideContainerItems())
+            return false;
+
         ItemStack notInserted = this.bankItemStorage.getItemHandler(PickupMode.ALL).insertItem(stack);
         stack.setCount(notInserted.getCount());
         return notInserted.getCount() != stack.getCount();

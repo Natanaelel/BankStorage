@@ -82,6 +82,7 @@ public class BuildModePreviewRenderer {
             }
             if (oldBank != this.bankItem) {
                 this.selectedSlot = this.bankItem.getOrDefault(BankStorage.SelectedSlotComponentType, 0);
+                this.bankStorage = CachedBankStorage.getBankStorage(uuid);
             }
             if (this.bankStorage != null) {
                 this.selectedSlot = Mth.clamp(this.selectedSlot, 0, this.bankStorage.getBlockItems().size() - 1);
