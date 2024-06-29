@@ -60,7 +60,7 @@ public class BankScreenHandler extends AbstractContainerMenu {
         checkContainerSize(inventory, type.size());
 
         this.type = type;
-        this.uuid = bankItemStorage.uuid;
+        this.uuid = bankItemStorage.uuid();
 
         inventory.startOpen(playerInventory.player);
         int rows = this.type.rows;

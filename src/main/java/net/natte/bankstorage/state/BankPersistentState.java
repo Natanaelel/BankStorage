@@ -34,7 +34,7 @@ public class BankPersistentState extends SavedData {
                 .getOrThrow();
 
         for (BankItemStorage bank : banks) {
-            state.BANK_MAP.put(bank.uuid, bank);
+            state.BANK_MAP.put(bank.uuid(), bank);
         }
 
         BankStorage.LOGGER.debug("Loading done");
@@ -71,7 +71,7 @@ public class BankPersistentState extends SavedData {
             bank.initializeItems();
             set(uuid, bank);
         }
-        if (bank.type != type) {
+        if (bank.type() != type) {
             bank = bank.asType(type);
             set(uuid, bank);
         }

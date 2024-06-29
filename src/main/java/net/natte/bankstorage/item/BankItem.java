@@ -14,9 +14,6 @@ import net.natte.bankstorage.util.Util;
 
 public class BankItem extends BankFunctionality {
 
-    public static final String UUID_KEY = "bank:uuid";
-    public static final String OPTIONS_KEY = "bank:options";
-
     private static final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance(Locale.US);
 
     private final BankType type;

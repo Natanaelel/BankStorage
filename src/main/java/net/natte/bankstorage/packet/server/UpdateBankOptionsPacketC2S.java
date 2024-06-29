@@ -71,7 +71,7 @@ public record UpdateBankOptionsPacketC2S(InteractionHand hand, boolean dock,
             bankItem.set(BankStorage.OptionsComponentType, options);
 
             if (bankItemStorage != null)
-                NetworkUtil.syncCachedBankS2C(bankItemStorage.uuid, player);
+                NetworkUtil.syncCachedBankS2C(bankItemStorage.uuid(), player);
         }
     }
 }

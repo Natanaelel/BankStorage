@@ -96,7 +96,7 @@ public class RestoreBankCommands {
             return 0;
         }
         ItemStack stack = BuiltInRegistries.ITEM
-                .get(Util.ID(bank.type.getName()))
+                .get(Util.ID(bank.type().getName()))
                 .getDefaultInstance();
         stack.set(BankStorage.UUIDComponentType, uuid);
         player.getInventory().add(stack);
@@ -132,7 +132,7 @@ public class RestoreBankCommands {
 
         List<BankItemStorage> sortedBankItemStorages = switch (sortingMode) {
             case DATE -> bankItemStorages.sorted(Comparator.comparing(bank -> bank.dateCreated)).toList();
-            case TYPE -> bankItemStorages.sorted(Comparator.comparing(bank -> bank.type.getName())).toList();
+            case TYPE -> bankItemStorages.sorted(Comparator.comparing(bank -> bank.type().getName())).toList();
             case PLAYER -> bankItemStorages.sorted(Comparator.comparing(bank -> bank.usedByPlayerUUID)).toList();
         };
 
@@ -149,7 +149,7 @@ public class RestoreBankCommands {
         MutableComponent message = Component.empty();
 
         for (BankItemStorage bankItemStorage : bankItemStorages) {
-            UUID uuid = bankItemStorage.uuid;
+            UUID uuid = bankItemStorage.uuid();
 
             long nonEmptyStacks = bankItemStorage.getItems().stream().filter(stack -> !stack.isEmpty()).count();
 
@@ -159,8 +159,8 @@ public class RestoreBankCommands {
             HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("command.bankstorage.hoverinfo"));
 
             message.append(Component
-                    .literal(bankItemStorage.type.getName() + ", " + nonEmptyStacks + " items, uuid: "
-                            + bankItemStorage.uuid.toString() + ", " + bankItemStorage.usedByPlayerName
+                    .literal(bankItemStorage.type().getName() + ", " + nonEmptyStacks + " items, uuid: "
+                            + bankItemStorage.uuid().toString() + ", " + bankItemStorage.usedByPlayerName
                             + "\n")
                     .withStyle(style -> style
                             .withClickEvent(clickEvent)

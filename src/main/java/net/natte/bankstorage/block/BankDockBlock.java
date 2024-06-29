@@ -76,7 +76,7 @@ public class BankDockBlock extends Block implements EntityBlock {
                     if (bankItemStorage == null)
                         return InteractionResult.FAIL;
                     BankScreenHandlerFactory screenHandlerFactory = new BankScreenHandlerFactory(
-                            bankItemStorage.type,
+                            bankItemStorage.type(),
                             bankItemStorage,
                             bankItem,
                             -1,

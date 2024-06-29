@@ -27,6 +27,7 @@ public class Util {
     public static Random clientSyncedRandom;
 
     public static boolean isDebugMode = false;
+    public static final ThreadLocal<Boolean> isClient = ThreadLocal.withInitial(() -> false);
 
     public static boolean isBank(ItemStack itemStack) {
         return itemStack.getItem() instanceof BankItem;
@@ -163,8 +164,8 @@ public class Util {
             if (!Util.hasUUID(bank))
                 return null;
             BankItemStorage bankItemStorage = getBankItemStorage(Util.getUUID(bank));
-            if (bankItemStorage.type != bank.get(BankStorage.BankTypeComponentType)) {
-                bank.set(BankStorage.BankTypeComponentType, bankItemStorage.type);
+            if (bankItemStorage.type() != bank.get(BankStorage.BankTypeComponentType)) {
+                bank.set(BankStorage.BankTypeComponentType, bankItemStorage.type());
             }
             return bankItemStorage;
         }
@@ -182,8 +183,7 @@ public class Util {
     }
 
     public static IItemHandler getItemHandlerFromItem(ItemStack itemStack, Void unused) {
-        boolean isClient = Thread.currentThread().getName().equals("Render thread");
-        if (isClient)
+        if (isClient())
             return getClientItemHandlerFromItem(itemStack);
         else
             return getServerItemHandlerFromItem(itemStack);
@@ -206,6 +206,10 @@ public class Util {
 
     private static PickupMode getPickupMode(ItemStack itemStack) {
         return itemStack.getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT).pickupMode();
+    }
+
+    public static boolean isClient(){
+        return isClient.get();
     }
 }
 

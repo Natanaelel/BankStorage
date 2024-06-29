@@ -66,5 +66,7 @@
   "admin_restore_bank.bankstorage.added_item_filter": "Added item filter.",
 
   "admin_restore_bank.bankstorage.listed_banks_num": "(listed %d banks)",
-  "admin_restore_bank.bankstorage.unknown_player": "Cannot find the player to give the item to"
+  "admin_restore_bank.bankstorage.unknown_player": "Cannot find the player to give the item to",
+
+  "tag.item.bankstorage.banks": "Banks"
 }

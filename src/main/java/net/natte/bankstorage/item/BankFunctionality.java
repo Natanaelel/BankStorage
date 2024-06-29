@@ -21,7 +21,6 @@ import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.screen.BankScreenHandlerFactory;
 import net.natte.bankstorage.util.Util;
-import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -65,10 +64,9 @@ public abstract class BankFunctionality extends Item {
     // 1 1 1 1 -> 0 (build) animate
 
     // on .use or .useOnBlock. never returns PASS
-    private InteractionResult useBank(Player player, InteractionHand hand, boolean usedOnBlock,
+    private InteractionResult useBank(Player player, ItemStack bank, InteractionHand hand, boolean usedOnBlock,
                                       @Nullable BlockHitResult hitResult) {
 
-        ItemStack bank = player.getItemInHand(hand);
         Level world = player.level();
         boolean isBuildMode = Util.getOrCreateOptions(bank).buildMode() != BuildMode.NONE;
         boolean hasBoundKey = !Util.isBuildModeKeyUnBound;
@@ -81,7 +79,7 @@ public abstract class BankFunctionality extends Item {
         if (shouldToggleBuildMode) { // animate
             if (!world.isClientSide)
                 toggleBuildMode(bank, (ServerPlayer) player);
-            return InteractionResult.CONSUME;
+            return InteractionResult.sidedSuccess(world.isClientSide);
         }
 
         boolean tryOpenWhenUsedOnAir = !usedOnBlock;
@@ -127,10 +125,10 @@ public abstract class BankFunctionality extends Item {
         bankItemStorage.usedByPlayerName = player.getName().getString();
 
         int slot = hand == InteractionHand.MAIN_HAND ? player.getInventory().selected : 40;
-        BankScreenHandlerFactory screenHandlerFactory = new BankScreenHandlerFactory(bankItemStorage.type, bankItemStorage, bank, slot, ContainerLevelAccess.NULL);
+        BankScreenHandlerFactory screenHandlerFactory = new BankScreenHandlerFactory(bankItemStorage.type(), bankItemStorage, bank, slot, ContainerLevelAccess.NULL);
 
         player.openMenu(screenHandlerFactory, screenHandlerFactory::writeScreenOpeningData);
-        return InteractionResult.CONSUME;
+        return InteractionResult.SUCCESS;
     }
 
     private InteractionResult build(UseOnContext context) {
@@ -191,22 +189,24 @@ public abstract class BankFunctionality extends Item {
     public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
 
         ItemStack bank = player.getItemInHand(hand);
-        InteractionResult result = useBank(player, hand, false, null);
+        InteractionResult result = useBank(player, bank, hand, false, null);
 
         return switch (result) {
-            case CONSUME -> InteractionResultHolder.fail(bank);
+            case CONSUME -> InteractionResultHolder.consume(bank);
             case CONSUME_PARTIAL -> InteractionResultHolder.consume(bank);
-            case FAIL -> InteractionResultHolder.fail(bank);
+            case FAIL -> InteractionResultHolder.consume(bank);
             case PASS -> InteractionResultHolder.pass(bank);
-            case SUCCESS -> InteractionResultHolder.success(bank);
+            case SUCCESS -> InteractionResultHolder.consume(bank);
             case SUCCESS_NO_ITEM_USED -> InteractionResultHolder.success(bank);
         };
     }
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
-        return useBank(context.getPlayer(), context.getHand(), true, context.hitResult);
+        return useBank(context.getPlayer(), context.getItemInHand(), context.getHand(), true, context.hitResult);
     }
+
+
 
     @Override
     public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {

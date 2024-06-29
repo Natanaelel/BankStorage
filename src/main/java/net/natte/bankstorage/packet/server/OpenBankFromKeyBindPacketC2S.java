@@ -37,7 +37,7 @@ public record OpenBankFromKeyBindPacketC2S() implements CustomPacketPayload {
         if (bankItemStorage == null)
             return;
 
-        BankScreenHandlerFactory screenHandlerFactory = new BankScreenHandlerFactory(bankItemStorage.type, bankItemStorage, bank, slot, ContainerLevelAccess.NULL);
+        BankScreenHandlerFactory screenHandlerFactory = new BankScreenHandlerFactory(bankItemStorage.type(), bankItemStorage, bank, slot, ContainerLevelAccess.NULL);
         player.openMenu(screenHandlerFactory, screenHandlerFactory::writeScreenOpeningData);
     }
 

@@ -66,7 +66,7 @@ public class BankFilter {
     }
 
     private BankType getBankType(BankItemStorage bankItemStorage) {
-        return switch (bankItemStorage.type.getName()) {
+        return switch (bankItemStorage.type().getName()) {
             case "bank_1" -> BankType.BANK_1;
             case "bank_2" -> BankType.BANK_2;
             case "bank_3" -> BankType.BANK_3;

@@ -12,15 +12,11 @@ import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-import java.util.List;
 import java.util.stream.Stream;
 
 // rei's rendering of the yellow overlay is pretty slow...
 // some solution could be to always render over *all* slots as 1 big rectangle
 public class BankDraggableStackVisitor implements DraggableStackVisitor<BankScreen> {
-
-    private static List<BoundsProvider> cachedBounds;
-    private static ItemStack lastDraggedItem = ItemStack.EMPTY;
 
     @Override
     public <R extends Screen> boolean isHandingScreen(R screen) {
@@ -57,23 +53,17 @@ public class BankDraggableStackVisitor implements DraggableStackVisitor<BankScre
         if (draggedItem.isEmpty())
             return Stream.empty();
 
-        if (ItemStack.isSameItemSameComponents(draggedItem, lastDraggedItem))
-            return cachedBounds.stream();
 
         BankScreen screen = context.getScreen();
         int left = screen.getGuiLeft();
         int top = screen.getGuiTop();
 
-        lastDraggedItem = draggedItem;
-        cachedBounds = screen
+        return screen
                 .getMenu()
                 .slots
                 .stream()
                 .filter(slot -> slot instanceof BankSlot && (slot.getItem().isEmpty() || ItemStack.isSameItemSameComponents(slot.getItem(), draggedItem)))
-                .map(slot -> DraggableStackVisitor.BoundsProvider.ofRectangle(new Rectangle(left + slot.x, top + slot.y, 16, 16)))
-                .toList();
-
-        return cachedBounds.stream();
+                .map(slot -> DraggableStackVisitor.BoundsProvider.ofRectangle(new Rectangle(left + slot.x, top + slot.y, 16, 16)));
     }
 
 

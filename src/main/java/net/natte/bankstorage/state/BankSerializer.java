@@ -1,21 +1,18 @@
 package net.natte.bankstorage.state;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.util.ExtraCodecs;
-
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 public class BankSerializer {
 
@@ -32,17 +29,17 @@ public class BankSerializer {
     private static final Codec<BankItemStorage> BANK_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             UUIDUtil.STRING_CODEC
                     .fieldOf("uuid")
-                    .forGetter(b -> b.uuid),
+                    .forGetter(BankItemStorage::uuid),
             BankType.CODEC
                     .fieldOf("type")
-                    .forGetter(b -> b.type),
+                    .forGetter(BankItemStorage::type),
             OPTIONAL_LARGE_STACK_CODEC.listOf()
                     .fieldOf("items")
-                    .forGetter(b -> b.getItems()),
+                    .forGetter(BankItemStorage::getItems),
             // maps must have string keys
             Codec.unboundedMap(Codec.STRING.xmap(Integer::valueOf, String::valueOf), OPTIONAL_SINGLE_ITEM_CODEC)
                     .fieldOf("locked_slots")
-                    .forGetter(b -> b.getlockedSlots()),
+                    .forGetter(BankItemStorage::getlockedSlots),
             Codec.STRING
                     .lenientOptionalFieldOf("date_created", LocalDateTime.now().toString())
                     .forGetter(b -> b.dateCreated.toString()),

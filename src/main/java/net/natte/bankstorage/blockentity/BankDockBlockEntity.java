@@ -82,7 +82,6 @@ public class BankDockBlockEntity extends BlockEntity {
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registryLookup) {
-        // TODO: check this works
         return saveWithoutMetadata(registryLookup);
     }
 

@@ -56,7 +56,7 @@ public class ItemPickupHandler {
                 if (bankPickedUpAny) {
                     PacketDistributor.sendToPlayer((ServerPlayer) playerInventory.player, new ItemStackBobbingAnimationPacketS2C(index));
 
-                    NetworkUtil.syncCachedBankS2C(bankItemStorage.uuid, ((ServerPlayer) playerInventory.player));
+                    NetworkUtil.syncCachedBankS2C(bankItemStorage.uuid(), ((ServerPlayer) playerInventory.player));
                 }
 
                 if (pickedUpStack.isEmpty()) {

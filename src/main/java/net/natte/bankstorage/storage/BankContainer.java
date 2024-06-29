@@ -6,7 +6,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.container.BankItemStorage;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 public class BankContainer implements Container {
 
@@ -67,6 +69,6 @@ public class BankContainer implements Container {
     @Override
     public void clearContent() {
         // who would call this??
-        items.replaceAll(stack -> ItemStack.EMPTY);
+        Collections.fill(items, ItemStack.EMPTY);
     }
 }

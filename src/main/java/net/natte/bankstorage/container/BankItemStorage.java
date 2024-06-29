@@ -15,8 +15,8 @@ import java.util.*;
 
 public class BankItemStorage {
 
-    public BankType type;
-    public UUID uuid;
+    private BankType type;
+    private final UUID uuid;
 
     // this is where the items are stored
     private List<ItemStack> items;
@@ -45,9 +45,12 @@ public class BankItemStorage {
         this.items = list;
     }
 
-    public BankItemStorage withItem(ItemStack itemStack) {
-        this.bankLikeItem = itemStack;
-        return this;
+    public UUID uuid() {
+        return uuid;
+    }
+
+    public BankType type() {
+        return type;
     }
 
     public BankItemStorage asType(BankType type) {
@@ -66,7 +69,6 @@ public class BankItemStorage {
         BankStorage.LOGGER.debug("Upgrading bank from " + this.type.getName() + " to " + type.getName() + " uuid " + this.uuid);
 
         assert type.size() > this.type.size() : "Cannot downgrade banks!";
-
 
         BankItemStorage newBankItemStorage = new BankItemStorage(type, this.uuid);
         newBankItemStorage.initializeItems();
