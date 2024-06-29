@@ -37,7 +37,7 @@ public class BankDragDropHandler implements EmiDragDropHandler<BankScreen> {
         if (draggedStack.isEmpty())
             return;
         for (Slot slot : screen.getMenu().slots) {
-            if (slot instanceof BankSlot && (slot.getItem().isEmpty() || ItemStack.isSameItemSameComponents(slot.getItem(), draggedStack))) {
+            if (slot instanceof BankSlot bankSlot && (slot.getItem().isEmpty() || !bankSlot.isLocked() && ItemStack.isSameItemSameComponents(slot.getItem(), draggedStack))) {
                 int x = screen.getGuiLeft() + slot.x;
                 int y = screen.getGuiTop() + slot.y;
                 guiGraphics.fill(x, y, x + 16, y + 16, 0x8822BB33);
