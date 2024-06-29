@@ -12,6 +12,7 @@ import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.packet.NetworkUtil;
 import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
 import net.natte.bankstorage.util.Util;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public class ItemPickupHandler {
 
@@ -53,7 +54,7 @@ public class ItemPickupHandler {
                 pickedUpStack.setCount(notPickedUp.getCount());
 
                 if (bankPickedUpAny) {
-                    ((ServerPlayer) playerInventory.player).connection.send(new ItemStackBobbingAnimationPacketS2C(index));
+                    PacketDistributor.sendToPlayer((ServerPlayer) playerInventory.player, new ItemStackBobbingAnimationPacketS2C(index));
 
                     NetworkUtil.syncCachedBankS2C(bankItemStorage.uuid, ((ServerPlayer) playerInventory.player));
                 }

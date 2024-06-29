@@ -4,10 +4,8 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.natte.bankstorage.BankStorage;
@@ -61,6 +59,7 @@ public class BankStorageClient {
 
     static {
         Util.isShiftDown = Screen::hasShiftDown;
+        Util.isClient.set(true);
         CachedBankStorage.setCacheUpdater(CachedBankStorage.bankRequestQueue::add);
     }
 
@@ -149,19 +148,13 @@ public class BankStorageClient {
 
     public void handleInputs() {
         while (toggleBuildModeKeyBinding.consumeClick())
-            send(ToggleBuildModePacketC2S.INSTANCE);
+            PacketDistributor.sendToServer(ToggleBuildModePacketC2S.INSTANCE);
 
         while (togglePickupModeKeyBinding.consumeClick())
-            send(PickupModePacketC2S.INSTANCE);
+            PacketDistributor.sendToServer(PickupModePacketC2S.INSTANCE);
 
         while (openBankFromKeyBinding.consumeClick())
-            send(OpenBankFromKeyBindPacketC2S.INSTANCE);
-    }
-
-    private static void send(CustomPacketPayload payload) {
-        ClientPacketListener connection = Minecraft.getInstance().getConnection();
-        if (connection != null)
-            connection.send(payload);
+            PacketDistributor.sendToServer(OpenBankFromKeyBindPacketC2S.INSTANCE);
     }
 
     private void sendQueuedUpdateRequests() {

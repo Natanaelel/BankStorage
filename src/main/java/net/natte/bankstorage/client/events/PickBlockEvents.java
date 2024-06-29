@@ -12,6 +12,7 @@ import net.natte.bankstorage.packet.server.SelectedSlotPacketC2S;
 import net.natte.bankstorage.util.Util;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 @OnlyIn(Dist.CLIENT)
 public class PickBlockEvents {
@@ -52,7 +53,7 @@ public class PickBlockEvents {
         
         BankStorageClient.buildModePreviewRenderer.selectedSlot = slot;
 
-        client.getConnection().send(new SelectedSlotPacketC2S(hand == InteractionHand.MAIN_HAND, slot));
+        PacketDistributor.sendToServer(new SelectedSlotPacketC2S(hand == InteractionHand.MAIN_HAND, slot));
         return true;
 
     }

@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.client.screen.BankScreen;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -43,7 +44,7 @@ public class BankDraggableStackVisitor implements DraggableStackVisitor<BankScre
         // optimistically lock slot on client, will be synced later
         screen.getMenu().lockSlot(bankSlot.index, draggedItem);
 
-        screen.getMinecraft().getConnection().send(new LockSlotPacketC2S(screen.getMenu().containerId, bankSlot.index, draggedItem, true));
+        PacketDistributor.sendToServer(new LockSlotPacketC2S(screen.getMenu().containerId, bankSlot.index, draggedItem, true));
 
         return DraggedAcceptorResult.ACCEPTED;
     }

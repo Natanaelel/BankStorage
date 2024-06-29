@@ -12,10 +12,10 @@ import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.packet.server.SelectedSlotPacketC2S;
-import net.natte.bankstorage.util.Util;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 @OnlyIn(Dist.CLIENT)
 public class MouseEvents {
@@ -51,7 +51,7 @@ public class MouseEvents {
         int newSelectedItemSlot = Mth.clamp(selectedItemSlot + scroll, 0, cachedBankStorage.getBlockItems().size() - 1);
         preview.selectedSlot = newSelectedItemSlot;
 
-        player.connection.send(new SelectedSlotPacketC2S(preview.renderingFromHand == InteractionHand.MAIN_HAND, newSelectedItemSlot));
+        PacketDistributor.sendToServer(new SelectedSlotPacketC2S(preview.renderingFromHand == InteractionHand.MAIN_HAND, newSelectedItemSlot));
 
         event.setCanceled(true);
     }

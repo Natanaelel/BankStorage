@@ -3,7 +3,6 @@ package net.natte.bankstorage.client.screen;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -27,6 +26,7 @@ import net.natte.bankstorage.packet.server.SortPacketC2S;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.NumberFormat;
@@ -115,7 +115,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
         else
             this.menu.lockSlot(bankSlot.index, isSlotEmpty ? cursorStack : hoveredStack);
 
-        minecraft.getConnection().send(
+        PacketDistributor.sendToServer(
                 new LockSlotPacketC2S(
                         this.menu.containerId,
                         hoveredSlotIndex,
@@ -244,7 +244,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
     private void onPickupModeButtonPress(PickupModeButtonWidget button) {
         button.nextState();
         button.refreshTooltip();
-        Minecraft.getInstance().getConnection().send(new PickupModePacketC2S());
+        PacketDistributor.sendToServer(new PickupModePacketC2S());
     }
 
     private void onSortButtonPress(SortButtonWidget button) {
@@ -257,7 +257,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
     }
 
     private void sendSortPacket() {
-        Minecraft.getInstance().getConnection().send(new SortPacketC2S(this.sortMode));
+        PacketDistributor.sendToServer(new SortPacketC2S(this.sortMode));
     }
 }
 

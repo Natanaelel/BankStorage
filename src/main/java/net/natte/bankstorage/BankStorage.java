@@ -24,7 +24,6 @@ import net.natte.bankstorage.block.BankDockBlock;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.command.RestoreBankCommands;
 import net.natte.bankstorage.container.BankType;
-import net.natte.bankstorage.item.BankFunctionality;
 import net.natte.bankstorage.item.LinkItem;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.packet.client.ItemStackBobbingAnimationPacketS2C;
@@ -49,6 +48,7 @@ import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.entity.EntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -170,7 +170,7 @@ public class BankStorage {
                 long randomSeed = player.getRandom().nextLong();
                 Random random = new Random(randomSeed);
                 player.setData(SYNCED_RANDOM_ATTACHMENT, random);
-                player.connection.send(new SyncedRandomPacketS2C(randomSeed));
+                PacketDistributor.sendToPlayer(player, new SyncedRandomPacketS2C(randomSeed));
             }
         });
 

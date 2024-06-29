@@ -6,6 +6,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerSynchronizer;
 import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.Map;
 
@@ -20,7 +21,7 @@ public class BankScreenHandlerSyncHandler implements ContainerSynchronizer {
 
 
     public void syncLockedSlots(AbstractContainerMenu screenHandler, Map<Integer, ItemStack> lockedSlots) {
-        player.connection.send(new LockedSlotsPacketS2C(screenHandler.containerId, lockedSlots));
+        PacketDistributor.sendToPlayer(player, new LockedSlotsPacketS2C(screenHandler.containerId, lockedSlots));
     }
 
     @Override
