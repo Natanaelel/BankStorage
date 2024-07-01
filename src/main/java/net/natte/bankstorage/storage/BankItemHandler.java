@@ -3,6 +3,7 @@ package net.natte.bankstorage.storage;
 import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.options.PickupMode;
+import net.natte.bankstorage.util.Util;
 import net.neoforged.neoforge.items.IItemHandler;
 
 import java.util.List;
@@ -48,9 +49,11 @@ public class BankItemHandler implements IItemHandler {
     @Override
     public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
         // ignores slot. hacky? yes. NeoForge needs better transfer api? yes.
-
         if (stack.isEmpty())
             return ItemStack.EMPTY;
+        if (!Util.isAllowedInBank(stack))
+            return stack;
+
         int maxAmount = stack.getCount();
         int inserted = 0;
 

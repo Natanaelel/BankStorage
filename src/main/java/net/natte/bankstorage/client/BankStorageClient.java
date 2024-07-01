@@ -59,7 +59,6 @@ public class BankStorageClient {
 
     static {
         Util.isShiftDown = Screen::hasShiftDown;
-        Util.isClient.set(true);
         CachedBankStorage.setCacheUpdater(CachedBankStorage.bankRequestQueue::add);
     }
 
@@ -72,9 +71,11 @@ public class BankStorageClient {
 
         modBus.addListener(this::registerModelPredicates);
         modBus.addListener(this::registerKeyBinds);
+        modBus.addListener(this::initializeClientOnRenderThread);
+        modBus.addListener(this::registerItemColors);
+
         NeoForge.EVENT_BUS.addListener(this::registerTickEvents);
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
-        modBus.addListener(this::registerItemColors);
         NeoForge.EVENT_BUS.addListener(MouseEvents::onScroll);
 
     }
@@ -137,6 +138,10 @@ public class BankStorageClient {
         modBus.<RegisterMenuScreensEvent>addListener(event -> {
             event.register(BankStorage.MENU_TYPE, BankScreen::new);
         });
+    }
+
+    private void initializeClientOnRenderThread(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> Util.isClient.set(true));
     }
 
     public void registerKeyBinds(RegisterKeyMappingsEvent event) {

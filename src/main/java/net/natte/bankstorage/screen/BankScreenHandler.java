@@ -14,6 +14,7 @@ import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.inventory.LockedSlot;
 import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.packet.NetworkUtil;
+import net.natte.bankstorage.util.Util;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -151,7 +152,7 @@ public class BankScreenHandler extends AbstractContainerMenu {
     // returns true if something got inserted
     private boolean insertIntoBank(ItemStack stack) {
         // must modify input stack
-        if (!stack.getItem().canFitInsideContainerItems())
+        if (!Util.isAllowedInBank(stack))
             return false;
 
         ItemStack notInserted = this.bankItemStorage.getItemHandler(PickupMode.ALL).insertItem(stack);
