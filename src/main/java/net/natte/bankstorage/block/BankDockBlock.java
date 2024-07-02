@@ -38,16 +38,15 @@ public class BankDockBlock extends Block implements EntityBlock {
     public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
 
         BlockEntity blockEntity = world.getBlockEntity(pos);
-        InteractionHand hand = player.getUsedItemHand();
         if (blockEntity instanceof BankDockBlockEntity bankDockBlockEntity) {
-            ItemStack stackInHand = player.getItemInHand(hand);
+            ItemStack stackInHand = player.getMainHandItem();
             if (bankDockBlockEntity.hasBank()) {
 
                 // pick up bank from dock
                 if (stackInHand.isEmpty() && player.isShiftKeyDown()) {
                     ItemStack bankInDock = bankDockBlockEntity.pickUpBank();
                     bankInDock.setPopTime(5);
-                    player.setItemInHand(hand, bankInDock);
+                    player.setItemInHand(InteractionHand.MAIN_HAND, bankInDock);
 
                     world.playSound(null, player, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2f,
                             (player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 1.4f + 2.0f);
@@ -56,10 +55,10 @@ public class BankDockBlock extends Block implements EntityBlock {
 
                 // swap hand and dock
                 if (Util.isBankLike(stackInHand)) {
-                    player.setItemInHand(hand, ItemStack.EMPTY);
+                    player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                     ItemStack bankInDock = bankDockBlockEntity.pickUpBank();
                     bankInDock.setPopTime(5);
-                    player.setItemInHand(hand, bankInDock);
+                    player.setItemInHand(InteractionHand.MAIN_HAND, bankInDock);
                     world.playSound(null, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f,
                             SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 0.2f, 0.0f);
                     world.playSound(null, player, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2f,
@@ -89,8 +88,8 @@ public class BankDockBlock extends Block implements EntityBlock {
             } else {
                 // place bank in dock
                 if (Util.isBankLike(stackInHand)) {
-                    bankDockBlockEntity.putBank(player.getItemInHand(hand));
-                    player.setItemInHand(hand, ItemStack.EMPTY);
+                    bankDockBlockEntity.putBank(player.getMainHandItem());
+                    player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                     world.playSound(null, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f,
                             SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 0.2f, 0.0f);
 
