@@ -2,10 +2,12 @@ package net.natte.bankstorage.state;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
@@ -17,7 +19,7 @@ import java.util.Optional;
 public class BankSerializer {
 
     private static final Codec<ItemStack> LARGE_STACK_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                    ItemStack.ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
+                    ItemStack.ITEM_NON_AIR_CODEC.lenientOptionalFieldOf("id", Holder.direct(Items.AIR)).forGetter(ItemStack::getItemHolder),
                     Codec.INT.fieldOf("count").forGetter(ItemStack::getCount),
                     DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(ItemStack::getComponentsPatch)
             ).apply(instance, ItemStack::new)
