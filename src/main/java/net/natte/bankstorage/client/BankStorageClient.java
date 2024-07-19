@@ -132,6 +132,7 @@ public class BankStorageClient {
         handleInputs();
         buildModePreviewRenderer.tick();
         sendQueuedUpdateRequests();
+        CachedBankStorage.advanceThrottledQueue();
     }
 
     private void registerHandledScreens(IEventBus modBus) {

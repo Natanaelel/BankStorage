@@ -28,13 +28,15 @@ public class BankItemStorage {
     private ItemStack bankLikeItem;
     public UUID usedByPlayerUUID = BankStorage.FAKE_PLAYER_UUID;
     public String usedByPlayerName = "World";
-    public LocalDateTime dateCreated = LocalDateTime.MIN;
+    public LocalDateTime dateCreated;
 
     public BankItemStorage(BankType type, UUID uuid) {
         this.type = type;
         this.uuid = uuid;
 
         this.lockedSlots = new HashMap<>();
+
+        this.dateCreated = LocalDateTime.now();
     }
 
     public void initializeItems() {

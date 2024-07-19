@@ -164,6 +164,10 @@ public class Util {
             if (!Util.hasUUID(bank))
                 return null;
             BankItemStorage bankItemStorage = getBankItemStorage(Util.getUUID(bank));
+
+            if (bankItemStorage == null)
+                throw new IllegalStateException("Storage of a Bank Link could not be found. This is likely caused by a corrupted bankstorage.dat file.");
+
             if (bankItemStorage.type() != bank.get(BankStorage.BankTypeComponentType)) {
                 bank.set(BankStorage.BankTypeComponentType, bankItemStorage.type());
             }
@@ -208,7 +212,7 @@ public class Util {
         return itemStack.getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT).pickupMode();
     }
 
-    public static boolean isClient(){
+    public static boolean isClient() {
         return isClient.get();
     }
 }

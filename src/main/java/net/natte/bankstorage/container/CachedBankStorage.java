@@ -40,6 +40,9 @@ public class CachedBankStorage {
 
     public static Set<UUID> bankRequestQueue = new HashSet<>();
 
+    private static final Map<UUID, Integer> throddledQueue = new HashMap<>();
+
+
     private static Consumer<UUID> requestCacheUpdate = uuid -> {
     };
     public static boolean markDirtyForPreview = false;
@@ -65,6 +68,24 @@ public class CachedBankStorage {
 
     public static void setCacheUpdater(Consumer<UUID> consumer) {
         requestCacheUpdate = consumer;
+    }
+
+    @Nullable
+    public static CachedBankStorage getAndThrottleUpdate(ItemStack stack, int ticks) {
+        if (!Util.hasUUID(stack))
+            return null;
+        UUID uuid = Util.getUUID(stack);
+
+        if (!throddledQueue.containsKey(uuid)) {
+            throddledQueue.put(uuid, ticks);
+            requestCacheUpdate(uuid);
+        }
+        return getBankStorage(uuid);
+    }
+
+    public static void advanceThrottledQueue() {
+        throddledQueue.entrySet().removeIf(entity -> entity.getValue() <= 0);
+        throddledQueue.replaceAll((uuid, ticksLeft) -> ticksLeft - 1);
     }
 
     public ItemStack getSelectedItem(int selectedItemSlot) {

@@ -206,15 +206,13 @@ public abstract class BankFunctionality extends Item {
         return useBank(context.getPlayer(), context.getItemInHand(), context.getHand(), true, context.hitResult);
     }
 
-
-
     @Override
     public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {
 
         if (Util.isShiftDown.get())
             return Optional.empty();
 
-        CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(stack);
+        CachedBankStorage cachedBankStorage = CachedBankStorage.getAndThrottleUpdate(stack, 20);
 
         if (cachedBankStorage == null)
             return Optional.empty();
