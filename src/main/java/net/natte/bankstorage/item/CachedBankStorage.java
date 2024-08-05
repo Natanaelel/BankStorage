@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.item.BlockItem;
@@ -62,7 +63,7 @@ public class CachedBankStorage {
     public ItemStack getSelectedItem(int selectedItemSlot) {
         if (this.blockItems.isEmpty())
             return ItemStack.EMPTY;
-        return this.blockItems.get(selectedItemSlot % this.blockItems.size());
+        return this.blockItems.get(MathHelper.clamp(selectedItemSlot, 0, this.blockItems.size() - 1));
     }
 
     public ItemStack getRandomItem(Random random) {

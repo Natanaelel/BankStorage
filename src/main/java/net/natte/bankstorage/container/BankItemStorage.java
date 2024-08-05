@@ -8,6 +8,8 @@ import java.util.Random;
 import java.util.UUID;
 
 import java.time.LocalDateTime;
+
+import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 
 import net.fabricmc.fabric.api.entity.FakePlayer;
@@ -258,7 +260,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
 
     public ItemStack getSelectedItem(int selectedItemSlot) {
         List<ItemStack> items = getBlockItems();
-        return items.isEmpty() ? ItemStack.EMPTY : items.get(Math.min(selectedItemSlot, items.size() - 1));
+        return items.isEmpty() ? ItemStack.EMPTY : items.get(MathHelper.clamp(selectedItemSlot, 0, items.size() - 1));
     }
 
     public ItemStack getRandomItem(Random random) {

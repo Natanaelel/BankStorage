@@ -242,7 +242,7 @@ public class BuildModePreviewRenderer implements EndTick {
             context.getMatrices().scale(1.0f / h, (h + 1.0f) / 2.0f, 1.0f);
             context.getMatrices().translate(-(x + 8), -(y + 12), 0.0f);
         }
-        context.drawItem((LivingEntity) player, stack, x, y, seed);
+        context.drawItem(player, stack, x, y, seed);
         if (g > 0.0f) {
             context.getMatrices().pop();
         }
@@ -268,32 +268,34 @@ public class BuildModePreviewRenderer implements EndTick {
             context.fill(RenderLayer.getGuiOverlay(), k, l, k + i, l + 1, j | 0xFF000000);
         }
         if (stack.getCount() != 1) {
-            String count = ItemCountUtils.toConsiseString(stack.getCount());
-            String string = count;
-            matrices.translate(0.0f, 0.0f, 200.0f);
+//            String count = ItemCountUtils.toConsiseString(stack.getCount());
+//            String string = count;
+//            matrices.translate(0.0f, 0.0f, 200.0f);
 
-            if (Util.isDebugMode) {
-                float scale = ItemCountUtils.scale(string);
+            ItemCountUtils.drawItemCount(context, textRenderer, x, y, stack.getCount(), false);
 
-                matrices.translate(x * (1 - scale), y * (1 - scale) + (1 - scale) * 16, 0);
-                matrices.scale(scale, scale, 1);
-
-                int textWidth = (int) (textRenderer.getWidth(string) * scale);
-                context.drawText(textRenderer, string, x + 19 - 2 - textWidth, y + 6 + 3, 0xFFFFFF, true);
-            } else {
-                float scale = ItemCountUtils.scale(string);
-
-                int textWidth = (int) (textRenderer.getWidth(string));
-
-                int xOffset = x + 18 - 2;
-                int yOffset = y + 18 - 2;
-                matrices.push();
-                matrices.translate(xOffset, yOffset, 0);
-                matrices.scale(scale, scale, 1);
-                matrices.translate(-xOffset, -yOffset, 0);
-                context.drawText(textRenderer, string, x + 18 - 1 - textWidth, y + 9, 0xFFFFFF, true);
-                matrices.pop();
-            }
+//            if (Util.isDebugMode) {
+//                float scale = ItemCountUtils.scale(string);
+//
+//                matrices.translate(x * (1 - scale), y * (1 - scale) + (1 - scale) * 16, 0);
+//                matrices.scale(scale, scale, 1);
+//
+//                int textWidth = (int) (textRenderer.getWidth(string) * scale);
+//                context.drawText(textRenderer, string, x + 19 - 2 - textWidth, y + 6 + 3, 0xFFFFFF, true);
+//            } else {
+//                float scale = ItemCountUtils.scale(string);
+//
+//                int textWidth = (int) (textRenderer.getWidth(string));
+//
+//                int xOffset = x + 18 - 2;
+//                int yOffset = y + 18 - 2;
+//                matrices.push();
+//                matrices.translate(xOffset, yOffset, 0);
+//                matrices.scale(scale, scale, 1);
+//                matrices.translate(-xOffset, -yOffset, 0);
+//                context.drawText(textRenderer, string, x + 18 - 1 - textWidth, y + 9, 0xFFFFFF, true);
+//                matrices.pop();
+//            }
         }
 
         matrices.pop();
