@@ -2,12 +2,10 @@ package net.natte.bankstorage.state;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.Holder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
@@ -19,14 +17,14 @@ import java.util.Optional;
 public class BankSerializer {
 
     private static final Codec<ItemStack> LARGE_STACK_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                    ItemStack.ITEM_NON_AIR_CODEC.lenientOptionalFieldOf("id", Holder.direct(Items.AIR)).forGetter(ItemStack::getItemHolder),
+                    ItemStack.ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
                     Codec.INT.fieldOf("count").forGetter(ItemStack::getCount),
                     DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(ItemStack::getComponentsPatch)
             ).apply(instance, ItemStack::new)
     );
 
-    private static final Codec<ItemStack> OPTIONAL_LARGE_STACK_CODEC = optionalOrEmptyMap(LARGE_STACK_CODEC);
-    private static final Codec<ItemStack> OPTIONAL_SINGLE_ITEM_CODEC = optionalOrEmptyMap(ItemStack.SINGLE_ITEM_CODEC);
+    private static final Codec<ItemStack> OPTIONAL_LARGE_STACK_CODEC = airIfError(optionalOrEmptyMap(LARGE_STACK_CODEC));
+    private static final Codec<ItemStack> OPTIONAL_SINGLE_ITEM_CODEC = airIfError(optionalOrEmptyMap(ItemStack.SINGLE_ITEM_CODEC));
 
     private static final Codec<BankItemStorage> BANK_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             UUIDUtil.STRING_CODEC
@@ -62,5 +60,9 @@ public class BankSerializer {
                 .xmap(
                         maybeStack -> maybeStack.orElse(ItemStack.EMPTY),
                         stack -> stack.isEmpty() ? Optional.empty() : Optional.of(stack));
+    }
+
+    private static Codec<ItemStack> airIfError(Codec<ItemStack> codec) {
+        return Codec.withAlternative(codec, Codec.unit(ItemStack.EMPTY));
     }
 }

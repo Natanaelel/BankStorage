@@ -166,7 +166,7 @@ public class Util {
             BankItemStorage bankItemStorage = getBankItemStorage(Util.getUUID(bank));
 
             if (bankItemStorage == null)
-                throw new IllegalStateException("Storage of a Bank Link could not be found. This is likely caused by a corrupted bankstorage.dat file.");
+                throw new IllegalStateException("Storage of a Bank Link could not be found. This is likely caused by a corrupted bankstorage.dat file. UUID = '" + Util.getUUID(bank) + "'");
 
             if (bankItemStorage.type() != bank.get(BankStorage.BankTypeComponentType)) {
                 bank.set(BankStorage.BankTypeComponentType, bankItemStorage.type());
