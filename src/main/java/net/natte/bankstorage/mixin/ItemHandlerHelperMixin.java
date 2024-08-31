@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 @Mixin(ItemHandlerHelper.class)
 public abstract class ItemHandlerHelperMixin {
 
-    @ModifyVariable(method = "giveItemToPlayer(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;I)V", at = @At("HEAD"), argsOnly = true)
-    private static ItemStack onGiveItemToPlayer(ItemStack stack, @Local(argsOnly = true) Player player, @Local(argsOnly = true) int preferredSlot) {
+    @ModifyVariable(method = "giveItemToPlayer(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;I)V", at = @At("STORE"), ordinal = 1)
+    private static ItemStack onAssignRemainder(ItemStack stack, @Local(argsOnly = true) Player player, @Local(argsOnly = true) int preferredSlot) {
         if (preferredSlot != -1)
             return stack;
 
