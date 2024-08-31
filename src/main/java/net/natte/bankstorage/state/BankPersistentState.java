@@ -49,8 +49,7 @@ public class BankPersistentState extends SavedData {
 
         Tag bankNbt = BankSerializer.CODEC
                 .encodeStart(registryLookup.createSerializationContext(NbtOps.INSTANCE), getBankItemStorages())
-                .resultOrPartial(BankStorage.LOGGER::error)
-                .orElse(new CompoundTag());
+                .getOrThrow();
 
         nbtCompound.put(BANK_DATA_KEY, bankNbt);
         BankStorage.LOGGER.debug("Saving done");

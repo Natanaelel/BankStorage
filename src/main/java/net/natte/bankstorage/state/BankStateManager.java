@@ -27,4 +27,9 @@ public class BankStateManager {
         INSTANCE.setDirty(); // could be optimized?
         return INSTANCE;
     }
+
+    // this maybe makes the above setDirty unnecessary
+    public static void markDirty() {
+        getState().setDirty();
+    }
 }

@@ -6,6 +6,7 @@ import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.PickupMode;
+import net.natte.bankstorage.state.BankStateManager;
 import net.natte.bankstorage.storage.BankContainer;
 import net.natte.bankstorage.storage.BankItemHandler;
 import org.jetbrains.annotations.Nullable;
@@ -96,6 +97,7 @@ public class BankItemStorage {
     public void markDirty() {
         updateLockedSlotsRevision();
         updateRevision();
+        BankStateManager.markDirty();
     }
 
     public int size() {
