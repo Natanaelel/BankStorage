@@ -62,7 +62,6 @@ public class ItemPickupHandler {
                 if (pickedUpStack.isEmpty()) {
                     return true;
                 }
-
             }
         }
         return false;

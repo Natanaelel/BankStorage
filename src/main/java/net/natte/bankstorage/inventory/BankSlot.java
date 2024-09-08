@@ -25,7 +25,6 @@ public class BankSlot extends Slot {
         if (lockedStack != null) {
             this.lockedStack = lockedStack;
         }
-
     }
 
     public void lock(ItemStack stack) {

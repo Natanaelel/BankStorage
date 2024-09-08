@@ -70,7 +70,6 @@ public class Util {
             setOptions(itemStack, options);
         }
         return options;
-
     }
 
     public static void setOptions(ItemStack itemStack, BankOptions options) {
@@ -191,7 +190,6 @@ public class Util {
             return getClientItemHandlerFromItem(itemStack);
         else
             return getServerItemHandlerFromItem(itemStack);
-
     }
 
     private static IItemHandler getClientItemHandlerFromItem(ItemStack itemStack) {

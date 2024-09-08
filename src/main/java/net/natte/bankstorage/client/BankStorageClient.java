@@ -77,7 +77,6 @@ public class BankStorageClient {
         NeoForge.EVENT_BUS.addListener(this::registerTickEvents);
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
         NeoForge.EVENT_BUS.addListener(MouseEvents::onScroll);
-
     }
 
     private void registerItemColors(RegisterColorHandlersEvent.Item event) {
@@ -85,7 +84,6 @@ public class BankStorageClient {
             event.register((stack, tintIndex) -> DyedItemColor.getOrDefault(stack, 0), type.item.get());
         }
         event.register((stack, tintIndex) -> DyedItemColor.getOrDefault(stack, 0), BankStorage.BANK_LINK.get());
-
     }
 
     private void registerCommands(RegisterClientCommandsEvent event) {
@@ -106,7 +104,6 @@ public class BankStorageClient {
         modBus.<RegisterClientTooltipComponentFactoriesEvent>addListener(event -> {
             event.register(BankTooltipData.class, BankTooltipComponent::of);
         });
-
     }
 
     private void registerModelPredicates(FMLClientSetupEvent event) {
@@ -115,7 +112,6 @@ public class BankStorageClient {
                 ItemProperties.register(type.item.get(), ResourceLocation.withDefaultNamespace("has_color"), (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1 : 0);
             }
             ItemProperties.register(BankStorage.BANK_LINK.get(), ResourceLocation.withDefaultNamespace("has_color"), (stack, level, entity, seed) -> stack.has(DataComponents.DYED_COLOR) ? 1 : 0);
-
         });
     }
 

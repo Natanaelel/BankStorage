@@ -91,11 +91,9 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
             this.skipNextRelease = true;
             return true;
-
         }
 
         return super.mouseClicked(mouseX, mouseY, button);
-
     }
 
     private void handleSlotLock(BankSlot bankSlot) {
@@ -159,7 +157,6 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
         super.renderSlot(context, slot);
 
         this.currentlyRenderingBankSlot = null;
-
     }
 
     @Override
@@ -196,8 +193,6 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
         // copyWithCount(1) and null text to force not draw count text
         context.renderItemDecorations(this.font, stack.copyWithCount(1), x, y, null);
-
-
     }
 
     public static void drawItemCount(GuiGraphics context, Font textRenderer, int count, int x, int y,
@@ -226,10 +221,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
         poseStack.translate(0.0f, 0.0f, 200.0f);
         context.drawString(textRenderer, formattedString, x + 18 - 1 - textWidth, y + 9, 0xFFFFFF, true);
 
-
         poseStack.popPose();
-
-
     }
 
     @Override

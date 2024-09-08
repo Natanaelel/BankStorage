@@ -44,7 +44,6 @@ public class BankType {
         this.guiTextureHeight = Mth.ceil(this.guiImageHeight / 256d) * 256;
 
         this.stackLimit = stackLimit;
-
     }
 
     public void register() {

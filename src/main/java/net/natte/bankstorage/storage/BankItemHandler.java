@@ -167,7 +167,6 @@ public class BankItemHandler implements IItemHandler {
         for (ItemStack stackInSlot : items) {
             if (ItemStack.isSameItemSameComponents(stackInSlot, stack))
                 return true;
-
         }
         return false;
     }

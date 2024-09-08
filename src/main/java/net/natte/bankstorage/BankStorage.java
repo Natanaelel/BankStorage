@@ -149,7 +149,6 @@ public class BankStorage {
 
     private void registerScreenHandlers() {
         SCREEN_HANDLERS.register("bank_menu", () -> MENU_TYPE);
-
     }
 
     private void registerItemComponentTypes() {
@@ -203,7 +202,6 @@ public class BankStorage {
         event.accept(BANK_7.item.get());
         event.accept(BANK_LINK.get());
         event.accept(BANK_DOCK_BLOCK.get());
-
     }
 
 
@@ -213,7 +211,6 @@ public class BankStorage {
             event.registerItem(Capabilities.ItemHandler.ITEM, Util::getItemHandlerFromItem, type.item.get());
         }
         event.registerItem(Capabilities.ItemHandler.ITEM, Util::getItemHandlerFromItem, BANK_LINK.get());
-
     }
 
     public void registerCommands() {
@@ -238,6 +235,5 @@ public class BankStorage {
         registrar.playToServer(LockSlotPacketC2S.TYPE, LockSlotPacketC2S.STREAM_CODEC, LockSlotPacketC2S::handle);
         registrar.playToServer(KeyBindUpdatePacketC2S.TYPE, KeyBindUpdatePacketC2S.STREAM_CODEC, KeyBindUpdatePacketC2S::handle);
         registrar.playToServer(ToggleBuildModePacketC2S.TYPE, ToggleBuildModePacketC2S.STREAM_CODEC, ToggleBuildModePacketC2S::handle);
-
     }
 }

@@ -50,11 +50,10 @@ public class PickBlockEvents {
 
         if (slot == -1)
             return false;
-        
+
         BankStorageClient.buildModePreviewRenderer.selectedSlot = slot;
 
         PacketDistributor.sendToServer(new SelectedSlotPacketC2S(hand == InteractionHand.MAIN_HAND, slot));
         return true;
-
     }
 }

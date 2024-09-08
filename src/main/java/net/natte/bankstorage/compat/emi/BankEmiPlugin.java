@@ -11,6 +11,5 @@ public class BankEmiPlugin implements EmiPlugin {
     @Override
     public void register(EmiRegistry registry) {
         registry.addDragDropHandler(BankScreen.class, new BankDragDropHandler());
-
     }
 }

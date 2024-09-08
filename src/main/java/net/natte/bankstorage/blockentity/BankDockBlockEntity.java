@@ -112,6 +112,5 @@ public class BankDockBlockEntity extends BlockEntity {
             this.bankItemHandler = bankItemStorage.getItemHandler(pickupMode);
         }
         return this.bankItemHandler;
-
     }
 }

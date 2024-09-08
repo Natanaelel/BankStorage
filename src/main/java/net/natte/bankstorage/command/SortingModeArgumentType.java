@@ -32,11 +32,9 @@ public class SortingModeArgumentType extends StringRepresentableArgument<Sorting
         public String getSerializedName() {
             return this.name;
         }
-
     }
 
     public static SortingMode getSortingMode(CommandContext<CommandSourceStack> context, String id) {
         return context.getArgument(id, SortingMode.class);
-
     }
 }

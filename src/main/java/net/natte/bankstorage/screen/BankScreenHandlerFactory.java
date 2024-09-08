@@ -34,7 +34,6 @@ public class BankScreenHandlerFactory implements MenuProvider {
         buf.writeUtf(this.type.getName());
         ItemStack.STREAM_CODEC.encode(buf, this.bankItem);
         buf.writeInt(this.slot);
-
     }
 
     // called client side only

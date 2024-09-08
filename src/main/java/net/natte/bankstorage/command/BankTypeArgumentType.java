@@ -36,11 +36,9 @@ public class BankTypeArgumentType extends StringRepresentableArgument<BankTypeAr
         public String getSerializedName() {
             return this.name;
         }
-
     }
 
     public static BankType getBankType(CommandContext<CommandSourceStack> context, String id) {
         return context.getArgument(id, BankType.class);
-
     }
 }

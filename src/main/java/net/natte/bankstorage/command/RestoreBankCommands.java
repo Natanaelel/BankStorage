@@ -77,7 +77,6 @@ public class RestoreBankCommands {
 
         ArgumentTypeInfos.registerByClass(SortingModeArgumentType.class, SORTING_MODE_ARGUMENT_TYPE);
         ArgumentTypeInfos.registerByClass(BankTypeArgumentType.class, BANK_TYPE_ARGUMENT_TYPE);
-
     }
 
     private static int restoreBankCommand(CommandContext<CommandSourceStack> context) {

@@ -33,7 +33,6 @@ public record ToggleBuildModePacketC2S() implements CustomPacketPayload {
 
         context.player().displayClientMessage(Component.translatable("popup.bankstorage.buildmode."
                 + bankItem.get(BankStorage.OptionsComponentType).buildMode().toString().toLowerCase()), true);
-
     }
 
     @Nullable

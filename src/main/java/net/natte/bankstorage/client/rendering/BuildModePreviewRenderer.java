@@ -111,7 +111,6 @@ public class BuildModePreviewRenderer {
             case NORMAL -> renderBlockPreview(context);
             case RANDOM -> renderRandomPreview(context);
         }
-
     }
 
     private boolean canRender() {

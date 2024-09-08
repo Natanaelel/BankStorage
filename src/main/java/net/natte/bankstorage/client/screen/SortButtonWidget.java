@@ -61,7 +61,7 @@ public class SortButtonWidget extends Button {
             case MOD -> 28;
         };
     }
-    
+
     public void refreshTooltip() {
         this.setTooltip(Tooltip.create(Component.translatable("title.bankstorage.sortmode." + sortMode.name().toLowerCase())
                 .append(Component.empty().append("\n").append(

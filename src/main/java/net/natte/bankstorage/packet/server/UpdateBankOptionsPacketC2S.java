@@ -67,7 +67,7 @@ public record UpdateBankOptionsPacketC2S(InteractionHand hand, boolean dock,
             BankOptions options = packet.options;
 
             BankItemStorage bankItemStorage = Util.getBankItemStorage(bankItem);
-            
+
             bankItem.set(BankStorage.OptionsComponentType, options);
 
             if (bankItemStorage != null)

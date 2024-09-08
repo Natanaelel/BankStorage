@@ -45,7 +45,7 @@ public class MouseEvents {
 
         if (cachedBankStorage == null)
             return;
-        
+
         int selectedItemSlot = preview.selectedSlot;
 
         int newSelectedItemSlot = Mth.clamp(selectedItemSlot + scroll, 0, cachedBankStorage.getBlockItems().size() - 1);

@@ -42,6 +42,5 @@ public record SelectedSlotPacketC2S(boolean isRight, int slot) implements Custom
         int size = bankItemStorage.getBlockItems().size();
         int selectedSlot = Mth.clamp(packet.slot, 0, size - 1);
         stack.set(BankStorage.SelectedSlotComponentType, selectedSlot);
-
     }
 }

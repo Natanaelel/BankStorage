@@ -96,7 +96,6 @@ public class BankScreenHandler extends AbstractContainerMenu {
                 this.addSlot(new Slot(playerInventory, x, 8 + x * 18, inventoryY + 58));
             }
         }
-
     }
 
     @Override
@@ -133,7 +132,6 @@ public class BankScreenHandler extends AbstractContainerMenu {
                 if (!this.insertItemToPlayer(originalStack, this.inventory.getContainerSize(), this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
-
             } // move from player to bank
             else if (!this.insertIntoBank(originalStack)) {
                 return ItemStack.EMPTY;
@@ -315,7 +313,6 @@ public class BankScreenHandler extends AbstractContainerMenu {
         super.clicked(slotIndex, button, actionType, player);
         if (uuid != null)
             NetworkUtil.syncCachedBankS2C(uuid, ((ServerPlayer) player));
-
     }
 
 

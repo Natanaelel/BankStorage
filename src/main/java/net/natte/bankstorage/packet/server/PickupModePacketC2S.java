@@ -33,7 +33,6 @@ public record PickupModePacketC2S() implements CustomPacketPayload {
             togglePickupModeOfScreenHandler(bankScreenHandler);
         else
             togglePickupModeOfHeldBank(player);
-
     }
 
     private static void togglePickupModeOfScreenHandler(BankScreenHandler bankScreenHandler) {

@@ -65,7 +65,5 @@ public class BankDraggableStackVisitor implements DraggableStackVisitor<BankScre
                 .filter(slot -> slot instanceof BankSlot bankSlot && (slot.getItem().isEmpty() || !bankSlot.isLocked() && ItemStack.isSameItemSameComponents(slot.getItem(), draggedItem)))
                 .map(slot -> DraggableStackVisitor.BoundsProvider.ofRectangle(new Rectangle(left + slot.x, top + slot.y, 16, 16)));
     }
-
-
 }
 
