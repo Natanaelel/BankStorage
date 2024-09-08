@@ -140,8 +140,8 @@ public class RestoreBankCommands {
         return 1;
     }
 
-    private static int listBankStoragesInChat(CommandContext<CommandSourceStack> context,
-                                              List<BankItemStorage> bankItemStorages) {
+    private static void listBankStoragesInChat(CommandContext<CommandSourceStack> context,
+                                               List<BankItemStorage> bankItemStorages) {
 
         ServerPlayer player = context.getSource().getPlayer();
 
@@ -168,8 +168,6 @@ public class RestoreBankCommands {
         context.getSource().sendSystemMessage(message);
         context.getSource().sendSystemMessage(
                 Component.translatable("admin_restore_bank.bankstorage.listed_banks_num", bankItemStorages.size()));
-
-        return 1;
     }
 
     private static BankFilter getFilter(CommandContext<CommandSourceStack> context) {

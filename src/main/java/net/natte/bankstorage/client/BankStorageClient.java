@@ -32,21 +32,13 @@ import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
-
-import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
-import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
-import static net.minecraft.commands.Commands.argument;
-import static net.minecraft.commands.Commands.literal;
 
 
 @Mod(value = BankStorage.MOD_ID, dist = Dist.CLIENT)
 public class BankStorageClient {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(BankStorage.MOD_ID);
 
     public static final ResourceLocation WIDGETS_TEXTURE = Util.ID("textures/gui/widgets.png");
 
@@ -75,7 +67,6 @@ public class BankStorageClient {
         modBus.addListener(this::registerItemColors);
 
         NeoForge.EVENT_BUS.addListener(this::registerTickEvents);
-        NeoForge.EVENT_BUS.addListener(this::registerCommands);
         NeoForge.EVENT_BUS.addListener(MouseEvents::onScroll);
     }
 
@@ -84,17 +75,6 @@ public class BankStorageClient {
             event.register((stack, tintIndex) -> DyedItemColor.getOrDefault(stack, 0), type.item.get());
         }
         event.register((stack, tintIndex) -> DyedItemColor.getOrDefault(stack, 0), BankStorage.BANK_LINK.get());
-    }
-
-    private void registerCommands(RegisterClientCommandsEvent event) {
-        event.getDispatcher().register(
-                literal("bankstorageclient")
-                        .then(literal("debug")
-                                .then(argument("debug", bool())
-                                        .executes(context -> {
-                                            Util.isDebugMode = getBool(context, "debug");
-                                            return 1;
-                                        }))));
     }
 
     private void registerEventListeners(IEventBus modBus) {

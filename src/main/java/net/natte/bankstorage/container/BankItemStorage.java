@@ -184,7 +184,6 @@ public class BankItemStorage {
         BankItemStorage bankItemStorage = new BankItemStorage(type, uuid);
         bankItemStorage.initializeItems();
         for (int i = 0; i < items.size(); ++i) {
-            // SETSTACK
             bankItemStorage.items.set(i, items.get(i));
         }
 

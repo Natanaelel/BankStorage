@@ -113,7 +113,7 @@ public class Util {
 
         // first fill locked slots with their item
         for (HugeItemStack collectedItem : collectedItems) {
-            bankItemStorage.getlockedSlots().keySet().stream().filter(index -> ItemStack.isSameItemSameComponents(collectedItem.stack, bankItemStorage.getLockedStack(index))).sorted()                       // SETSTACK
+            bankItemStorage.getlockedSlots().keySet().stream().filter(index -> ItemStack.isSameItemSameComponents(collectedItem.stack, bankItemStorage.getLockedStack(index))).sorted()
                     .forEach(index -> bankItemStorage.getItems().set(index, collectedItem.split(slotSize)));
         }
 
@@ -127,7 +127,6 @@ public class Util {
                     continue;
                 ItemStack existingStack = bankItemStorage.getItems().get(i);
                 if (existingStack.isEmpty()) {
-                    // SETSTACK
                     bankItemStorage.getItems().set(i, collectedItem.split(slotSize));
                 }
             }

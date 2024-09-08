@@ -22,20 +22,9 @@ public class ItemCountUtils {
         }
     }
 
-    /**
-     * How big or small to render the item count text
-     * 1 == vanilla
-     */
-    private static float scale = 1f;
-    private static int i = 0;
-
     public static float scale() {
-        // cache "expensive" calculation because why not
-        if (i++ % 1000 == 0) {
-            Minecraft client = Minecraft.getInstance();
-            int guiScale = (int) client.getWindow().getGuiScale();
-            scale = Math.max(1f, (int) (0.7f * guiScale)) / guiScale;
-        }
-        return scale;
+        Minecraft client = Minecraft.getInstance();
+        int guiScale = (int) client.getWindow().getGuiScale();
+        return Math.max(1f, (int) (0.7f * guiScale)) / guiScale;
     }
 }

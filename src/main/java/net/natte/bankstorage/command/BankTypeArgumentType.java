@@ -1,6 +1,7 @@
 package net.natte.bankstorage.command;
 
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.serialization.Codec;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.StringRepresentableArgument;
 import net.minecraft.util.StringRepresentable;
@@ -15,7 +16,7 @@ public class BankTypeArgumentType extends StringRepresentableArgument<BankTypeAr
         return new BankTypeArgumentType();
     }
 
-    public static enum BankType implements StringRepresentable {
+    public enum BankType implements StringRepresentable {
         BANK_1("bank_1"),
         BANK_2("bank_2"),
         BANK_3("bank_3"),
@@ -25,8 +26,7 @@ public class BankTypeArgumentType extends StringRepresentableArgument<BankTypeAr
         BANK_7("bank_7");
 
         private final String name;
-        public static final com.mojang.serialization.Codec<BankType> CODEC = StringRepresentable
-                .fromEnum(BankType::values);
+        public static final Codec<BankType> CODEC = StringRepresentable.fromEnum(BankType::values);
 
         BankType(String name) {
             this.name = name;

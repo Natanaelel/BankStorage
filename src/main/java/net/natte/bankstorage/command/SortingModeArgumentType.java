@@ -1,6 +1,7 @@
 package net.natte.bankstorage.command;
 
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.serialization.Codec;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.StringRepresentableArgument;
 import net.minecraft.util.StringRepresentable;
@@ -15,13 +16,13 @@ public class SortingModeArgumentType extends StringRepresentableArgument<Sorting
         return new SortingModeArgumentType();
     }
 
-    public static enum SortingMode implements StringRepresentable {
+    public enum SortingMode implements StringRepresentable {
         DATE("date"),
         TYPE("type"),
         PLAYER("player");
 
         private final String name;
-        public static final com.mojang.serialization.Codec<SortingMode> CODEC = StringRepresentable
+        public static final Codec<SortingMode> CODEC = StringRepresentable
                 .fromEnum(SortingMode::values);
 
         SortingMode(String name) {

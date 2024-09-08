@@ -20,7 +20,7 @@ public class BankType {
     public static final Codec<BankType> CODEC = Codec.STRING.xmap(BankType::getBankTypeFromName, BankType::getName);
     public static final StreamCodec<ByteBuf, BankType> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(BankType::getBankTypeFromName, BankType::getName);
 
-    private String name;
+    private final String name;
     public int rows;
     public int cols;
     public int guiImageWidth;
