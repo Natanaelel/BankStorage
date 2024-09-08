@@ -103,36 +103,12 @@ public class BankTooltipComponent implements TooltipComponent {
             context.fill(RenderLayer.getGuiOverlay(), k, l, k + 13, l + 2, -16777216);
             context.fill(RenderLayer.getGuiOverlay(), k, l, k + i, l + 1, j | 0xFF000000);
         }
-        if (stack.getCount() != 1) {
-            String count = ItemCountUtils.toConsiseString(stack.getCount());
-            String string = count;
-            matrices.translate(0.0f, 0.0f, 200.0f);
-            if (Util.isDebugMode) {
-                float scale = ItemCountUtils.scale(string);
+        if (stack.getCount() != 1)
+            ItemCountUtils.drawItemCount(context, textRenderer, x, y, stack.getCount(), false);
 
-                matrices.translate(x * (1 - scale), y * (1 - scale) + (1 - scale) * 16, 0);
-                matrices.scale(scale, scale, 1);
-
-                int textWidth = (int) (textRenderer.getWidth(string) * scale);
-                context.drawText(textRenderer, count, x + 19 - 2 - textWidth, y + 6 + 3, 0xFFFFFF, true);
-            } else {
-                float scale = ItemCountUtils.scale(string);
-
-                int textWidth = (int) (textRenderer.getWidth(string));
-
-                int xOffset = x + 18 - 2;
-                int yOffset = y + 18 - 2;
-                matrices.push();
-                matrices.translate(xOffset, yOffset, 0);
-                matrices.scale(scale, scale, 1);
-                matrices.translate(-xOffset, -yOffset, 0);
-                context.drawText(textRenderer, string, x + 18 - 1 - textWidth, y + 9, 0xFFFFFF, true);
-                matrices.pop();
-            }
-        }
         f = (clientPlayerEntity = this.client.player) == null ? 0.0f
                 : clientPlayerEntity.getItemCooldownManager().getCooldownProgress(stack.getItem(),
-                        this.client.getTickDelta());
+                this.client.getTickDelta());
         if (f > 0.0f) {
             k = y + MathHelper.floor((float) (16.0f * (1.0f - f)));
             l = k + MathHelper.ceil((float) (16.0f * f));

@@ -84,7 +84,6 @@ public class BankStorageClient implements ClientModInitializer {
 		registerNetworkListeners();
 		registerTickEvents();
 		registerEventListeners();
-		registerCommands();
 		registerItemColors();
 
 	}
@@ -92,27 +91,10 @@ public class BankStorageClient implements ClientModInitializer {
 	private void registerItemColors() {
 
 		for (BankType type : BankStorage.bankTypes) {
-			ColorProviderRegistry.ITEM.register((stack, tintIndex) -> {
-				return ((DyeableItem) stack.getItem()).getColor(stack);
-			}, new ItemConvertible[] { type.item });
+			ColorProviderRegistry.ITEM.register((stack, tintIndex) -> ((DyeableItem) stack.getItem()).getColor(stack), type.item);
 		}
 
-		ColorProviderRegistry.ITEM.register((stack, tintIndex) -> {
-			return ((DyeableItem) stack.getItem()).getColor(stack);
-		}, new ItemConvertible[] { BankStorage.LINK_ITEM });
-	}
-
-	private void registerCommands() {
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-			dispatcher.register(
-					literal("bankstorageclient")
-							.then(literal("debug")
-									.then(argument("debug", BoolArgumentType.bool())
-											.executes(context -> {
-												Util.isDebugMode = BoolArgumentType.getBool(context, "debug");
-												return 1;
-											}))));
-		});
+		ColorProviderRegistry.ITEM.register((stack, tintIndex) -> ((DyeableItem) stack.getItem()).getColor(stack), BankStorage.LINK_ITEM);
 	}
 
 	private void registerEventListeners() {

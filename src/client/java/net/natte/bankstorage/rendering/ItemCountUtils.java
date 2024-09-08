@@ -4,7 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
-import net.natte.bankstorage.util.Util;
+import net.minecraft.util.Formatting;
 
 public class ItemCountUtils {
 
@@ -32,14 +32,6 @@ public class ItemCountUtils {
      * @return 1 == vanilla
      */
     public static float scale(String string) {
-        if (Util.isDebugMode) {
-            if (string.length() > 3) {
-                return 5f / 8f;
-            } else if (string.length() == 3) {
-                return 6f / 8f;
-            }
-            return 1f;
-        }
         return newScale(string);
     }
 
@@ -70,6 +62,8 @@ public class ItemCountUtils {
     public static void drawItemCount(DrawContext context, TextRenderer textRenderer, int x, int y, int count, boolean drawInYellow) {
 
         String string = toConsiseString(count);
+        if (drawInYellow)
+            string = Formatting.YELLOW + string;
         float scale = ItemCountUtils.newNewScale();
 
         int textWidth = textRenderer.getWidth(string);
