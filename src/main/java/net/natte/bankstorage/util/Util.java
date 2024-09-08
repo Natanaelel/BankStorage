@@ -249,30 +249,6 @@ public class Util {
             return null;
         return bankItemStorage.uuid;
     }
-
-    public static void invalid(PlayerEntity playerEntity) {
-        playerEntity.sendMessage(invalid());
-    }
-
-    public static Text invalid() {
-        ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.OPEN_URL,
-                Text.translatable("github_url.bankstorage").getString());
-
-        HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                Text.translatable("open_github_url.bankstorage"));
-
-        return Text.translatable("invalid.bankstorage")
-                .append(Text.literal("\n§r"))
-                .append(Text.translatable("github_url.bankstorage").styled(style -> style
-                        .withHoverEvent(hoverEvent)
-                        .withClickEvent(clickEvent)
-                        .withUnderline(true)
-                        .withColor(Formatting.BLUE)));
-    }
-
-    public static Text invalid(String context) {
-        return invalid().copy().append(Text.literal(" context: " + context));
-    }
 }
 
 // if somehow one bank has more than Integer.MAX_VALUE total of one item

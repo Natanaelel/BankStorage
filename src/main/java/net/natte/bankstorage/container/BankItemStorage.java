@@ -67,7 +67,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
     public BankItemStorage asType(BankType type) {
         if (this.type != type) {
             if (type.size() < this.type.size()) {
-                BankStorage.LOGGER.error(Util.invalid("BankItemStorage.asType(BankType)").getString());
+                BankStorage.LOGGER.error("Bank cannot be downgraded! uuid={}, last used by {}", this.uuid, this.usedByPlayerName);
                 return this;
             }
             return changeType(type);
@@ -118,7 +118,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
     @Override
     public Text getDisplayName() {
         if (this.bankLikeItem == null) {
-            return Util.invalid("getDisplayName()");
+            return Text.literal("huh? code not worky?");
         }
 
         return this.bankLikeItem.getName();
