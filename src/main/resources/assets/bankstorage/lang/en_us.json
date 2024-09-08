@@ -51,11 +51,6 @@
   "command.bankstorage.bankinfo": "%s %d items %s\n",
   "command.bankstorage.unknownid": "No bank with that id",
 
-  "github_url.bankstorage": "https://github.com/Natanaelel/BankStorage/issues",
-  "open_github_url.bankstorage": "Open github URL",
-  "invalid.bankstorage": "§c§lTHIS WAS NOT SUPPOSED TO HAPPEN!\n§rPlease make a bug report\n§rdescribing what caused this message to appear.",
-  "error.bankstorage.random_is_null": "Math.Random PlayerEntity.bankstorage$getSyncedRandom() returned null\nIf this error persists, try rejoining the server/world.",
-
   "admin_restore_bank.bankstorage.cleared_all_filters": "Cleared all filters.",
   "admin_restore_bank.bankstorage.cleared_type_filters": "Cleared type filters.",
   "admin_restore_bank.bankstorage.cleared_player_filters": "Cleared player filters.",
@@ -68,5 +63,6 @@
   "admin_restore_bank.bankstorage.listed_banks_num": "(listed %d banks)",
   "admin_restore_bank.bankstorage.unknown_player": "Cannot find the player to give the item to",
 
-  "tag.item.bankstorage.banks": "Banks"
+  "tag.item.bankstorage.banks": "Banks",
+  "emi.info.bankstorage.tips": "§nPickup modes§r\nPickup all: All items picked up will automatically go into the Bank.\nFiltered pickup: Only filtered items will only go into Banks.\nVoid overflow: Overflow will be voided.\n\n§nBuild modes§r\nBuild directly from the Bank.\nScroll while crouching to choose block.\nRandomized build mode: Blocks get chosen randomly.\nRight click which crouching to change build mode.\n\n§nSlot filtering§r\nAlt-click to set slot filter.\n\n§nBank Dock§r\nRight click with the Bank to dock it.\nRight click while crouching to pick up the Bank.\n\n§nBank Link§r\nLink to another Bank to access the contents in multiple places at the same time."
 }

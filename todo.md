@@ -1,3 +1,5 @@
+[x] emi info page
+
 [x] font size that always look good?
 
 [x] colored banks

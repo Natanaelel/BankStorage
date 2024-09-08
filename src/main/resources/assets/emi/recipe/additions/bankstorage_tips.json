@@ -1,0 +1,5 @@
+{
+  "type": "emi:info",
+  "stacks": "#item:bankstorage:banks",
+  "text": "emi.info.bankstorage.tips"
+}
