@@ -95,9 +95,12 @@ public class BankItemStorage {
     }
 
     public void markDirty() {
-        updateLockedSlotsRevision();
-        updateRevision();
-        BankStateManager.markDirty();
+        if (uuid != null) {
+            // uuid == null means we're acting as temp-storage in a client-side gui
+            updateLockedSlotsRevision();
+            updateRevision();
+            BankStateManager.markDirty();
+        }
     }
 
     public int size() {
