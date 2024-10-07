@@ -1,4 +1,4 @@
-package net.natte.bankstorage.compat.rei;
+package net.natte.bankstorage.client.compat.rei;
 
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.rei.api.client.gui.drag.DraggableStack;
@@ -6,12 +6,15 @@ import me.shedaniel.rei.api.client.gui.drag.DraggableStackVisitor;
 import me.shedaniel.rei.api.client.gui.drag.DraggedAcceptorResult;
 import me.shedaniel.rei.api.client.gui.drag.DraggingContext;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.natte.bankstorage.client.screen.BankScreen;
 import net.natte.bankstorage.inventory.BankSlot;
 import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 // rei's rendering of the yellow overlay is pretty slow...
@@ -58,12 +61,14 @@ public class BankDraggableStackVisitor implements DraggableStackVisitor<BankScre
         int left = screen.getGuiLeft();
         int top = screen.getGuiTop();
 
+        Predicate<Slot> hasBounds = slot -> slot.isActive() && slot instanceof BankSlot bankSlot && (slot.getItem().isEmpty() || !bankSlot.isLocked() && ItemStack.isSameItemSameComponents(slot.getItem(), draggedItem));
+
         return screen
                 .getMenu()
                 .slots
                 .stream()
-                .filter(slot -> slot instanceof BankSlot bankSlot && (slot.getItem().isEmpty() || !bankSlot.isLocked() && ItemStack.isSameItemSameComponents(slot.getItem(), draggedItem)))
-                .map(slot -> DraggableStackVisitor.BoundsProvider.ofRectangle(new Rectangle(left + slot.x, top + slot.y, 16, 16)));
+                .filter(BankSlot.class::isInstance)
+                .map(slot -> () -> hasBounds.test(slot) ? Shapes.box(left + slot.x, top + slot.y, 0, left + slot.x + 16, top + slot.y + 16, 0.1) : Shapes.empty());
     }
 }
 

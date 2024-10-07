@@ -1,4 +1,4 @@
-package net.natte.bankstorage.compat.emi;
+package net.natte.bankstorage.client.compat.emi;
 
 import dev.emi.emi.api.EmiEntrypoint;
 import dev.emi.emi.api.EmiPlugin;
@@ -11,5 +11,7 @@ public class BankEmiPlugin implements EmiPlugin {
     @Override
     public void register(EmiRegistry registry) {
         registry.addDragDropHandler(BankScreen.class, new BankDragDropHandler());
+        registry.addStackProvider(BankScreen.class, new BankStackProvider());
+        registry.addExclusionArea(BankScreen.class, new BankScreenExclusionArea());
     }
 }

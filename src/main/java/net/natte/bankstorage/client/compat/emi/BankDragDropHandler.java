@@ -1,4 +1,4 @@
-package net.natte.bankstorage.compat.emi;
+package net.natte.bankstorage.client.compat.emi;
 
 import dev.emi.emi.api.EmiDragDropHandler;
 import dev.emi.emi.api.stack.EmiIngredient;
@@ -37,7 +37,7 @@ public class BankDragDropHandler implements EmiDragDropHandler<BankScreen> {
         if (draggedStack.isEmpty())
             return;
         for (Slot slot : screen.getMenu().slots) {
-            if (slot instanceof BankSlot bankSlot && (slot.getItem().isEmpty() || !bankSlot.isLocked() && ItemStack.isSameItemSameComponents(slot.getItem(), draggedStack))) {
+            if (slot.isActive() && slot instanceof BankSlot bankSlot && (slot.getItem().isEmpty() || !bankSlot.isLocked() && ItemStack.isSameItemSameComponents(slot.getItem(), draggedStack))) {
                 int x = screen.getGuiLeft() + slot.x;
                 int y = screen.getGuiTop() + slot.y;
                 guiGraphics.fill(x, y, x + 16, y + 16, 0x8822BB33);
