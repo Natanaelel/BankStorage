@@ -31,7 +31,7 @@ import net.natte.bankstorage.packet.client.SyncedRandomPacketS2C;
 import net.natte.bankstorage.packet.screensync.LockedSlotsPacketS2C;
 import net.natte.bankstorage.packet.server.*;
 import net.natte.bankstorage.recipe.BankLinkRecipe;
-import net.natte.bankstorage.recipe.BankUpgradeRecipe;
+import net.natte.bankstorage.recipe.BankRecipe;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.screen.BankScreenHandlerFactory;
 import net.natte.bankstorage.state.BankStateManager;
@@ -89,7 +89,7 @@ public class BankStorage {
     public static final DeferredRegister<ArgumentTypeInfo<?, ?>> COMMAND_ARGUMENT_TYPES = DeferredRegister.create(BuiltInRegistries.COMMAND_ARGUMENT_TYPE, BankStorage.MOD_ID);
 
 
-    public static final DeferredHolder<RecipeSerializer<?>, BankUpgradeRecipe.Serializer> BANK_UPGRADE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("bank_upgrade", BankUpgradeRecipe.Serializer::new);
+    public static final DeferredHolder<RecipeSerializer<?>, BankRecipe.Serializer> BANK_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("copy_components_or_assign_uuid", BankRecipe.Serializer::new);
     public static final DeferredHolder<RecipeSerializer<?>, BankLinkRecipe.Serializer> BANK_LINK_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("bank_link", BankLinkRecipe.Serializer::new);
 
     public static final DeferredHolder<Block, BankDockBlock> BANK_DOCK_BLOCK = BLOCKS.register("bank_dock", () -> new BankDockBlock(BlockBehaviour.Properties.of().strength(5.0f, 6.0f)

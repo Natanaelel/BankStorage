@@ -1,5 +1,5 @@
 {
-	"type": "minecraft:crafting_shaped",
+	"type": "bankstorage:copy_components_or_assign_uuid",
 	"pattern": [
 		"AAA",
 		"ABA",

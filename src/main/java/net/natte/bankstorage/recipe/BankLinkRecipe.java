@@ -45,13 +45,13 @@ public class BankLinkRecipe extends ShapedRecipe {
 
     @Override
     public NonNullList<ItemStack> getRemainingItems(CraftingInput recipeInputInventory) {
-        NonNullList<ItemStack> defaultedList = NonNullList.withSize(recipeInputInventory.size(), ItemStack.EMPTY);
-        for (int i = 0; i < defaultedList.size(); ++i) {
+        NonNullList<ItemStack> remainingItems = super.getRemainingItems(recipeInputInventory);
+        for (int i = 0; i < remainingItems.size(); ++i) {
             ItemStack stack = recipeInputInventory.getItem(i);
-            if (Util.isBank(stack))
-                defaultedList.set(i, stack.copyWithCount(1));
+            if (Util.isBankLike(stack))
+                remainingItems.set(i, stack.copyWithCount(1));
         }
-        return defaultedList;
+        return remainingItems;
     }
 
     @Override

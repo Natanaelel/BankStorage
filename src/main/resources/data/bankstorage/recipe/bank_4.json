@@ -1,5 +1,5 @@
 {
-	"type": "bankstorage:bank_upgrade",
+	"type": "bankstorage:copy_components_or_assign_uuid",
 	"pattern": [
 		"AAA",
 		"ABA",
