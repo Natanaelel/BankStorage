@@ -93,4 +93,13 @@ public class BankSlot extends Slot {
         }
         return Optional.of(itemStack);
     }
+
+    @Override
+    public boolean isActive() {
+        return this.isActive;
+    }
+
+    public void setActive(boolean active) {
+        this.isActive = active;
+    }
 }

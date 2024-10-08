@@ -11,8 +11,7 @@ public class BankExclusionZone implements ExclusionZonesProvider<BankScreen> {
     @Override
     public Collection<Rectangle> provide(BankScreen screen) {
         if (screen.hasScrollBar()) {
-            int visibleSlots = BankScreen.staticGetMaxVisibleRows();
-            return List.of(new Rectangle(screen.getGuiLeft() + 176, screen.getGuiTop(), 18, visibleSlots * 18 + 24));
+            return List.of(new Rectangle(screen.getGuiLeft() + 176, screen.getGuiTop(), 18, screen.getScrollBarHeight()));
         }
         return List.of();
     }

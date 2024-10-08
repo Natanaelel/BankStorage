@@ -68,13 +68,13 @@ public class BankStorage {
 
     public static final UUID FAKE_PLAYER_UUID = UUID.fromString("41C82C87-7AfB-4024-BA57-13D2C99CAE77");
 
-    private static final BankType BANK_1 = new BankType("bank_1", 256, 1, 9, 176, 114 + 18);
-    private static final BankType BANK_2 = new BankType("bank_2", 1024, 2, 9, 176, 114 + 18 * 2);
-    private static final BankType BANK_3 = new BankType("bank_3", 4096, 3, 9, 176, 114 + 18 * 3);
-    private static final BankType BANK_4 = new BankType("bank_4", 16_384, 4, 9, 176, 114 + 18 * 4);
-    private static final BankType BANK_5 = new BankType("bank_5", 65_536, 6, 9, 176, 114 + 18 * 6);
-    private static final BankType BANK_6 = new BankType("bank_6", 262_144, 9, 9, 176, 114 + 18 * 9);
-    private static final BankType BANK_7 = new BankType("bank_7", 1_000_000_000, 12, 9, 176, 114 + 18 * 12);
+    private static final BankType BANK_1 = new BankType("bank_1", 256, 1, 9);
+    private static final BankType BANK_2 = new BankType("bank_2", 1024, 2, 9);
+    private static final BankType BANK_3 = new BankType("bank_3", 4096, 3, 9);
+    private static final BankType BANK_4 = new BankType("bank_4", 16_384, 4, 9);
+    private static final BankType BANK_5 = new BankType("bank_5", 65_536, 6, 9);
+    private static final BankType BANK_6 = new BankType("bank_6", 262_144, 9, 9);
+    private static final BankType BANK_7 = new BankType("bank_7", 1_000_000_000, 12, 9);
 
     public static final BankType[] BANK_TYPES = {BANK_1, BANK_2, BANK_3, BANK_4, BANK_5, BANK_6, BANK_7};
 

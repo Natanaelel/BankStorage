@@ -10,11 +10,13 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.client.BankStorageClient;
+import net.natte.bankstorage.client.Resources;
 import net.natte.bankstorage.client.rendering.ItemCountUtils;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.inventory.BankSlot;
@@ -39,28 +41,49 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
     private static final NumberFormat FORMAT = NumberFormat.getNumberInstance(Locale.US);
 
     private final BankType type;
-    private final ResourceLocation texture;
+    private ResourceLocation texture = Resources.NULL_TEXTURE;
+    private int guiTextureWidth = 256;
+    private int guiTextureHeight = 256;
+    private boolean hasScrollBar = false;
+    private int visibleRows;
+    private int topVisibleRow = 0;
 
     private SortMode sortMode;
 
     @Nullable
     private BankSlot currentlyRenderingBankSlot = null;
     private boolean isLockSlotKeyDown;
+    private float scrollValue = 0;
+    private ScrollBarWidget scrollBar;
 
     public BankScreen(BankScreenHandler screenHandler, Inventory playerInventory, Component text) {
         super(screenHandler, playerInventory, text);
-
         this.type = screenHandler.getBankType();
-        this.texture = this.type.getGuiTexture();
-        this.imageWidth = this.type.guiImageWidth;
-        this.imageHeight = this.type.guiImageHeight;
-
-        this.inventoryLabelY += this.type.rows * 18 - 52;
     }
 
     @Override
     protected void init() {
+
+        this.visibleRows = getVisibleRows();
+        hasScrollBar = this.visibleRows < this.type.rows;
+
+        scrollTo(0);
+        repositionPlayerSlots();
+
+        this.imageWidth = 176;
+        this.imageHeight = 114 + this.visibleRows * 18;
+
+        this.texture = Resources.backGround(this.visibleRows);
+
+        this.guiTextureWidth = 256;
+        this.guiTextureHeight = Mth.ceil(this.imageHeight / 256d) * 256;
+
+        this.inventoryLabelY = 20 + this.visibleRows * 18;
+
+
         super.init();
+
+
         BankOptions options = this.menu.getBankLikeItem().getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT);
         this.sortMode = options.sortMode();
         this.addRenderableWidget(
@@ -72,7 +95,92 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
                 new SortButtonWidget(options.sortMode(),
                         leftPos + titleLabelX + this.imageWidth - 31, topPos + titleLabelY - 4,
                         14, 14, BankStorageClient.WIDGETS_TEXTURE, this::onSortButtonPress));
+        if (hasScrollBar)
+            this.scrollBar = this.addRenderableWidget(new ScrollBarWidget(leftPos + this.imageWidth - 4, topPos, type.rows, visibleRows, this.scrollValue, this::onScroll));
+        else
+            this.scrollBar = null;
     }
+
+    private int getVisibleRows() {
+        int heightOf6RowsGui = 114 + 18 * 6; // ContainerScreen.<init>()
+        int minimumScreenHeight = 240; // Window.calculateScale()
+        int screenHeight = this.height;
+        int maxRows = (screenHeight - minimumScreenHeight + heightOf6RowsGui - 114) / 18;
+        return Mth.clamp(maxRows, 1, this.type.rows);
+    }
+
+    public boolean hasScrollBar() {
+        return hasScrollBar;
+    }
+
+    public int getScrollBarHeight() {
+        return this.visibleRows * 18 + 24;
+    }
+
+    private void onScroll(float percentage) {
+        int hiddenRows = this.type.rows - this.visibleRows;
+        int topRow = Mth.clamp(Math.round(percentage * hiddenRows), 0, hiddenRows);
+        this.scrollValue = percentage;
+        if (topRow != this.topVisibleRow)
+            scrollTo(topRow);
+
+    }
+
+    private void scrollTo(int topRow) {
+        this.topVisibleRow = topRow;
+        for (int i = 0; i < this.type.size(); ++i) {
+            int y = i / 9;
+            BankSlot slot = (BankSlot) this.menu.getSlot(i);
+            if (y < this.topVisibleRow || y >= this.topVisibleRow + this.visibleRows) {
+                slot.setActive(false);
+            } else {
+                slot.setActive(true);
+                slot.y = 18 + y * 18 - this.topVisibleRow * 18;
+            }
+        }
+    }
+
+    private void repositionPlayerSlots() {
+
+        int inventoryY = 32 + this.visibleRows * 18;
+        int i = this.type.size();
+        // inventory
+        for (int y = 0; y < 3; ++y) {
+            for (int x = 0; x < 9; ++x) {
+                this.menu.slots.get(i++).y = inventoryY + y * 18;
+            }
+        }
+
+        // hotbar
+        for (int x = 0; x < 9; ++x) {
+            this.menu.slots.get(i++).y = inventoryY + 58;
+        }
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (hasScrollBar && this.scrollBar != null && this.scrollBar.mouseDragged(mouseX, mouseY, button, dragX, dragY))
+            return true;
+
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (hasScrollBar && this.scrollBar != null && this.scrollBar.mouseReleased(mouseX, mouseY, button))
+            return true;
+
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (hasScrollBar && this.scrollBar != null && this.scrollBar.mouseScrolled(mouseX, mouseY, scrollX, scrollY))
+            return true;
+
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
@@ -147,7 +255,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
     @Override
     protected void renderBg(GuiGraphics drawContext, float timeDelta, int mouseX, int mouseY) {
-        drawContext.blit(this.texture, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.type.guiTextureWidth, this.type.guiTextureHeight);
+        drawContext.blit(this.texture, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.guiTextureWidth, this.guiTextureHeight);
     }
 
     @Override

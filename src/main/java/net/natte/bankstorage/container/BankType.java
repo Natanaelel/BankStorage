@@ -21,27 +21,16 @@ public class BankType {
     public static final StreamCodec<ByteBuf, BankType> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(BankType::getBankTypeFromName, BankType::getName);
 
     private final String name;
-    public int rows;
-    public int cols;
-    public int guiImageWidth;
-    public int guiImageHeight;
-    public int guiTextureWidth;
-    public int guiTextureHeight;
+    public final int rows;
+    public final int cols;
 
-    public int stackLimit;
+    public final int stackLimit;
     public DeferredHolder<Item, BankItem> item;
 
-    public BankType(String name, int stackLimit, int rows, int cols, int guiTextureWidth,
-                    int guiTextureHeight) {
+    public BankType(String name, int stackLimit, int rows, int cols) {
         this.name = name;
         this.rows = rows;
         this.cols = cols;
-
-        this.guiImageWidth = guiTextureWidth;
-        this.guiImageHeight = guiTextureHeight;
-
-        this.guiTextureWidth = Mth.ceil(this.guiImageWidth / 256d) * 256;
-        this.guiTextureHeight = Mth.ceil(this.guiImageHeight / 256d) * 256;
 
         this.stackLimit = stackLimit;
     }
@@ -60,10 +49,6 @@ public class BankType {
 
     public String getName() {
         return this.name;
-    }
-
-    public ResourceLocation getGuiTexture() {
-        return Util.ID("textures/gui/" + this.cols + "x" + this.rows + ".png");
     }
 
     public static BankType getBankTypeFromName(String name) {
