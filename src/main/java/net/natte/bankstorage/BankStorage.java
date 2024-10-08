@@ -5,7 +5,7 @@ import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -79,14 +79,14 @@ public class BankStorage {
     public static final BankType[] BANK_TYPES = {BANK_1, BANK_2, BANK_3, BANK_4, BANK_5, BANK_6, BANK_7};
 
 
-    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MOD_ID);
+    private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MOD_ID);
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MOD_ID);
-    public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(MOD_ID);
-    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, MOD_ID);
-    public static final DeferredRegister<MenuType<?>> SCREEN_HANDLERS = DeferredRegister.create(BuiltInRegistries.MENU, MOD_ID);
+    private static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
+    private static final DeferredRegister<MenuType<?>> SCREEN_HANDLERS = DeferredRegister.create(Registries.MENU, MOD_ID);
     private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MOD_ID);
-    private static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(BuiltInRegistries.RECIPE_SERIALIZER, MOD_ID);
-    public static final DeferredRegister<ArgumentTypeInfo<?, ?>> COMMAND_ARGUMENT_TYPES = DeferredRegister.create(BuiltInRegistries.COMMAND_ARGUMENT_TYPE, BankStorage.MOD_ID);
+    private static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(Registries.RECIPE_SERIALIZER, MOD_ID);
+    private static final DeferredRegister<ArgumentTypeInfo<?, ?>> COMMAND_ARGUMENT_TYPES = DeferredRegister.create(Registries.COMMAND_ARGUMENT_TYPE, BankStorage.MOD_ID);
 
 
     public static final DeferredHolder<RecipeSerializer<?>, BankRecipe.Serializer> BANK_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("copy_components_or_assign_uuid", BankRecipe.Serializer::new);
@@ -173,20 +173,19 @@ public class BankStorage {
         });
 
         // copy random on clone
-        NeoForge.EVENT_BUS.<PlayerEvent.Clone>addListener(event -> {
-            event.getEntity().setData(SYNCED_RANDOM_ATTACHMENT, event.getOriginal().getData(SYNCED_RANDOM_ATTACHMENT));
-        });
+        NeoForge.EVENT_BUS.<PlayerEvent.Clone>addListener(
+                event -> event.getEntity().setData(SYNCED_RANDOM_ATTACHMENT, event.getOriginal().getData(SYNCED_RANDOM_ATTACHMENT)));
     }
 
     private void registerBanks() {
 
-        BANK_1.register();
-        BANK_2.register();
-        BANK_3.register();
-        BANK_4.register();
-        BANK_5.register();
-        BANK_6.register();
-        BANK_7.register(() -> new Item.Properties().fireResistant());
+        BANK_1.register(ITEMS);
+        BANK_2.register(ITEMS);
+        BANK_3.register(ITEMS);
+        BANK_4.register(ITEMS);
+        BANK_5.register(ITEMS);
+        BANK_6.register(ITEMS);
+        BANK_7.register(ITEMS, () -> new Item.Properties().fireResistant());
     }
 
     private void addItemsToCreativeTab(BuildCreativeModeTabContentsEvent event) {
@@ -214,7 +213,7 @@ public class BankStorage {
     }
 
     public void registerCommands() {
-        RestoreBankCommands.registerArgumentTypes();
+        RestoreBankCommands.registerArgumentTypes(COMMAND_ARGUMENT_TYPES);
         NeoForge.EVENT_BUS.addListener(RestoreBankCommands::registerCommands);
     }
 

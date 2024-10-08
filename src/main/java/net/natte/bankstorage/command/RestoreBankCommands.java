@@ -1,5 +1,6 @@
 package net.natte.bankstorage.command;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
@@ -22,6 +23,7 @@ import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.state.BankStateManager;
 import net.natte.bankstorage.util.Util;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -70,10 +72,10 @@ public class RestoreBankCommands {
                                         .executes(RestoreBankCommands::addItemFilter))))));
     }
 
-    public static void registerArgumentTypes() {
+    public static void registerArgumentTypes(DeferredRegister<ArgumentTypeInfo<?, ?>> argumentTypeRegister) {
 
-        BankStorage.COMMAND_ARGUMENT_TYPES.register("sorting_mode", () -> SORTING_MODE_ARGUMENT_TYPE);
-        BankStorage.COMMAND_ARGUMENT_TYPES.register("bank_type", () -> BANK_TYPE_ARGUMENT_TYPE);
+        argumentTypeRegister.register("sorting_mode", () -> SORTING_MODE_ARGUMENT_TYPE);
+        argumentTypeRegister.register("bank_type", () -> BANK_TYPE_ARGUMENT_TYPE);
 
         ArgumentTypeInfos.registerByClass(SortingModeArgumentType.class, SORTING_MODE_ARGUMENT_TYPE);
         ArgumentTypeInfos.registerByClass(BankTypeArgumentType.class, BANK_TYPE_ARGUMENT_TYPE);

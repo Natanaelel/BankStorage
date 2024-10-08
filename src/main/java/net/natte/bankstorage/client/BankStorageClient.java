@@ -78,12 +78,10 @@ public class BankStorageClient {
     }
 
     private void registerEventListeners(IEventBus modBus) {
-        NeoForge.EVENT_BUS.<ClientPlayerNetworkEvent.LoggingIn>addListener(event -> {
-            KeyBindUpdateEvents.onKeyBindChange();
-        });
-        modBus.<RegisterClientTooltipComponentFactoriesEvent>addListener(event -> {
-            event.register(BankTooltipData.class, BankTooltipComponent::of);
-        });
+        NeoForge.EVENT_BUS.<ClientPlayerNetworkEvent.LoggingIn>addListener(
+                event -> KeyBindUpdateEvents.onKeyBindChange());
+        modBus.<RegisterClientTooltipComponentFactoriesEvent>addListener(
+                event -> event.register(BankTooltipData.class, BankTooltipComponent::of));
     }
 
     private void registerModelPredicates(FMLClientSetupEvent event) {
@@ -99,9 +97,8 @@ public class BankStorageClient {
 
         NeoForge.EVENT_BUS.<RenderGuiEvent.Post>addListener(event -> buildModePreviewRenderer.render(event.getGuiGraphics()));
 
-        modBus.<EntityRenderersEvent.RegisterRenderers>addListener(event -> {
-            event.registerBlockEntityRenderer(BankStorage.BANK_DOCK_BLOCK_ENTITY.get(), BankDockBlockEntityRenderer::new);
-        });
+        modBus.<EntityRenderersEvent.RegisterRenderers>addListener(
+                event -> event.registerBlockEntityRenderer(BankStorage.BANK_DOCK_BLOCK_ENTITY.get(), BankDockBlockEntityRenderer::new));
     }
 
     private void registerTickEvents(ClientTickEvent.Post event) {
@@ -112,9 +109,8 @@ public class BankStorageClient {
     }
 
     private void registerHandledScreens(IEventBus modBus) {
-        modBus.<RegisterMenuScreensEvent>addListener(event -> {
-            event.register(BankStorage.MENU_TYPE, BankScreen::new);
-        });
+        modBus.<RegisterMenuScreensEvent>addListener(
+                event -> event.register(BankStorage.MENU_TYPE, BankScreen::new));
     }
 
     private void initializeClientOnRenderThread(FMLClientSetupEvent event) {
