@@ -26,7 +26,6 @@ public class Util {
     public static boolean isBuildModeKeyUnBound = true;
     public static Random clientSyncedRandom;
 
-    public static boolean isDebugMode = false;
     public static final ThreadLocal<Boolean> isClient = ThreadLocal.withInitial(() -> false);
 
     public static boolean isBank(ItemStack itemStack) {
@@ -41,8 +40,8 @@ public class Util {
         return isBank(itemStack) || isLink(itemStack);
     }
 
-    public static boolean isAllowedInBank(ItemStack itemStack) {
-        return itemStack.getItem().canFitInsideContainerItems();
+    public static boolean isDisallowedInBank(ItemStack itemStack) {
+        return !itemStack.getItem().canFitInsideContainerItems();
     }
 
     public static boolean hasUUID(ItemStack itemStack) {
@@ -57,10 +56,6 @@ public class Util {
         if (stack.getItem() instanceof BankItem bankItem)
             return bankItem.getType();
         return stack.getOrDefault(BankStorage.BankTypeComponentType, BankStorage.BANK_TYPES[0]);
-    }
-
-    public static void setType(ItemStack itemStack, BankType type) {
-        itemStack.set(BankStorage.BankTypeComponentType, type);
     }
 
     public static BankOptions getOrCreateOptions(ItemStack itemStack) {
@@ -93,7 +88,7 @@ public class Util {
                 }
             }
             if (!didExist && !itemStack.isEmpty())
-                collectedItems.add(new HugeItemStack(itemStack.copyWithCount(1), (long) itemStack.getCount()));
+                collectedItems.add(new HugeItemStack(itemStack.copyWithCount(1), itemStack.getCount()));
         }
 
         // sort
@@ -136,7 +131,7 @@ public class Util {
         for (HugeItemStack collectedItem : collectedItems) {
 
             while (collectedItem.count > 0) {
-                BankStorage.LOGGER.warn("Item does not fit in bank after sort. This *should* be impossible. item: " + collectedItem.stack + " count: " + collectedItem.count);
+                BankStorage.LOGGER.warn("Item does not fit in bank after sort. This *should* be impossible. item: {} count: {}", collectedItem.stack, collectedItem.count);
                 player.getInventory().placeItemBackInInventory(collectedItem.split(collectedItem.stack.getMaxStackSize()));
             }
         }
@@ -172,19 +167,27 @@ public class Util {
             return bankItemStorage;
         }
 
-        UUID uuid = hasUUID(bank) ? getUUID(bank) : UUID.randomUUID();
-        if (!hasUUID(bank))
-            bank.set(BankStorage.UUIDComponentType, uuid);
+        UUID uuid = getOrSetUUID(bank);
 
         BankType type = ((BankItem) bank.getItem()).getType();
         return BankStateManager.getState().getOrCreate(uuid, type);
+    }
+
+    public static UUID getOrSetUUID(ItemStack bank) {
+        UUID uuid = bank.get(BankStorage.UUIDComponentType);
+        if (uuid == null) {
+            uuid = UUID.randomUUID();
+            bank.set(BankStorage.UUIDComponentType, uuid);
+        }
+        return uuid;
+
     }
 
     public static ResourceLocation ID(String path) {
         return ResourceLocation.fromNamespaceAndPath(BankStorage.MOD_ID, path);
     }
 
-    public static IItemHandler getItemHandlerFromItem(ItemStack itemStack, Void unused) {
+    public static IItemHandler getItemHandlerFromItem(ItemStack itemStack, Void ignored) {
         if (isClient())
             return getClientItemHandlerFromItem(itemStack);
         else
@@ -216,7 +219,7 @@ public class Util {
 
 // if somehow one bank has more than Integer.MAX_VALUE total of one item
 class HugeItemStack {
-    public ItemStack stack;
+    public final ItemStack stack;
     public long count;
 
     public HugeItemStack(ItemStack stack, long count) {

@@ -16,7 +16,7 @@ import java.util.*;
 
 public class BankItemStorage {
 
-    private BankType type;
+    private final BankType type;
     private final UUID uuid;
 
     // this is where the items are stored
@@ -26,7 +26,6 @@ public class BankItemStorage {
     private short lockedSlotsRevision = 0;
     private short revision = 1; // start different from client (0) to update client cache
 
-    private ItemStack bankLikeItem;
     public UUID usedByPlayerUUID = BankStorage.FAKE_PLAYER_UUID;
     public String usedByPlayerName = "World";
     public LocalDateTime dateCreated;
@@ -69,7 +68,7 @@ public class BankItemStorage {
     }
 
     public BankItemStorage changeType(BankType type) {
-        BankStorage.LOGGER.debug("Upgrading bank from " + this.type.getName() + " to " + type.getName() + " uuid " + this.uuid);
+        BankStorage.LOGGER.debug("Upgrading bank from {} to {} uuid {}", this.type.getName(), type.getName(), this.uuid);
 
         assert type.size() > this.type.size() : "Cannot downgrade banks!";
 
@@ -80,10 +79,6 @@ public class BankItemStorage {
         }
         newBankItemStorage.lockedSlots = this.lockedSlots;
         return newBankItemStorage;
-    }
-
-    public ItemStack getItem() {
-        return this.bankLikeItem;
     }
 
     public BankItemHandler getItemHandler(PickupMode pickupMode) {

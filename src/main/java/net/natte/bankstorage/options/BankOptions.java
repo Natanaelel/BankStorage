@@ -36,17 +36,6 @@ public record BankOptions(PickupMode pickupMode, BuildMode buildMode, SortMode s
                 SortMode.values()[sortMode]);
     }
 
-    @Deprecated(forRemoval = true)
-    public BankOptions copy() {
-        return this;
-//        BankOptions copy = new BankOptions();
-//        copy.pickupMode = pickupMode;
-//        copy.buildMode = buildMode;
-//        copy.sortMode = sortMode;
-//        copy.selectedItemSlot = selectedItemSlot;
-//        return copy;
-    }
-
     @Override
     public boolean equals(Object other) {
         if (this == other)

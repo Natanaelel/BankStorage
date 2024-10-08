@@ -57,7 +57,6 @@ public class BuildModePreviewRenderer {
     }
 
     private void updateBank() {
-        boolean hadBank = this.hasBank;
         ItemStack oldBank = this.bankItem;
 
         if (canRenderFrom(this.client.player.getMainHandItem())) {

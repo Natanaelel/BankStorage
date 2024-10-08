@@ -25,7 +25,7 @@ public class PickupModeButtonWidget extends Button {
     private final ResourceLocation texture;
     private int uOffset;
 
-    PickupModeButtonWidget(PickupMode pickupMode, int x, int y, int width, int height,
+    public PickupModeButtonWidget(PickupMode pickupMode, int x, int y, int width, int height,
                            ResourceLocation texture,
                            Consumer<PickupModeButtonWidget> pressAction) {
         super(x, y, width, height, CommonComponents.EMPTY,

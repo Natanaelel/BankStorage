@@ -22,7 +22,6 @@ public class SortButtonWidget extends Button {
     private long lastPressedTime;
     private final ResourceLocation texture;
     private int uOffset;
-    private int vOffset;
 
     public SortButtonWidget(SortMode sortMode, int x, int y, int width, int height, ResourceLocation texture,
                             Consumer<SortButtonWidget> pressAction) {

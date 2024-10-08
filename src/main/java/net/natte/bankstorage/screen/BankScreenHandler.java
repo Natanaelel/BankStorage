@@ -23,14 +23,14 @@ import java.util.UUID;
 
 public class BankScreenHandler extends AbstractContainerMenu {
 
-    public Container inventory;
+    public final Container inventory;
 
     private final BankType type;
     // barebones on client
     private final BankItemStorage bankItemStorage;
     // null on client
     @Nullable
-    UUID uuid;
+    final UUID uuid;
 
     private final ContainerLevelAccess context;
 
@@ -66,6 +66,7 @@ public class BankScreenHandler extends AbstractContainerMenu {
         inventory.startOpen(playerInventory.player);
         int rows = this.type.rows;
         int cols = this.type.cols;
+
 
         for (int y = 0; y < rows; ++y) {
             for (int x = 0; x < cols; ++x) {
@@ -129,7 +130,7 @@ public class BankScreenHandler extends AbstractContainerMenu {
             newStack = originalStack.copy();
             if (invSlot < this.inventory.getContainerSize()) {
                 // move from bank to player
-                if (!this.insertItemToPlayer(originalStack, this.inventory.getContainerSize(), this.slots.size(), true)) {
+                if (!this.insertItemToPlayer(originalStack, this.inventory.getContainerSize(), this.slots.size())) {
                     return ItemStack.EMPTY;
                 }
             } // move from player to bank
@@ -150,7 +151,7 @@ public class BankScreenHandler extends AbstractContainerMenu {
     // returns true if something got inserted
     private boolean insertIntoBank(ItemStack stack) {
         // must modify input stack
-        if (!Util.isAllowedInBank(stack))
+        if (Util.isDisallowedInBank(stack))
             return false;
 
         ItemStack notInserted = this.bankItemStorage.getItemHandler(PickupMode.ALL).insertItem(stack);
@@ -158,16 +159,13 @@ public class BankScreenHandler extends AbstractContainerMenu {
         return notInserted.getCount() != stack.getCount();
     }
 
-    protected boolean insertItemToPlayer(ItemStack stack, int startIndex, int endIndex, boolean fromLast) {
+    private boolean insertItemToPlayer(ItemStack stack, int startIndex, int endIndex) {
         ItemStack itemStack;
         Slot slot;
         boolean bl = false;
-        int i = startIndex;
-        if (fromLast) {
-            i = endIndex - 1;
-        }
+        int i = endIndex - 1;
         if (stack.isStackable()) {
-            while (!stack.isEmpty() && (fromLast ? i >= startIndex : i < endIndex)) {
+            while (!stack.isEmpty() && (i >= startIndex)) {
                 slot = this.slots.get(i);
                 int maxStackCount = slot.getMaxStackSize(stack);
                 itemStack = slot.getItem();
@@ -185,16 +183,12 @@ public class BankScreenHandler extends AbstractContainerMenu {
                         bl = true;
                     }
                 }
-                if (fromLast) {
-                    --i;
-                    continue;
-                }
-                ++i;
+                --i;
             }
         }
         if (!stack.isEmpty()) {
-            i = fromLast ? endIndex - 1 : startIndex;
-            while (fromLast ? i >= startIndex : i < endIndex) {
+            i = endIndex - 1;
+            while (i >= startIndex) {
                 slot = this.slots.get(i);
                 itemStack = slot.getItem();
                 if (itemStack.isEmpty() && slot.mayPlace(stack)) {
@@ -204,11 +198,7 @@ public class BankScreenHandler extends AbstractContainerMenu {
                     bl = true;
                     break;
                 }
-                if (fromLast) {
-                    --i;
-                    continue;
-                }
-                ++i;
+                --i;
             }
         }
         return bl;

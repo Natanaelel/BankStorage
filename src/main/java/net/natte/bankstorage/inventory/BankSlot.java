@@ -13,6 +13,7 @@ public class BankSlot extends Slot {
 
     private final int stackLimit;
     private @Nullable ItemStack lockedStack = null;
+    private boolean isActive = true;
 
     public BankSlot(Container inventory, int index, int x, int y, int stackLimit) {
         super(inventory, index, x, y);
@@ -20,7 +21,7 @@ public class BankSlot extends Slot {
     }
 
     public BankSlot(Container inventory, int index, int x, int y, int stackLimit,
-            @Nullable ItemStack lockedStack) {
+                    @Nullable ItemStack lockedStack) {
         this(inventory, index, x, y, stackLimit);
         if (lockedStack != null) {
             this.lockedStack = lockedStack;
@@ -47,7 +48,7 @@ public class BankSlot extends Slot {
     public boolean mayPlace(ItemStack stack) {
         if (this.lockedStack != null && !ItemStack.isSameItemSameComponents(stack, this.lockedStack))
             return false;
-        if (!Util.isAllowedInBank(stack))
+        if (Util.isDisallowedInBank(stack))
             return false;
 
         return super.mayPlace(stack);
@@ -60,6 +61,7 @@ public class BankSlot extends Slot {
 
         return stackLimit;
     }
+
     @Override
     public int getMaxStackSize(ItemStack stack) {
         // return stack.getMaxCount() * this.stackLimit;

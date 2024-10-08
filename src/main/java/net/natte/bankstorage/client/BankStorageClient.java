@@ -47,7 +47,7 @@ public class BankStorageClient {
     public static final KeyMapping lockSlotKeyBinding = new KeyMapping("key.bankstorage.lockslot", KeyConflictContext.GUI, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, "category.bankstorage");
     public static final KeyMapping openBankFromKeyBinding = new KeyMapping("key.bankstorage.openbankfromkeybind", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.bankstorage");
 
-    public static BuildModePreviewRenderer buildModePreviewRenderer = new BuildModePreviewRenderer();
+    public static final BuildModePreviewRenderer buildModePreviewRenderer = new BuildModePreviewRenderer();
 
     static {
         Util.isShiftDown = Screen::hasShiftDown;

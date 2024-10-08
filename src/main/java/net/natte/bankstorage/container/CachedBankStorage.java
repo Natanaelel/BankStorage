@@ -38,7 +38,7 @@ public class CachedBankStorage {
 
     private static final Map<UUID, CachedBankStorage> BANK_CACHE = new HashMap<>();
 
-    public static Set<UUID> bankRequestQueue = new HashSet<>();
+    public static final Set<UUID> bankRequestQueue = new HashSet<>();
 
     private static final Map<UUID, Integer> throddledQueue = new HashMap<>();
 
@@ -50,7 +50,7 @@ public class CachedBankStorage {
     private final List<ItemStack> items;
     private final List<ItemStack> nonEmptyItems;
     private final List<ItemStack> blockItems;
-    public UUID uuid;
+    public final UUID uuid;
     public short revision;
 
     public CachedBankStorage(List<ItemStack> items, UUID uuid, short revision) {

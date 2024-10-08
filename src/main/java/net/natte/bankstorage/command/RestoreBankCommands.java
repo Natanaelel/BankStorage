@@ -101,7 +101,7 @@ public class RestoreBankCommands {
                 .getDefaultInstance();
         stack.set(BankStorage.UUIDComponentType, uuid);
         player.getInventory().add(stack);
-        return 1;
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int listBankStorages(CommandContext<CommandSourceStack> context) {
@@ -117,7 +117,7 @@ public class RestoreBankCommands {
 
         listBankStoragesInChat(context, bankItemStorages);
 
-        return 1;
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int listBankStoragesSorted(CommandContext<CommandSourceStack> context) {
@@ -139,7 +139,7 @@ public class RestoreBankCommands {
 
         listBankStoragesInChat(context, sortedBankItemStorages);
 
-        return 1;
+        return Command.SINGLE_SUCCESS;
     }
 
     private static void listBankStoragesInChat(CommandContext<CommandSourceStack> context,
@@ -168,8 +168,7 @@ public class RestoreBankCommands {
                             .withHoverEvent(hoverEvent)));
         }
         context.getSource().sendSystemMessage(message);
-        context.getSource().sendSystemMessage(
-                Component.translatable("admin_restore_bank.bankstorage.listed_banks_num", bankItemStorages.size()));
+        context.getSource().sendSystemMessage(Component.translatable("admin_restore_bank.bankstorage.listed_banks_num", bankItemStorages.size()));
     }
 
     private static BankFilter getFilter(CommandContext<CommandSourceStack> context) {
@@ -181,42 +180,42 @@ public class RestoreBankCommands {
     private static int clearFilter(CommandContext<CommandSourceStack> context) {
         getFilter(context).clear();
         context.getSource().sendSystemMessage(Component.translatable("admin_restore_bank.bankstorage.cleared_all_filters"));
-        return 1;
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int clearFilterType(CommandContext<CommandSourceStack> context) {
         getFilter(context).clearType();
         context.getSource().sendSystemMessage(Component.translatable("admin_restore_bank.bankstorage.cleared_type_filters"));
-        return 1;
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int clearPlayerFilter(CommandContext<CommandSourceStack> context) {
         getFilter(context).clearPlayers();
         context.getSource().sendSystemMessage(Component.translatable("admin_restore_bank.bankstorage.cleared_player_filters"));
-        return 1;
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int clearItemFilter(CommandContext<CommandSourceStack> context) {
         getFilter(context).clearItems();
         context.getSource().sendSystemMessage(Component.translatable("admin_restore_bank.bankstorage.cleared_item_filters"));
-        return 1;
+        return Command.SINGLE_SUCCESS;
     }
 
-    private static int addTypeFilter(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+    private static int addTypeFilter(CommandContext<CommandSourceStack> context)  {
         getFilter(context).addType(BankTypeArgumentType.getBankType(context, "type"));
         context.getSource().sendSystemMessage(Component.translatable("admin_restore_bank.bankstorage.added_type_filter"));
-        return 1;
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int addPlayerFilter(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         getFilter(context).addPlayer(EntityArgument.getPlayer(context, "player"));
         context.getSource().sendSystemMessage(Component.translatable("admin_restore_bank.bankstorage.added_player_filter"));
-        return 1;
+        return Command.SINGLE_SUCCESS;
     }
 
-    private static int addItemFilter(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+    private static int addItemFilter(CommandContext<CommandSourceStack> context) {
         getFilter(context).addItemPredicate(ItemPredicateArgument.getItemPredicate(context, "itemPredicate"));
         context.getSource().sendSystemMessage(Component.translatable("admin_restore_bank.bankstorage.added_item_filter"));
-        return 1;
+        return Command.SINGLE_SUCCESS;
     }
 }

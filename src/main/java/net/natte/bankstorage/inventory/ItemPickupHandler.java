@@ -24,7 +24,7 @@ public class ItemPickupHandler {
             return false;
         if (pickedUpStack.isEmpty())
             return false;
-        if (!Util.isAllowedInBank(pickedUpStack))
+        if (Util.isDisallowedInBank(pickedUpStack))
             return false;
 
         int index = -1;

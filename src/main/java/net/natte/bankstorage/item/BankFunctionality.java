@@ -192,11 +192,8 @@ public abstract class BankFunctionality extends Item {
         InteractionResult result = useBank(player, bank, hand, false, null);
 
         return switch (result) {
-            case CONSUME -> InteractionResultHolder.consume(bank);
-            case CONSUME_PARTIAL -> InteractionResultHolder.consume(bank);
-            case FAIL -> InteractionResultHolder.consume(bank);
+            case CONSUME, CONSUME_PARTIAL, FAIL, SUCCESS -> InteractionResultHolder.consume(bank);
             case PASS -> InteractionResultHolder.pass(bank);
-            case SUCCESS -> InteractionResultHolder.consume(bank);
             case SUCCESS_NO_ITEM_USED -> InteractionResultHolder.success(bank);
         };
     }

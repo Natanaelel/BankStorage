@@ -60,8 +60,8 @@ public class BankType {
     }
 
     @Override
-    public boolean equals(Object o) {
-        return this == o;
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 
     @Override

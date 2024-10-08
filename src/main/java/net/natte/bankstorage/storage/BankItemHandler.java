@@ -51,7 +51,7 @@ public class BankItemHandler implements IItemHandler {
         // ignores slot. hacky? yes. NeoForge needs better transfer api? yes.
         if (stack.isEmpty())
             return ItemStack.EMPTY;
-        if (!Util.isAllowedInBank(stack))
+        if (Util.isDisallowedInBank(stack))
             return stack;
 
         int maxAmount = stack.getCount();
@@ -76,7 +76,7 @@ public class BankItemHandler implements IItemHandler {
             case VOID -> {
                 if (hasSlotWithItem(stack)) {
                     inserted += insertIntoLockedSlots(stack, maxAmount - inserted, simulate);
-                    inserted += insertIntoNonEmptySlots(stack, maxAmount - inserted, simulate);
+                    insertIntoNonEmptySlots(stack, maxAmount - inserted, simulate);
                     inserted = maxAmount;
                 }
             }
