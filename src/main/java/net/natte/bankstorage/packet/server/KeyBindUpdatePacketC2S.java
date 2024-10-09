@@ -6,6 +6,8 @@ import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.PlayPacketHandler;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.natte.bankstorage.access.KeyBindInfoAccess;
+import net.natte.bankstorage.util.KeyBindInfo;
 import net.natte.bankstorage.util.Util;
 
 public class KeyBindUpdatePacketC2S implements FabricPacket {
@@ -18,24 +20,25 @@ public class KeyBindUpdatePacketC2S implements FabricPacket {
 
         @Override
         public void receive(KeyBindUpdatePacketC2S packet, ServerPlayerEntity player,
-                PacketSender responseSender) {
-            Util.isBuildModeKeyUnBound = packet.isUnbound;
+                            PacketSender responseSender) {
+            ((KeyBindInfoAccess) player).bankstorge$setKeyBindInfo(packet.keyBindInfo);
         }
     }
 
-    public boolean isUnbound;
+    public KeyBindInfo keyBindInfo;
 
-    public KeyBindUpdatePacketC2S(boolean isUnbound) {
-        this.isUnbound = isUnbound;
+    public KeyBindUpdatePacketC2S(KeyBindInfo keyBindInfo) {
+        this.keyBindInfo = keyBindInfo;
     }
 
     public KeyBindUpdatePacketC2S(PacketByteBuf buf) {
-        this(buf.readBoolean());
+        this(new KeyBindInfo(buf.readBoolean(), buf.readBoolean()));
     }
 
     @Override
     public void write(PacketByteBuf buf) {
-        buf.writeBoolean(this.isUnbound);
+        buf.writeBoolean(this.keyBindInfo.hasBuildModeToggleKey());
+        buf.writeBoolean(this.keyBindInfo.hasBuildModeCycleKey());
     }
 
     @Override

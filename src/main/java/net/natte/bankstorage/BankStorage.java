@@ -18,6 +18,7 @@ import net.minecraft.item.ItemGroups;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.sound.BlockSoundGroup;
+import net.natte.bankstorage.access.KeyBindInfoAccess;
 import net.natte.bankstorage.access.SyncedRandomAccess;
 import net.natte.bankstorage.block.BankDockBlock;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
@@ -28,6 +29,7 @@ import net.natte.bankstorage.packet.client.SyncedRandomPacketS2C;
 import net.natte.bankstorage.packet.server.*;
 import net.natte.bankstorage.recipe.BankLinkRecipe;
 import net.natte.bankstorage.recipe.BankRecipe;
+import net.natte.bankstorage.util.KeyBindInfo;
 import net.natte.bankstorage.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,11 +78,17 @@ public class BankStorage implements ModInitializer {
             long randomSeed = handler.player.getRandom().nextLong();
             ((SyncedRandomAccess) handler.player).bankstorage$setSyncedRandom(new Random(randomSeed));
             sender.sendPacket(new SyncedRandomPacketS2C(randomSeed));
+
+            ((KeyBindInfoAccess) handler.player).bankstorge$setKeyBindInfo(new KeyBindInfo(false, false));
         });
 
         ServerPlayerEvents.COPY_FROM.register((oldPlayer, newPlayer, alive) -> {
             Random random = ((SyncedRandomAccess) oldPlayer).bankstorage$getSyncedRandom();
             ((SyncedRandomAccess) newPlayer).bankstorage$setSyncedRandom(random);
+
+            KeyBindInfo keyBindInfo = ((KeyBindInfoAccess) oldPlayer).bankstorge$getKeyBindInfo();
+            ((KeyBindInfoAccess) newPlayer).bankstorge$setKeyBindInfo(keyBindInfo);
+
         });
 
     }

@@ -55,13 +55,27 @@ public class MouseEvents {
 
     public static void onToggleBuildMode(PlayerEntity player) {
 
-        // BankOptions options = Util.getOrCreateOptions(stack);
         BankOptions options = BankStorageClient.buildModePreviewRenderer.options;
-        options.buildMode = options.buildMode.next();
+        BuildMode newBuildMode = Util.isBuildModeCycleKeyBound(player) ? options.buildMode.toggle() : options.buildMode.next();
+        options.buildMode = newBuildMode;
+
         ClientPlayNetworking.send(new UpdateBankOptionsPacketC2S(options));
-        // Util.setOptions(stack, options);
         player.sendMessage(Text.translatable("popup.bankstorage.buildmode."
-                + options.buildMode.toString().toLowerCase()), true);
+                + newBuildMode.toString().toLowerCase()), true);
+    }
+
+    public static void onCycleBuildMode(PlayerEntity player) {
+        BankOptions options = BankStorageClient.buildModePreviewRenderer.options;
+        if (!options.buildMode.isActive())
+            return;
+
+        BuildMode newBuildMode = options.buildMode.cycle();
+
+        options.buildMode = newBuildMode;
+
+        ClientPlayNetworking.send(new UpdateBankOptionsPacketC2S(options));
+        player.sendMessage(Text.translatable("popup.bankstorage.buildmode."
+                + newBuildMode.toString().toLowerCase()), true);
 
     }
 

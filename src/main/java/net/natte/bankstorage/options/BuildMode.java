@@ -1,9 +1,10 @@
 package net.natte.bankstorage.options;
 
 public enum BuildMode {
-    NONE(0),
-    NORMAL(1),
-    RANDOM(2);
+    NONE_NORMAL(0),
+    NONE_RANDOM(1),
+    NORMAL(2),
+    RANDOM(3);
 
     public byte number;
 
@@ -13,10 +14,11 @@ public enum BuildMode {
 
     public static BuildMode from(byte n) {
         return switch (n) {
-            case 0 -> NONE;
-            case 1 -> NORMAL;
-            case 2 -> RANDOM;
-            default -> NONE;
+            case 0 -> NONE_NORMAL;
+            case 1 -> NONE_RANDOM;
+            case 2 -> NORMAL;
+            case 3 -> RANDOM;
+            default -> NONE_NORMAL;
         };
     }
 
@@ -24,7 +26,33 @@ public enum BuildMode {
         return BuildMode.from((byte) n);
     }
 
-    public BuildMode next(){
-        return from((number + 1) % 3);
+    public BuildMode next() {
+        return switch (this) {
+            case NONE_NORMAL, NONE_RANDOM -> NORMAL;
+            case NORMAL -> RANDOM;
+            case RANDOM -> NONE_NORMAL;
+        };
+    }
+
+    public BuildMode toggle() {
+        return switch (this) {
+            case NONE_NORMAL -> NORMAL;
+            case NONE_RANDOM -> RANDOM;
+            case NORMAL -> NONE_NORMAL;
+            case RANDOM -> NONE_RANDOM;
+        };
+    }
+
+    public BuildMode cycle() {
+        return switch (this) {
+            case NONE_NORMAL -> NONE_RANDOM;
+            case NONE_RANDOM -> NONE_NORMAL;
+            case NORMAL -> RANDOM;
+            case RANDOM -> NORMAL;
+        };
+    }
+
+    public boolean isActive() {
+        return this == NORMAL || this == RANDOM;
     }
 }

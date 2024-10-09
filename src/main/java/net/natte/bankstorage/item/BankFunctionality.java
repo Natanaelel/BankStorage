@@ -1,11 +1,5 @@
 package net.natte.bankstorage.item;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.client.item.TooltipData;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
@@ -22,8 +16,12 @@ import net.natte.bankstorage.access.SyncedRandomAccess;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.item.tooltip.BankTooltipData;
 import net.natte.bankstorage.options.BankOptions;
-import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.util.Util;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 
 public abstract class BankFunctionality extends Item {
 
@@ -60,13 +58,13 @@ public abstract class BankFunctionality extends Item {
 
         ItemStack bank = player.getStackInHand(hand);
         World world = player.getWorld();
-        boolean isBuildMode = Util.getOrCreateOptions(bank).buildMode != BuildMode.NONE;
-        boolean hasBoundKey = !Util.isBuildModeKeyUnBound;
+        boolean isBuildMode = Util.getOrCreateOptions(bank).buildMode.isActive();
+        boolean hasBoundKey = Util.isBuildModeToggleKeyBound(player);
 
         if (bank.getCount() != 1)
             return ActionResult.FAIL;
 
-        boolean shouldToggleBuildMode = !usedOnBlock && player.isSneaking() && Util.isBuildModeKeyUnBound;
+        boolean shouldToggleBuildMode = !usedOnBlock && player.isSneaking() && !hasBoundKey;
 
         if (shouldToggleBuildMode) { // animate
             if (world.isClient)

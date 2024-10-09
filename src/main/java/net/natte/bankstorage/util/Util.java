@@ -26,6 +26,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.natte.bankstorage.BankStorage;
+import net.natte.bankstorage.access.KeyBindInfoAccess;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.BankItem;
@@ -34,15 +35,22 @@ import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.SortMode;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.world.BankStateSaverAndLoader;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class Util {
 
     public static Supplier<Boolean> isShiftDown = () -> false;
-    public static boolean isBuildModeKeyUnBound = true;
     public static Random clientSyncedRandom;
+    public static KeyBindInfo keyBindInfo = new KeyBindInfo(false, false);
 
-    public static boolean isDebugMode = false;
-    public static Consumer<PlayerEntity> onToggleBuildMode = e -> {};
+    public static Consumer<PlayerEntity> onToggleBuildMode = e -> {
+    };
+    public static Consumer<PlayerEntity> onCycleBuildMode = e -> {
+    };
 
     public static boolean isBank(ItemStack itemStack) {
         return itemStack.getItem() instanceof BankItem;
@@ -257,6 +265,14 @@ public class Util {
         UUID uuid = UUID.randomUUID();
         bank.getOrCreateNbt().putUuid(BankItem.UUID_KEY, uuid);
         return uuid;
+    }
+
+    public static boolean isBuildModeToggleKeyBound(PlayerEntity player) {
+        return (player.getWorld().isClient ? Util.keyBindInfo : ((KeyBindInfoAccess) player).bankstorge$getKeyBindInfo()).hasBuildModeToggleKey();
+    }
+
+    public static boolean isBuildModeCycleKeyBound(PlayerEntity player) {
+        return (player.getWorld().isClient ? Util.keyBindInfo : ((KeyBindInfoAccess) player).bankstorge$getKeyBindInfo()).hasBuildModeCycleKey();
     }
 }
 

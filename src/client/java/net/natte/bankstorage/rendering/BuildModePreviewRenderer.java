@@ -1,25 +1,22 @@
 package net.natte.bankstorage.rendering;
 
-import java.util.List;
-import java.util.UUID;
-
 import com.mojang.blaze3d.systems.RenderSystem;
-
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.EndTick;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.natte.bankstorage.item.CachedBankStorage;
 import net.natte.bankstorage.options.BankOptions;
-import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.util.Util;
+
+import java.util.List;
+import java.util.UUID;
 
 public class BuildModePreviewRenderer implements EndTick {
 
@@ -51,7 +48,7 @@ public class BuildModePreviewRenderer implements EndTick {
 
         this.ticks++;
         // request cache sync every 2 seconds if holding bank in buildmode
-        if (this.ticks % (2 * 20) == 0 && this.uuid != null && this.options.buildMode != BuildMode.NONE)
+        if (this.ticks % (2 * 20) == 0 && this.uuid != null && this.options.buildMode.isActive())
             CachedBankStorage.requestCacheUpdate(this.uuid);
 
         ItemStack right = this.client.player.getMainHandStack();
@@ -132,7 +129,7 @@ public class BuildModePreviewRenderer implements EndTick {
         if (this.bankStorage == null)
             return;
         switch (this.options.buildMode) {
-            case NONE:
+            case NONE_NORMAL, NONE_RANDOM:
                 // renderNothingLol();
                 return;
             case NORMAL:

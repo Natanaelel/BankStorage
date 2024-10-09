@@ -4,7 +4,7 @@ import net.minecraft.nbt.NbtCompound;
 
 public class BankOptions {
     public PickupMode pickupMode = PickupMode.NONE;
-    public BuildMode buildMode = BuildMode.NONE;
+    public BuildMode buildMode = BuildMode.NONE_NORMAL;
     public SortMode sortMode = SortMode.COUNT;
 
     public int selectedItemSlot = 0;

@@ -54,6 +54,7 @@ public class BankStorageClient implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger(BankStorage.MOD_ID);
 
     public static KeyBinding toggleBuildModeKeyBinding;
+    public static KeyBinding cycleBuildModeKeyBinding;
     public static KeyBinding togglePickupModeKeyBinding;
     public static KeyBinding lockSlotKeyBinding;
     public static KeyBinding openBankFromKeyBinding;
@@ -63,6 +64,7 @@ public class BankStorageClient implements ClientModInitializer {
     static {
         Util.isShiftDown = Screen::hasShiftDown;
         Util.onToggleBuildMode = MouseEvents::onToggleBuildMode;
+        Util.onCycleBuildMode = MouseEvents::onCycleBuildMode;
         CachedBankStorage.setCacheUpdater(uuid -> CachedBankStorage.bankRequestQueue.add(uuid));
     }
 
@@ -150,6 +152,8 @@ public class BankStorageClient implements ClientModInitializer {
     public void registerKeyBinds() {
         toggleBuildModeKeyBinding = KeyBindingHelper.registerKeyBinding(
                 new KeyBinding("key.bankstorage.togglebuildmode", GLFW.GLFW_KEY_UNKNOWN, "category.bankstorage"));
+        cycleBuildModeKeyBinding = KeyBindingHelper.registerKeyBinding(
+                new KeyBinding("key.bankstorage.cyclebuildmode", GLFW.GLFW_KEY_UNKNOWN, "category.bankstorage"));
         togglePickupModeKeyBinding = KeyBindingHelper.registerKeyBinding(
                 new KeyBinding("key.bankstorage.togglepickupmode", GLFW.GLFW_KEY_P, "category.bankstorage"));
         lockSlotKeyBinding = KeyBindingHelper.registerKeyBinding(
@@ -163,6 +167,10 @@ public class BankStorageClient implements ClientModInitializer {
 
             while (toggleBuildModeKeyBinding.wasPressed()) {
                 Util.onToggleBuildMode.accept(client.player);
+            }
+
+            while (cycleBuildModeKeyBinding.wasPressed()) {
+                Util.onCycleBuildMode.accept(client.player);
             }
 
             while (togglePickupModeKeyBinding.wasPressed()) {
