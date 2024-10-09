@@ -149,30 +149,24 @@ public class Util {
 
     /**
      * Returns null if unlinked {@link LinkItem} otherwise {@link BankItemStorage}.
-     * Creates new {@link BankItemStorage} if stack has no uuid.
+     * Creates new {@link BankItemStorage} if needed.
      * Upgrades {@link BankType} if needed
      */
     @Nullable
     public static BankItemStorage getBankItemStorage(ItemStack bank) {
 
-        if (Util.isLink(bank)) {
-            if (!Util.hasUUID(bank))
-                return null;
-            BankItemStorage bankItemStorage = getBankItemStorage(Util.getUUID(bank));
+        UUID uuid = Util.isBank(bank) ? getOrSetUUID(bank) : getUUID(bank);
 
-            if (bankItemStorage == null)
-                throw new IllegalStateException("Storage of a Bank Link could not be found. This is likely caused by a corrupted bankstorage.dat file. UUID = '" + Util.getUUID(bank) + "'");
+        if (uuid == null)
+            return null; // unlinked link
 
-            if (bankItemStorage.type() != bank.get(BankStorage.BankTypeComponentType)) {
-                bank.set(BankStorage.BankTypeComponentType, bankItemStorage.type());
-            }
-            return bankItemStorage;
-        }
+        BankType type = getType(bank);
+        BankItemStorage bankItemStorage = BankStateManager.getState().getOrCreate(uuid, type);
+        bank.set(BankStorage.BankTypeComponentType, bankItemStorage.type());
+        if (bankItemStorage.type() != type && isLink(bank))
+            bank.set(BankStorage.BankTypeComponentType, bankItemStorage.type());
 
-        UUID uuid = getOrSetUUID(bank);
-
-        BankType type = ((BankItem) bank.getItem()).getType();
-        return BankStateManager.getState().getOrCreate(uuid, type);
+        return bankItemStorage;
     }
 
     public static UUID getOrSetUUID(ItemStack bank) {

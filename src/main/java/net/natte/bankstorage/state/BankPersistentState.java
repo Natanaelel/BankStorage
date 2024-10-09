@@ -62,7 +62,6 @@ public class BankPersistentState extends SavedData {
         return this.BANK_MAP.get(uuid);
     }
 
-    @Nullable
     public BankItemStorage getOrCreate(UUID uuid, BankType type) {
         BankItemStorage bank = this.BANK_MAP.get(uuid);
         if (bank == null) {

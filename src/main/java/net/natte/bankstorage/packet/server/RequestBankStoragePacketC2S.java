@@ -33,7 +33,7 @@ public record RequestBankStoragePacketC2S(UUID uuid, short cachedRevision) imple
         ServerPlayer player = (ServerPlayer) context.player();
         BankItemStorage bankItemStorage = Util.getBankItemStorage(packet.uuid);
         if (bankItemStorage == null) {
-            BankStorage.LOGGER.info("{} at {} {} requested cache update for {} revision {} which doesn't exist. This is *impossible*. ignoring.", context.player().getName().getString(), context.player().blockPosition(), context.player().level(), packet.uuid, packet.cachedRevision);
+//            BankStorage.LOGGER.info("{} at {} {} requested cache update for {} revision {} which doesn't exist. This is *impossible*. ignoring.", context.player().getName().getString(), context.player().blockPosition(), context.player().level(), packet.uuid, packet.cachedRevision);
             return;
         }
         // only send update if client doesn't already have latest version (revision)
