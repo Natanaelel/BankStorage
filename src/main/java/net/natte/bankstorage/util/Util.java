@@ -110,7 +110,7 @@ public class Util {
 
         // first fill locked slots with their item
         for (HugeItemStack collectedItem : collectedItems) {
-            bankItemStorage.getlockedSlots().keySet().stream().filter(index -> ItemStack.isSameItemSameComponents(collectedItem.stack, bankItemStorage.getLockedStack(index))).sorted()
+            bankItemStorage.getLockedSlots().keySet().stream().filter(index -> ItemStack.isSameItemSameComponents(collectedItem.stack, bankItemStorage.getLockedStack(index))).sorted()
                     .forEach(index -> bankItemStorage.getItems().set(index, collectedItem.split(slotSize)));
         }
 

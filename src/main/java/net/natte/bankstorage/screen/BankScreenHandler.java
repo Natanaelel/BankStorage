@@ -251,8 +251,8 @@ public class BankScreenHandler extends AbstractContainerMenu {
         if (this.bankScreenSync == null)
             return;
         if (bankItemStorage.getLockedSlotsRevision() != this.lockedSlotsRevision) {
-            this.setLockedSlotsNoSync(bankItemStorage.getlockedSlots());
-            this.bankScreenSync.syncLockedSlots(this, bankItemStorage.getlockedSlots());
+            this.setLockedSlotsNoSync(bankItemStorage.getLockedSlots());
+            this.bankScreenSync.syncLockedSlots(this, bankItemStorage.getLockedSlots());
             this.lockedSlotsRevision = bankItemStorage.getLockedSlotsRevision();
         }
     }
@@ -319,7 +319,7 @@ public class BankScreenHandler extends AbstractContainerMenu {
     }
 
     public Map<Integer, ItemStack> getLockedSlots() {
-        return bankItemStorage.getlockedSlots();
+        return bankItemStorage.getLockedSlots();
     }
 
     public BankItemStorage getBankItemStorage() {

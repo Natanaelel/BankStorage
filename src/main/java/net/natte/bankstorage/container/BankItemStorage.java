@@ -149,7 +149,7 @@ public class BankItemStorage {
         this.lockedSlots.remove(slotIndex);
     }
 
-    public Map<Integer, ItemStack> getlockedSlots() {
+    public Map<Integer, ItemStack> getLockedSlots() {
         return this.lockedSlots;
     }
 

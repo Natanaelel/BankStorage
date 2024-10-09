@@ -35,9 +35,6 @@ import java.util.UUID;
 @Mod(value = BankStorage.MOD_ID, dist = Dist.CLIENT)
 public class BankStorageClient {
 
-
-    public static final ResourceLocation WIDGETS_TEXTURE = Util.ID("textures/gui/widgets.png");
-
     public static final KeyMapping toggleBuildModeKeyBinding = new KeyMapping("key.bankstorage.togglebuildmode", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.bankstorage");
     public static final KeyMapping cycleBuildModeKeyBinding = new KeyMapping("key.bankstorage.cyclebuildmode", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.bankstorage");
     public static final KeyMapping togglePickupModeKeyBinding = new KeyMapping("key.bankstorage.togglepickupmode", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_P, "category.bankstorage");

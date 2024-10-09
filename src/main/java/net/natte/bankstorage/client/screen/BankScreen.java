@@ -26,8 +26,7 @@ import net.natte.bankstorage.packet.server.LockSlotPacketC2S;
 import net.natte.bankstorage.packet.server.PickupModePacketC2S;
 import net.natte.bankstorage.packet.server.SortPacketC2S;
 import net.natte.bankstorage.screen.BankScreenHandler;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import net.natte.bankstorage.util.Util;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,10 +34,11 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
-@OnlyIn(Dist.CLIENT)
 public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
     private static final NumberFormat FORMAT = NumberFormat.getNumberInstance(Locale.US);
+
+    private static final ResourceLocation WIDGETS_TEXTURE = Util.ID("textures/gui/widgets.png");
 
     private final BankType type;
     private ResourceLocation texture = Resources.NULL_TEXTURE;
@@ -89,12 +89,12 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
         this.addRenderableWidget(
                 new PickupModeButtonWidget(options.pickupMode(),
                         leftPos + titleLabelX + this.imageWidth - 49, topPos + titleLabelY - 4, 14, 14,
-                        BankStorageClient.WIDGETS_TEXTURE, this::onPickupModeButtonPress));
+                        WIDGETS_TEXTURE, this::onPickupModeButtonPress));
 
         this.addRenderableWidget(
                 new SortButtonWidget(options.sortMode(),
                         leftPos + titleLabelX + this.imageWidth - 31, topPos + titleLabelY - 4,
-                        14, 14, BankStorageClient.WIDGETS_TEXTURE, this::onSortButtonPress));
+                        14, 14, WIDGETS_TEXTURE, this::onSortButtonPress));
         if (hasScrollBar)
             this.scrollBar = this.addRenderableWidget(new ScrollBarWidget(leftPos + this.imageWidth - 4, topPos, type.rows, visibleRows, this.scrollValue, this::onScroll));
         else
@@ -123,7 +123,6 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
         this.scrollValue = percentage;
         if (topRow != this.topVisibleRow)
             scrollTo(topRow);
-
     }
 
     private void scrollTo(int topRow) {
@@ -284,7 +283,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
 
         if (slot.isLocked())
             // locked slot texture
-            context.blit(BankStorageClient.WIDGETS_TEXTURE, x, y, stack.isEmpty() ? 16 : 0, 46, 16, 16);
+            context.blit(WIDGETS_TEXTURE, x, y, stack.isEmpty() ? 16 : 0, 46, 16, 16);
 
         context.renderItem(slot.isLocked() ? slot.getLockedStack() : stack, x, y, seed);
 
@@ -292,7 +291,7 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
             // overlay transparent texture with background color to trick everyone into
             // thinking the item is transparent
             RenderSystem.enableBlend();
-            context.blit(BankStorageClient.WIDGETS_TEXTURE, x, y, 200, 32, 46, 16, 16, 256, 256);
+            context.blit(WIDGETS_TEXTURE, x, y, 200, 32, 46, 16, 16, 256, 256);
             RenderSystem.disableBlend();
         }
 
@@ -303,14 +302,11 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
         context.renderItemDecorations(this.font, stack.copyWithCount(1), x, y, null);
     }
 
-    public static void drawItemCount(GuiGraphics context, Font textRenderer, int count, int x, int y,
-                                     boolean drawInYellow) {
-
+    public static void drawItemCount(GuiGraphics context, Font textRenderer, int count, int x, int y, boolean drawInYellow) {
 
         PoseStack poseStack = context.pose();
 
         poseStack.pushPose();
-
 
         String countString = ItemCountUtils.toConsiseString(count);
         String formattedString = drawInYellow ? ChatFormatting.YELLOW + countString : countString;
@@ -360,4 +356,3 @@ public class BankScreen extends AbstractContainerScreen<BankScreenHandler> {
         PacketDistributor.sendToServer(new SortPacketC2S(this.sortMode));
     }
 }
-

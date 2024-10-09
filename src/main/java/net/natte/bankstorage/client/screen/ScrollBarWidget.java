@@ -121,6 +121,5 @@ public class ScrollBarWidget implements Renderable, GuiEventListener, Narratable
 
     @Override
     public void updateNarration(NarrationElementOutput narrationElementOutput) {
-
     }
 }

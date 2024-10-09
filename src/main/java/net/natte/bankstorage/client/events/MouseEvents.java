@@ -12,12 +12,9 @@ import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.packet.server.SelectedSlotPacketC2S;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-@OnlyIn(Dist.CLIENT)
 public class MouseEvents {
 
     public static void onScroll(InputEvent.MouseScrollingEvent event) {
@@ -40,7 +37,6 @@ public class MouseEvents {
         if (!isNormalBuildMode(preview.getItem()))
             return;
 
-
         CachedBankStorage cachedBankStorage = preview.getStorage();
 
         if (cachedBankStorage == null)
@@ -55,7 +51,6 @@ public class MouseEvents {
 
         event.setCanceled(true);
     }
-
 
     private static boolean isNormalBuildMode(ItemStack itemStack) {
         BuildMode buildMode = itemStack.getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT).buildMode();

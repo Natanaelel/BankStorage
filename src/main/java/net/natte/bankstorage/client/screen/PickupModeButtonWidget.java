@@ -1,8 +1,5 @@
 package net.natte.bankstorage.client.screen;
 
-import java.time.Duration;
-import java.util.function.Consumer;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -11,10 +8,10 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.natte.bankstorage.options.PickupMode;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
-@OnlyIn(Dist.CLIENT)
+import java.time.Duration;
+import java.util.function.Consumer;
+
 public class PickupModeButtonWidget extends Button {
 
     PickupMode pickupMode;
@@ -26,8 +23,8 @@ public class PickupModeButtonWidget extends Button {
     private int uOffset;
 
     public PickupModeButtonWidget(PickupMode pickupMode, int x, int y, int width, int height,
-                           ResourceLocation texture,
-                           Consumer<PickupModeButtonWidget> pressAction) {
+                                  ResourceLocation texture,
+                                  Consumer<PickupModeButtonWidget> pressAction) {
         super(x, y, width, height, CommonComponents.EMPTY,
                 button -> pressAction.accept((PickupModeButtonWidget) button), DEFAULT_NARRATION);
 
@@ -70,7 +67,8 @@ public class PickupModeButtonWidget extends Button {
         this.pickupMode = this.pickupMode.next();
         updateUOffset();
     }
-    private void updateUOffset(){
+
+    private void updateUOffset() {
         this.uOffset = switch (this.pickupMode) {
             case NONE -> 0;
             case ALL -> 14;

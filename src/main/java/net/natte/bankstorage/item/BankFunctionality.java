@@ -38,31 +38,6 @@ public abstract class BankFunctionality extends Item {
         return false;
     }
 
-
-//    @Override
-//    public boolean allowComponentsUpdateAnimation(PlayerEntity player, Hand hand, ItemStack oldStack,
-//            ItemStack newStack) {
-//        return false;
-//    }
-
-    // isBuildMode:B usedOnBlock:B isSneaking:B hasToggleKey:B -> shouldOpen:B
-    // 78: 0 0 0 0 -> 1
-    // 78: 0 0 0 1 -> 1
-    // 70: 0 0 1 0 -> 0 (toggle build mode) animate
-    // 78: 0 0 1 1 -> 1
-    // 0 1 0 0 -> 1 (unless clicked chest etc)
-    // 0 1 0 1 -> 1 (unless clicked chest etc)
-    // 0 1 1 0 -> 1 (:force open regardless of target)
-    // 0 1 1 1 -> 1 (:force open regardless of target)
-    // 78: 1 0 0 0 -> 1 (:open when build mode because no bound key)
-    // 78: 1 0 0 1 -> 0 (:^ but has bound key)
-    // 70: 1 0 1 0 -> 0 (toggle build mode) animate
-    // 78: 1 0 1 1 -> 0 (^ but has bound key)
-    // 1 1 0 0 -> 0 (build unless chest) animate
-    // 1 1 0 1 -> 0 (build unless chest) animate
-    // 1 1 1 0 -> 0 (build) animate
-    // 1 1 1 1 -> 0 (build) animate
-
     // on .use or .useOnBlock. never returns PASS
     private InteractionResult useBank(Player player, ItemStack bank, InteractionHand hand, boolean usedOnBlock,
                                       @Nullable BlockHitResult hitResult) {

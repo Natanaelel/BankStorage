@@ -10,9 +10,9 @@ import java.util.List;
 public class BankExclusionZone implements ExclusionZonesProvider<BankScreen> {
     @Override
     public Collection<Rectangle> provide(BankScreen screen) {
-        if (screen.hasScrollBar()) {
+        if (screen.hasScrollBar())
             return List.of(new Rectangle(screen.getGuiLeft() + 176, screen.getGuiTop(), 18, screen.getScrollBarHeight()));
-        }
+
         return List.of();
     }
 }

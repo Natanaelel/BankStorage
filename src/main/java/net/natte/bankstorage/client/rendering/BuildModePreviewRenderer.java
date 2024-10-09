@@ -130,7 +130,6 @@ public class BuildModePreviewRenderer {
         if (items.isEmpty())
             return;
 
-
         int scaledHeight = context.guiHeight();
         int scaledWidth = context.guiWidth();
 
@@ -166,7 +165,6 @@ public class BuildModePreviewRenderer {
         if (items.isEmpty())
             return;
 
-
         int scaledHeight = context.guiHeight();
         int scaledWidth = context.guiWidth();
 
@@ -180,15 +178,12 @@ public class BuildModePreviewRenderer {
             handXOffset += 29;
 
         if (items.size() == 1) {
-            context.blit(WIDGET_TEXTURE,
-                    scaledWidth / 2 + handXOffset, scaledHeight - 22, 0, 0, 22, 22);
+            context.blit(WIDGET_TEXTURE, scaledWidth / 2 + handXOffset, scaledHeight - 22, 0, 0, 22, 22);
         } else if (selectedSlot == 0 || selectedSlot == items.size() - 1) {
             boolean isLeft = selectedSlot > 0;
-            context.blit(WIDGET_TEXTURE,
-                    scaledWidth / 2 - (isLeft ? 20 : 0) + handXOffset, scaledHeight - 22, 22, 0, 42, 22);
+            context.blit(WIDGET_TEXTURE, scaledWidth / 2 - (isLeft ? 20 : 0) + handXOffset, scaledHeight - 22, 22, 0, 42, 22);
         } else {
-            context.blit(WIDGET_TEXTURE,
-                    scaledWidth / 2 - 20 + handXOffset, scaledHeight - 22, 64, 0, 62, 22);
+            context.blit(WIDGET_TEXTURE, scaledWidth / 2 - 20 + handXOffset, scaledHeight - 22, 64, 0, 62, 22);
         }
 
         for (int i = -1; i <= 1; ++i) {
@@ -202,15 +197,13 @@ public class BuildModePreviewRenderer {
             renderHotbarItem(context, x, y, itemStack, i);
         }
 
-        context.blit(WIDGET_TEXTURE,
-                scaledWidth / 2 - 1 + handXOffset, scaledHeight - 22 - 1, 0, 22, 24, 22);
+        context.blit(WIDGET_TEXTURE, scaledWidth / 2 - 1 + handXOffset, scaledHeight - 22 - 1, 0, 22, 24, 22);
         matrixStack.popPose();
 
         RenderSystem.disableBlend();
     }
 
-    private void renderHotbarItem(GuiGraphics context, int x, int y, ItemStack stack,
-                                  int seed) {
+    private void renderHotbarItem(GuiGraphics context, int x, int y, ItemStack stack, int seed) {
         if (stack.isEmpty()) {
             return;
         }

@@ -7,6 +7,7 @@ import net.natte.bankstorage.client.screen.BankScreen;
 
 @REIPluginClient
 public class BankReiPlugin implements REIClientPlugin {
+
     @Override
     public void registerScreens(ScreenRegistry registry) {
         registry.registerDraggableStackVisitor(new BankDraggableStackVisitor());

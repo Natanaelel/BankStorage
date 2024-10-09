@@ -70,4 +70,3 @@ public class BankDraggableStackVisitor implements DraggableStackVisitor<BankScre
                 .map(slot -> () -> hasBounds.test(slot) ? Shapes.box(left + slot.x, top + slot.y, 0, left + slot.x + 16, top + slot.y + 16, 0.1) : Shapes.empty());
     }
 }
-

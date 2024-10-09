@@ -10,11 +10,8 @@ import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
 import net.natte.bankstorage.packet.server.SelectedSlotPacketC2S;
 import net.natte.bankstorage.util.Util;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-@OnlyIn(Dist.CLIENT)
 public class PickBlockEvents {
     public static boolean pickBlock(ItemStack pickedStack) {
         Minecraft client = Minecraft.getInstance();

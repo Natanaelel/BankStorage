@@ -39,7 +39,7 @@ public class BankSerializer {
             // maps must have string keys
             Codec.unboundedMap(Codec.STRING.xmap(Integer::valueOf, String::valueOf), OPTIONAL_SINGLE_ITEM_CODEC)
                     .fieldOf("locked_slots")
-                    .forGetter(BankItemStorage::getlockedSlots),
+                    .forGetter(BankItemStorage::getLockedSlots),
             Codec.STRING
                     .lenientOptionalFieldOf("date_created", LocalDateTime.now().toString())
                     .forGetter(b -> b.dateCreated.toString()),

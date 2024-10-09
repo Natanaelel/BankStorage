@@ -11,9 +11,9 @@ public class BankStackProvider implements EmiStackProvider<BankScreen> {
     @Override
     public EmiStackInteraction getStackAt(BankScreen screen, int x, int y) {
         if (screen.getSlotUnderMouse() instanceof BankSlot bankSlot) {
-            if (bankSlot.isLocked()) {
+            if (bankSlot.isLocked())
                 return new EmiStackInteraction(EmiStack.of(bankSlot.getLockedStack()), null, false);
-            }
+
             if (bankSlot.getItem().getCount() > 99)
                 return new EmiStackInteraction(EmiStack.of(bankSlot.getItem().copyWithCount(64)), null, false);
         }

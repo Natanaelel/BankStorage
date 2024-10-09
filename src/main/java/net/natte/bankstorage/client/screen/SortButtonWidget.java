@@ -1,8 +1,5 @@
 package net.natte.bankstorage.client.screen;
 
-import java.time.Duration;
-import java.util.function.Consumer;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
@@ -12,10 +9,10 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.natte.bankstorage.options.SortMode;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
-@OnlyIn(Dist.CLIENT)
+import java.time.Duration;
+import java.util.function.Consumer;
+
 public class SortButtonWidget extends Button {
 
     public SortMode sortMode;
