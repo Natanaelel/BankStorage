@@ -25,7 +25,7 @@ public class BankLinkRecipe extends ShapedRecipe {
     @Override
     public ItemStack craft(RecipeInputInventory recipeInputInventory, DynamicRegistryManager dynamicRegistryManager) {
         Optional<ItemStack> maybeBankItemStack = recipeInputInventory.getInputStacks().stream()
-                .filter(stack -> Util.isBank(stack)).findFirst();
+                .filter(Util::isBank).findFirst();
 
         if (maybeBankItemStack.isEmpty()) {
             return ItemStack.EMPTY;
@@ -42,13 +42,13 @@ public class BankLinkRecipe extends ShapedRecipe {
 
     @Override
     public DefaultedList<ItemStack> getRemainder(RecipeInputInventory recipeInputInventory) {
-        DefaultedList<ItemStack> defaultedList = DefaultedList.ofSize(recipeInputInventory.size(), ItemStack.EMPTY);
-        for (int i = 0; i < defaultedList.size(); ++i) {
+        DefaultedList<ItemStack> remainingItems = super.getRemainder(recipeInputInventory);
+        for (int i = 0; i < remainingItems.size(); ++i) {
             ItemStack stack = recipeInputInventory.getStack(i);
-            if (Util.isBank(stack))
-                defaultedList.set(i, stack.copyWithCount(1));
+            if (Util.isBankLike(stack))
+                remainingItems.set(i, stack.copyWithCount(1));
         }
-        return defaultedList;
+        return remainingItems;
     }
 
     public static class Serializer extends ShapedRecipe.Serializer {

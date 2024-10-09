@@ -1,34 +1,34 @@
 package net.natte.bankstorage.recipe;
 
-import java.util.Optional;
-
 import com.google.gson.JsonObject;
-
 import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.recipe.ShapedRecipe;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.util.Identifier;
-import net.natte.bankstorage.item.BankItem;
+import net.natte.bankstorage.util.Util;
 
 public class BankRecipe extends ShapedRecipe {
 
     public BankRecipe(ShapedRecipe recipe) {
-        super(recipe.getId(), "bank_upgrade", recipe.getCategory(), recipe.getWidth(), recipe.getHeight(),
+        super(recipe.getId(), "copy_nbt_or_assign_uuid", recipe.getCategory(), recipe.getWidth(), recipe.getHeight(),
                 recipe.getIngredients(), recipe.getOutput(null));
     }
 
     @Override
     public ItemStack craft(RecipeInputInventory recipeInputInventory, DynamicRegistryManager dynamicRegistryManager) {
-        Optional<ItemStack> maybeBankItemStack = recipeInputInventory.getInputStacks().stream()
-                .filter(stack -> (stack.getItem() instanceof BankItem)).findFirst();
 
-        if (maybeBankItemStack.isEmpty()) {
-            return ItemStack.EMPTY;
-        }
         ItemStack result = super.craft(recipeInputInventory, dynamicRegistryManager);
-        result.setNbt(maybeBankItemStack.get().getNbt());
+
+        recipeInputInventory
+                .getInputStacks()
+                .stream()
+                .filter(Util::isBank)
+                .findFirst()
+                .ifPresent(bank -> result.setNbt(bank.getNbt()));
+
+        Util.getOrSetUUID(result);
 
         return result;
     }

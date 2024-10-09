@@ -249,6 +249,15 @@ public class Util {
             return null;
         return bankItemStorage.uuid;
     }
+
+    public static UUID getOrSetUUID(ItemStack bank) {
+        if (hasUUID(bank))
+            return getUUID(bank);
+
+        UUID uuid = UUID.randomUUID();
+        bank.getOrCreateNbt().putUuid(BankItem.UUID_KEY, uuid);
+        return uuid;
+    }
 }
 
 // if somehow one bank has more than Integer.MAX_VALUE total of one item
