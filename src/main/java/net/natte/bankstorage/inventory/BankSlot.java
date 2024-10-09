@@ -12,8 +12,9 @@ import net.natte.bankstorage.util.Util;
 
 public class BankSlot extends Slot {
 
-    public int stackLimit;
+    public final int stackLimit;
     private @Nullable ItemStack lockedStack = null;
+    private boolean isActive = true;
 
     public BankSlot(Inventory inventory, int index, int x, int y, int stackLimit) {
         super(inventory, index, x, y);
@@ -93,5 +94,14 @@ public class BankSlot extends Slot {
             this.setStack(ItemStack.EMPTY);
         }
         return Optional.of(itemStack);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.isActive;
+    }
+
+    public void setActive(boolean active) {
+        this.isActive = active;
     }
 }
