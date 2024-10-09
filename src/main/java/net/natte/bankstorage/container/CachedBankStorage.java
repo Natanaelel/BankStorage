@@ -102,7 +102,7 @@ public class CachedBankStorage {
 
     public ItemStack chooseItemToPlace(BankOptions options, Random random, int selectedSlot) {
         return switch (options.buildMode()) {
-            case NONE -> ItemStack.EMPTY;
+            case NONE_NORMAL, NONE_RANDOM -> ItemStack.EMPTY;
             case NORMAL -> getSelectedItem(selectedSlot);
             case RANDOM -> getRandomItem(random);
         };

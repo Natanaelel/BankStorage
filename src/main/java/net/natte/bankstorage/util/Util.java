@@ -3,6 +3,7 @@ package net.natte.bankstorage.util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.container.BankItemStorage;
@@ -23,7 +24,8 @@ import java.util.function.Supplier;
 public class Util {
 
     public static Supplier<Boolean> isShiftDown = () -> false;
-    public static boolean isBuildModeKeyUnBound = true;
+    // used on client, player attachment used on server
+    public static KeyBindInfo keybindInfo = new KeyBindInfo(false, false);
     public static Random clientSyncedRandom;
 
     public static final ThreadLocal<Boolean> isClient = ThreadLocal.withInitial(() -> false);
@@ -214,6 +216,14 @@ public class Util {
 
     public static boolean isClient() {
         return isClient.get();
+    }
+
+    public static boolean isBuildModeToggleKeyBound(Player player) {
+        return (player.level().isClientSide() ? Util.keybindInfo : player.getData(BankStorage.KEYBIND_INFO_ATTACHMENT)).hasBuildModeToggleKey();
+    }
+
+    public static boolean isBuildModeCycleKeyBound(Player player) {
+        return (player.level().isClientSide() ? Util.keybindInfo : player.getData(BankStorage.KEYBIND_INFO_ATTACHMENT)).hasBuildModeCycleKey();
     }
 }
 

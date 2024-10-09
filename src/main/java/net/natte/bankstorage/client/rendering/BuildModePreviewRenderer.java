@@ -94,7 +94,7 @@ public class BuildModePreviewRenderer {
             return false;
         if (!Util.hasUUID(stack))
             return false;
-        if (stack.getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT).buildMode() == BuildMode.NONE)
+        if (!stack.getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT).buildMode().isActive())
             return false;
         CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(stack);
         if (cachedBankStorage == null)

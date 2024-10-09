@@ -11,7 +11,8 @@
 
   "block.bankstorage.bank_dock": "Bank Dock",
 
-  "popup.bankstorage.buildmode.none": "Bag mode",
+  "popup.bankstorage.buildmode.none_normal": "Bag mode",
+  "popup.bankstorage.buildmode.none_random": "Bag mode",
   "popup.bankstorage.buildmode.normal": "Build mode",
   "popup.bankstorage.buildmode.random": "Randomized build mode",
 
@@ -24,6 +25,7 @@
 
   "category.bankstorage": "Bank Storage",
   "key.bankstorage.togglebuildmode": "Toggle build mode",
+  "key.bankstorage.cyclebuildmode": "Cycle build mode",
   "key.bankstorage.togglepickupmode": "Toggle pickup mode",
   "key.bankstorage.lockslot": "Filter Slot",
   "key.bankstorage.openbankfromkeybind": "Open bank",

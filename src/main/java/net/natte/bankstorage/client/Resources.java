@@ -1,7 +1,6 @@
 package net.natte.bankstorage.client;
 
 import net.minecraft.resources.ResourceLocation;
-import net.natte.bankstorage.BankStorage;
 import net.natte.bankstorage.util.Util;
 
 public class Resources {

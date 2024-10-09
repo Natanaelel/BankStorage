@@ -13,26 +13,29 @@ import net.natte.bankstorage.util.Util;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.Nullable;
 
-public record ToggleBuildModePacketC2S() implements CustomPacketPayload {
+public record CycleBuildModePacketC2S() implements CustomPacketPayload {
 
-    public static final ToggleBuildModePacketC2S INSTANCE = new ToggleBuildModePacketC2S();
+    public static final CycleBuildModePacketC2S INSTANCE = new CycleBuildModePacketC2S();
 
-    public static final Type<ToggleBuildModePacketC2S> TYPE = new Type<>(Util.ID("toggle_buildmode_c2s"));
-    public static final StreamCodec<RegistryFriendlyByteBuf, ToggleBuildModePacketC2S> STREAM_CODEC = StreamCodec.unit(INSTANCE);
+    public static final Type<CycleBuildModePacketC2S> TYPE = new Type<>(Util.ID("cycle_buildmode_c2s"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, CycleBuildModePacketC2S> STREAM_CODEC = StreamCodec.unit(INSTANCE);
 
     @Override
-    public Type<ToggleBuildModePacketC2S> type() {
+    public Type<CycleBuildModePacketC2S> type() {
         return TYPE;
     }
 
-    public static void handle(ToggleBuildModePacketC2S packet, IPayloadContext context) {
+    public static void handle(CycleBuildModePacketC2S packet, IPayloadContext context) {
         ItemStack bankItem = getBankLike(context.player());
         if (bankItem == null)
             return;
 
         BankOptions options = bankItem.getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT);
 
-        BuildMode newBuildMode = Util.isBuildModeCycleKeyBound(context.player()) ? options.buildMode().toggle() : options.buildMode().next();
+        if (!options.buildMode().isActive())
+            return;
+
+        BuildMode newBuildMode = options.buildMode().cycle();
 
         bankItem.set(BankStorage.OptionsComponentType, options.withBuildMode(newBuildMode));
 

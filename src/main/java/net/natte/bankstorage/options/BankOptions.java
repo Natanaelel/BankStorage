@@ -11,7 +11,7 @@ import java.util.Objects;
 // revision increments only on serverside when an item's options should replace the client's BuildModePreviewRenderer.optimisticOptions, otherwise client options take priority
 public record BankOptions(PickupMode pickupMode, BuildMode buildMode, SortMode sortMode) {
 
-    public static final BankOptions DEFAULT = new BankOptions(PickupMode.NONE, BuildMode.NONE, SortMode.COUNT);
+    public static final BankOptions DEFAULT = new BankOptions(PickupMode.NONE, BuildMode.NONE_NORMAL, SortMode.COUNT);
 
     public static final StreamCodec<ByteBuf, BankOptions> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.BYTE,
@@ -51,8 +51,12 @@ public record BankOptions(PickupMode pickupMode, BuildMode buildMode, SortMode s
         return Objects.hash(pickupMode, buildMode, sortMode);
     }
 
+    public BankOptions withBuildMode(BuildMode newBuildMode){
+        return new BankOptions(pickupMode, newBuildMode, sortMode);
+    }
+
     public BankOptions nextBuildMode() {
-        return new BankOptions(pickupMode, buildMode.next(), sortMode);
+        return withBuildMode(buildMode.next());
     }
 
     public BankOptions withSortMode(SortMode newSortMode) {

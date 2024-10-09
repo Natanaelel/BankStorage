@@ -68,13 +68,13 @@ public abstract class BankFunctionality extends Item {
                                       @Nullable BlockHitResult hitResult) {
 
         Level world = player.level();
-        boolean isBuildMode = Util.getOrCreateOptions(bank).buildMode() != BuildMode.NONE;
-        boolean hasBoundKey = !Util.isBuildModeKeyUnBound;
+        boolean isBuildMode = Util.getOrCreateOptions(bank).buildMode().isActive();
+        boolean hasBoundKey = Util.isBuildModeToggleKeyBound(player);
 
         if (bank.getCount() != 1)
             return InteractionResult.FAIL;
 
-        boolean shouldToggleBuildMode = !usedOnBlock && player.isShiftKeyDown() && Util.isBuildModeKeyUnBound;
+        boolean shouldToggleBuildMode = !usedOnBlock && player.isShiftKeyDown() && !hasBoundKey;
 
         if (shouldToggleBuildMode) { // animate
             if (!world.isClientSide)
@@ -100,10 +100,12 @@ public abstract class BankFunctionality extends Item {
     }
 
     private void toggleBuildMode(ItemStack bankItem, ServerPlayer player) {
-        bankItem.update(BankStorage.OptionsComponentType, BankOptions.DEFAULT, BankOptions::nextBuildMode);
+        BankOptions options = bankItem.getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT);
+        BuildMode newBuildMode = Util.isBuildModeCycleKeyBound(player) ? options.buildMode().toggle() : options.buildMode().next();
+        bankItem.set(BankStorage.OptionsComponentType, options.withBuildMode(newBuildMode));
 
         player.displayClientMessage(Component.translatable("popup.bankstorage.buildmode."
-                + bankItem.get(BankStorage.OptionsComponentType).buildMode().toString().toLowerCase()), true);
+                + newBuildMode.toString().toLowerCase()), true);
     }
 
     private InteractionResult tryOpenBank(Level world, Player player, InteractionHand hand, ItemStack bank) {

@@ -35,6 +35,7 @@ import net.natte.bankstorage.recipe.BankRecipe;
 import net.natte.bankstorage.screen.BankScreenHandler;
 import net.natte.bankstorage.screen.BankScreenHandlerFactory;
 import net.natte.bankstorage.state.BankStateManager;
+import net.natte.bankstorage.util.KeyBindInfo;
 import net.natte.bankstorage.util.Util;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -105,7 +106,8 @@ public class BankStorage {
     public static final DataComponentType<BankType> BankTypeComponentType = DataComponentType.<BankType>builder().persistent(BankType.CODEC).networkSynchronized(BankType.STREAM_CODEC).build();
 
     public static final MenuType<BankScreenHandler> MENU_TYPE = IMenuTypeExtension.create(BankScreenHandlerFactory::createClientScreenHandler);
-    public static final AttachmentType<Random> SYNCED_RANDOM_ATTACHMENT = AttachmentType.builder(() -> new Random()).build();
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<Random>> SYNCED_RANDOM_ATTACHMENT = ATTACHMENT_TYPES.register("random", AttachmentType.builder(() -> new Random())::build);
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<KeyBindInfo>> KEYBIND_INFO_ATTACHMENT = ATTACHMENT_TYPES.register("keybind_info", AttachmentType.builder(() -> new KeyBindInfo(false, false))::build);
 
 
     public static final DeferredHolder<Item, LinkItem> BANK_LINK = BankStorage.ITEMS.register("bank_link", () -> new LinkItem(new Item.Properties().stacksTo(1)));
@@ -116,7 +118,7 @@ public class BankStorage {
         registerCommands();
         registerScreenHandlers();
 
-        registerPlayerSyncedRandom();
+        registerPlayerAttachmentHandlers();
         registerItemComponentTypes();
 
         ITEMS.register(modBus);
@@ -159,8 +161,7 @@ public class BankStorage {
     }
 
 
-    private void registerPlayerSyncedRandom() {
-        ATTACHMENT_TYPES.register("random", () -> SYNCED_RANDOM_ATTACHMENT);
+    private void registerPlayerAttachmentHandlers() {
 
         // create and send random (seed) on join
         NeoForge.EVENT_BUS.<PlayerEvent.PlayerLoggedInEvent>addListener(event -> {
@@ -172,9 +173,11 @@ public class BankStorage {
             }
         });
 
-        // copy random on clone
         NeoForge.EVENT_BUS.<PlayerEvent.Clone>addListener(
-                event -> event.getEntity().setData(SYNCED_RANDOM_ATTACHMENT, event.getOriginal().getData(SYNCED_RANDOM_ATTACHMENT)));
+                event -> {
+                    event.getEntity().setData(SYNCED_RANDOM_ATTACHMENT, event.getOriginal().getData(SYNCED_RANDOM_ATTACHMENT));
+                    event.getEntity().setData(KEYBIND_INFO_ATTACHMENT, event.getOriginal().getData(KEYBIND_INFO_ATTACHMENT));
+                });
     }
 
     private void registerBanks() {
@@ -234,5 +237,6 @@ public class BankStorage {
         registrar.playToServer(LockSlotPacketC2S.TYPE, LockSlotPacketC2S.STREAM_CODEC, LockSlotPacketC2S::handle);
         registrar.playToServer(KeyBindUpdatePacketC2S.TYPE, KeyBindUpdatePacketC2S.STREAM_CODEC, KeyBindUpdatePacketC2S::handle);
         registrar.playToServer(ToggleBuildModePacketC2S.TYPE, ToggleBuildModePacketC2S.STREAM_CODEC, ToggleBuildModePacketC2S::handle);
+        registrar.playToServer(CycleBuildModePacketC2S.TYPE, CycleBuildModePacketC2S.STREAM_CODEC, CycleBuildModePacketC2S::handle);
     }
 }

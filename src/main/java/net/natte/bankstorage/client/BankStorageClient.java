@@ -18,10 +18,7 @@ import net.natte.bankstorage.client.tooltip.BankTooltipComponent;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.item.tooltip.BankTooltipData;
-import net.natte.bankstorage.packet.server.OpenBankFromKeyBindPacketC2S;
-import net.natte.bankstorage.packet.server.PickupModePacketC2S;
-import net.natte.bankstorage.packet.server.RequestBankStoragePacketC2S;
-import net.natte.bankstorage.packet.server.ToggleBuildModePacketC2S;
+import net.natte.bankstorage.packet.server.*;
 import net.natte.bankstorage.util.Util;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -35,7 +32,6 @@ import org.lwjgl.glfw.GLFW;
 
 import java.util.UUID;
 
-
 @Mod(value = BankStorage.MOD_ID, dist = Dist.CLIENT)
 public class BankStorageClient {
 
@@ -43,6 +39,7 @@ public class BankStorageClient {
     public static final ResourceLocation WIDGETS_TEXTURE = Util.ID("textures/gui/widgets.png");
 
     public static final KeyMapping toggleBuildModeKeyBinding = new KeyMapping("key.bankstorage.togglebuildmode", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.bankstorage");
+    public static final KeyMapping cycleBuildModeKeyBinding = new KeyMapping("key.bankstorage.cyclebuildmode", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.bankstorage");
     public static final KeyMapping togglePickupModeKeyBinding = new KeyMapping("key.bankstorage.togglepickupmode", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_P, "category.bankstorage");
     public static final KeyMapping lockSlotKeyBinding = new KeyMapping("key.bankstorage.lockslot", KeyConflictContext.GUI, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, "category.bankstorage");
     public static final KeyMapping openBankFromKeyBinding = new KeyMapping("key.bankstorage.openbankfromkeybind", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.bankstorage");
@@ -59,7 +56,6 @@ public class BankStorageClient {
         registerHandledScreens(modBus);
         registerRenderers(modBus);
         registerEventListeners(modBus);
-
 
         modBus.addListener(this::registerModelPredicates);
         modBus.addListener(this::registerKeyBinds);
@@ -97,8 +93,7 @@ public class BankStorageClient {
 
         NeoForge.EVENT_BUS.<RenderGuiEvent.Post>addListener(event -> buildModePreviewRenderer.render(event.getGuiGraphics()));
 
-        modBus.<EntityRenderersEvent.RegisterRenderers>addListener(
-                event -> event.registerBlockEntityRenderer(BankStorage.BANK_DOCK_BLOCK_ENTITY.get(), BankDockBlockEntityRenderer::new));
+        modBus.<EntityRenderersEvent.RegisterRenderers>addListener(event -> event.registerBlockEntityRenderer(BankStorage.BANK_DOCK_BLOCK_ENTITY.get(), BankDockBlockEntityRenderer::new));
     }
 
     private void registerTickEvents(ClientTickEvent.Post event) {
@@ -109,8 +104,7 @@ public class BankStorageClient {
     }
 
     private void registerHandledScreens(IEventBus modBus) {
-        modBus.<RegisterMenuScreensEvent>addListener(
-                event -> event.register(BankStorage.MENU_TYPE, BankScreen::new));
+        modBus.<RegisterMenuScreensEvent>addListener(event -> event.register(BankStorage.MENU_TYPE, BankScreen::new));
     }
 
     private void initializeClientOnRenderThread(FMLClientSetupEvent event) {
@@ -119,6 +113,7 @@ public class BankStorageClient {
 
     public void registerKeyBinds(RegisterKeyMappingsEvent event) {
         event.register(toggleBuildModeKeyBinding);
+        event.register(cycleBuildModeKeyBinding);
         event.register(togglePickupModeKeyBinding);
         event.register(lockSlotKeyBinding);
         event.register(openBankFromKeyBinding);
@@ -127,6 +122,9 @@ public class BankStorageClient {
     public void handleInputs() {
         while (toggleBuildModeKeyBinding.consumeClick())
             PacketDistributor.sendToServer(ToggleBuildModePacketC2S.INSTANCE);
+
+        while (cycleBuildModeKeyBinding.consumeClick())
+            PacketDistributor.sendToServer(CycleBuildModePacketC2S.INSTANCE);
 
         while (togglePickupModeKeyBinding.consumeClick())
             PacketDistributor.sendToServer(PickupModePacketC2S.INSTANCE);
