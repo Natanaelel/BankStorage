@@ -1,16 +1,5 @@
 package net.natte.bankstorage.util;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -19,10 +8,6 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.natte.bankstorage.BankStorage;
@@ -226,23 +211,36 @@ public class Util {
      */
     public static @Nullable BankItemStorage getBankItemStorage(ItemStack bank, World world) {
 
-        if (Util.isLink(bank)) {
-            if (!Util.hasUUID(bank))
-                return null;
-            BankItemStorage bankItemStorage = getBankItemStorage(Util.getUUID(bank), world);
-            if (bankItemStorage.type != LinkItem.getType(bank)) {
-                LinkItem.setTypeName(bank, bankItemStorage.type.getName());
-            }
-            return bankItemStorage;
-        }
+//        if (Util.isLink(bank)) {
+//            if (!Util.hasUUID(bank))
+//                return null;
+//            BankItemStorage bankItemStorage = getBankItemStorage(Util.getUUID(bank), world);
+//            if (bankItemStorage.type != LinkItem.getType(bank)) {
+//                LinkItem.setTypeName(bank, bankItemStorage.type.getName());
+//            }
+//            return bankItemStorage;
+//        }
+//
+//        UUID uuid = hasUUID(bank) ? getUUID(bank) : UUID.randomUUID();
+//        if (!hasUUID(bank))
+//            bank.getOrCreateNbt().putUuid(BankItem.UUID_KEY, uuid);
+//
+//        BankType type = ((BankItem) bank.getItem()).getType();
+//        BankStateSaverAndLoader serverState = BankStateSaverAndLoader.getServerStateSaverAndLoader(world.getServer());
+//        BankItemStorage bankItemStorage = serverState.getOrCreate(uuid, type);
+//        return bankItemStorage;
+        UUID uuid = isBank(bank) ? getOrSetUUID(bank) : getUUID(bank);
+        if (uuid == null)
+            return null; // unlinked link
 
-        UUID uuid = hasUUID(bank) ? getUUID(bank) : UUID.randomUUID();
-        if (!hasUUID(bank))
-            bank.getOrCreateNbt().putUuid(BankItem.UUID_KEY, uuid);
+        BankType type = isBank(bank) ? ((BankItem) bank.getItem()).getType() : LinkItem.getType(bank);
 
-        BankType type = ((BankItem) bank.getItem()).getType();
         BankStateSaverAndLoader serverState = BankStateSaverAndLoader.getServerStateSaverAndLoader(world.getServer());
+
         BankItemStorage bankItemStorage = serverState.getOrCreate(uuid, type);
+        if (bankItemStorage.type != type && isLink(bank))
+            LinkItem.setTypeName(bank, bankItemStorage.type.getName());
+
         return bankItemStorage;
     }
 

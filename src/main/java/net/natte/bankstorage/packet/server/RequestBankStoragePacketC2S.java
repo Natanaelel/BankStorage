@@ -22,9 +22,13 @@ public class RequestBankStoragePacketC2S implements FabricPacket {
 
         @Override
         public void receive(RequestBankStoragePacketC2S packet, ServerPlayerEntity player,
-                PacketSender responseSender) {
+                            PacketSender responseSender) {
 
             BankItemStorage bankItemStorage = Util.getBankItemStorage(packet.uuid, player.getWorld());
+
+            if (bankItemStorage == null)
+                return;
+
             // only send update if client doesn't already have latest version (revision)
             if (packet.cachedRevision != bankItemStorage.getRevision()) {
                 NetworkUtil.syncCachedBankS2C(packet.uuid, player);

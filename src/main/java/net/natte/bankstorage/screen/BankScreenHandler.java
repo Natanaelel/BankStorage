@@ -31,7 +31,7 @@ public class BankScreenHandler extends ScreenHandler {
 
     public Inventory inventory;
 
-    private BankType type;
+    private final BankType type;
 
     private final ScreenHandlerContext context;
 

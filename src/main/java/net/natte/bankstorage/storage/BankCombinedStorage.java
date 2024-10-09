@@ -76,9 +76,7 @@ public class BankCombinedStorage implements Storage<ItemVariant> {
 
     @Override
     public Iterator<StorageView<ItemVariant>> iterator() {
-        return parts.stream().map(singleStackStorage -> {
-            return ((StorageView<ItemVariant>) singleStackStorage);
-        }).iterator();
+        return parts.stream().map(singleStackStorage -> ((StorageView<ItemVariant>) singleStackStorage)).iterator();
     }
 
     private long insertIntoLockedSlots(ItemVariant resource, long maxAmount, TransactionContext transaction) {

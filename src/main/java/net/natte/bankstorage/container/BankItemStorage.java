@@ -77,7 +77,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
 
     public BankItemStorage changeType(BankType type) {
         BankStorage.LOGGER
-                .info("Upgrading bank from " + this.type.getName() + " to " + type.getName() + " uuid " + this.uuid);
+                .debug("Upgrading bank from {} to {} uuid {}", this.type.getName(), type.getName(), this.uuid);
         BankItemStorage newBankItemStorage = new BankItemStorage(type, this.uuid);
         for (int i = 0; i < this.stacks.size(); ++i) {
             newBankItemStorage.stacks.set(i, this.stacks.get(i));
@@ -203,8 +203,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
             NbtCompound nbt = nbtList.getCompound(i);
             int j = nbt.getInt("Slot");
             if (j < 0 || j >= bankItemStorage.stacks.size()) {
-                BankStorage.LOGGER.info("tried to insert item into slot " + j + " but storage size is only "
-                        + bankItemStorage.stacks.size());
+                BankStorage.LOGGER.info("tried to insert item into slot {} but storage size is only {}", j, bankItemStorage.stacks.size());
                 continue;
             }
 
@@ -229,7 +228,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
     }
 
     public static BankType getBankTypeFromName(String name) {
-        for (BankType bankType : BankStorage.bankTypes) {
+        for (BankType bankType : BankStorage.BANK_TYPES) {
             if (bankType.getName().equals(name)) {
                 return bankType;
             }

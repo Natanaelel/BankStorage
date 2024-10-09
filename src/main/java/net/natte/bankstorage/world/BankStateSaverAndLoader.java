@@ -68,7 +68,7 @@ public class BankStateSaverAndLoader extends PersistentState {
             return old;
 
         } else {
-            BankStorage.LOGGER.info("creating new bank with uuid " + uuid);
+            BankStorage.LOGGER.debug("creating new bank with uuid " + uuid);
             BankItemStorage bankItemStorage = new BankItemStorage(type, uuid);
             bankItemStorage.dateCreated = LocalDateTime.now();
             this.state.getBankMap().put(uuid, bankItemStorage);

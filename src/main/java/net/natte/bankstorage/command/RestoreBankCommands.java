@@ -46,34 +46,34 @@ public class RestoreBankCommands {
     }
 
     private static void registerCommands() {
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(literal("bankstorage")
-                    .requires(context -> context.hasPermissionLevel(2))
-                    .then(literal("fromuuid")
-                            .then(argument("uuid", UuidArgumentType.uuid())
-                                    .then(argument("player", EntityArgumentType.player())
-                                            .executes(RestoreBankCommands::restoreBankCommand))))
-                    .then(literal("list").executes(RestoreBankCommands::listBankStorages).then(
-                            literal("sort").then(argument("sorting_mode", SortingModeArgumentType.sortingMode())
-                                    .executes(RestoreBankCommands::listBankStoragesSorted))))
-                    .then(literal("filter")
-                            .then(literal("clear")
-                                    .executes(RestoreBankCommands::clearFilter)
-                                    .then(literal("type")
-                                            .executes(RestoreBankCommands::clearFilterType))
-                                    .then(literal("player")
-                                            .executes(RestoreBankCommands::clearPlayerFilter))
-                                    .then(literal("item")
-                                            .executes(RestoreBankCommands::clearItemFilter)))
-                            .then(literal("add")
-                                    .then(literal("type").then(argument("type", BankTypeArgumentType.bankType())
-                                            .executes(RestoreBankCommands::addTypeFilter)))
-                                    .then(literal("player").then(argument("player", EntityArgumentType.player())
-                                            .executes(RestoreBankCommands::addPlayerFilter)))
-                                    .then(literal("item").then(argument("itemPredicate",
-                                            ItemPredicateArgumentType.itemPredicate(registryAccess))
-                                            .executes(RestoreBankCommands::addItemFilter))))));
-        });
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
+                dispatcher.register(literal("bankstorage")
+                        .requires(context -> context.hasPermissionLevel(2))
+                        .then(literal("fromuuid")
+                                .then(argument("uuid", UuidArgumentType.uuid())
+                                        .then(argument("player", EntityArgumentType.player())
+                                                .executes(RestoreBankCommands::restoreBankCommand))))
+                        .then(literal("list").executes(RestoreBankCommands::listBankStorages).then(
+                                literal("sort").then(argument("sorting_mode", SortingModeArgumentType.sortingMode())
+                                        .executes(RestoreBankCommands::listBankStoragesSorted))))
+                        .then(literal("filter")
+                                .then(literal("clear")
+                                        .executes(RestoreBankCommands::clearFilter)
+                                        .then(literal("type")
+                                                .executes(RestoreBankCommands::clearFilterType))
+                                        .then(literal("player")
+                                                .executes(RestoreBankCommands::clearPlayerFilter))
+                                        .then(literal("item")
+                                                .executes(RestoreBankCommands::clearItemFilter)))
+                                .then(literal("add")
+                                        .then(literal("type").then(argument("type", BankTypeArgumentType.bankType())
+                                                .executes(RestoreBankCommands::addTypeFilter)))
+                                        .then(literal("player").then(argument("player", EntityArgumentType.player())
+                                                .executes(RestoreBankCommands::addPlayerFilter)))
+                                        .then(literal("item").then(argument("itemPredicate",
+                                                ItemPredicateArgumentType.itemPredicate(registryAccess))
+                                                .executes(RestoreBankCommands::addItemFilter))))))
+        );
     }
 
     private static void registerArgumentTypes() {
@@ -142,7 +142,7 @@ public class RestoreBankCommands {
     }
 
     private static int listBankStoragesInChat(CommandContext<ServerCommandSource> context,
-            List<BankItemStorage> bankItemStorages) {
+                                              List<BankItemStorage> bankItemStorages) {
 
         ServerPlayerEntity player = context.getSource().getPlayer();
 
