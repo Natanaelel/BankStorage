@@ -204,7 +204,7 @@ public class Util {
         return bankItemStorage.getItemHandler(getPickupMode(itemStack));
     }
 
-    private static PickupMode getPickupMode(ItemStack itemStack) {
+    public static PickupMode getPickupMode(ItemStack itemStack) {
         return itemStack.getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT).pickupMode();
     }
 

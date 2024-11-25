@@ -107,8 +107,7 @@ public class BankDockBlockEntity extends BlockEntity {
             }
             bankItemStorage.usedByPlayerUUID = BankStorage.FAKE_PLAYER_UUID;
             bankItemStorage.usedByPlayerName = "World";
-            BankOptions options = bankItem.get(BankStorage.OptionsComponentType);
-            PickupMode pickupMode = options == null ? PickupMode.ALL : options.pickupMode();
+            PickupMode pickupMode = Util.getPickupMode(bankItem);
             this.bankItemHandler = bankItemStorage.getItemHandler(pickupMode);
         }
         return this.bankItemHandler;
