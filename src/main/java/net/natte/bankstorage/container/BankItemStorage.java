@@ -30,6 +30,11 @@ public class BankItemStorage {
     public String usedByPlayerName = "World";
     public LocalDateTime dateCreated;
 
+    @Nullable
+    private BankItemStorage upgraded = null;
+
+    private List<Runnable> invalidators = new ArrayList<>();
+
     public BankItemStorage(BankType type, UUID uuid) {
         this.type = type;
         this.uuid = uuid;
@@ -72,17 +77,31 @@ public class BankItemStorage {
 
         assert type.size() > this.type.size() : "Cannot downgrade banks!";
 
+
         BankItemStorage newBankItemStorage = new BankItemStorage(type, this.uuid);
         newBankItemStorage.initializeItems();
         for (int i = 0; i < this.items.size(); ++i) {
             newBankItemStorage.items.set(i, this.items.get(i));
         }
         newBankItemStorage.lockedSlots = this.lockedSlots;
+        this.onUpgrade(newBankItemStorage);
         return newBankItemStorage;
     }
 
+    private void onUpgrade(BankItemStorage newBankItemStorage) {
+        this.upgraded = newBankItemStorage;
+        this.invalidators.forEach(Runnable::run);
+        this.invalidators.clear();
+    }
+
+    public boolean isOutDated() {
+        return this.upgraded != null;
+    }
+
     public BankItemHandler getItemHandler(PickupMode pickupMode) {
-        return new BankItemHandler(items, lockedSlots, type, pickupMode, this::markDirty);
+        BankItemHandler itemHandler = new BankItemHandler(items, lockedSlots, type, pickupMode, this::markDirty);
+        this.invalidators.add(itemHandler::invalidate);
+        return itemHandler;
     }
 
     public Container getContainer() {

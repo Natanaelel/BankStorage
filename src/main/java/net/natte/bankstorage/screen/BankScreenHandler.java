@@ -104,6 +104,9 @@ public class BankScreenHandler extends AbstractContainerMenu {
         if (!AbstractContainerMenu.stillValid(this.context, player, BankStorage.BANK_DOCK_BLOCK.get()))
             return false;
 
+        if (this.bankItemStorage.isOutDated())
+            return false;
+
         return this.context.evaluate((world, pos) -> {
             if (!(world.getBlockEntity(pos) instanceof BankDockBlockEntity blockEntity))
                 return false;

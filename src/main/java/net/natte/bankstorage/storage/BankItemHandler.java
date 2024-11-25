@@ -5,6 +5,7 @@ import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.util.Util;
 import net.neoforged.neoforge.items.IItemHandler;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,9 @@ public class BankItemHandler implements IItemHandler {
     private final BankType type;
     private final int slotCapacity;
     private final Runnable setChanged;
+    @Nullable
+    private Runnable capabilityInvalidator;
+    private boolean invalidated = false;
 
 
     public BankItemHandler(List<ItemStack> items, Map<Integer, ItemStack> lockedSlots, BankType type, PickupMode pickupMode, Runnable setChanged) {
@@ -49,6 +53,9 @@ public class BankItemHandler implements IItemHandler {
     @Override
     public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
         // ignores slot. hacky? yes. NeoForge needs better transfer api? yes.
+        if (invalidated)
+            return ItemStack.EMPTY;
+
         if (stack.isEmpty())
             return ItemStack.EMPTY;
         if (Util.isDisallowedInBank(stack))
@@ -173,6 +180,9 @@ public class BankItemHandler implements IItemHandler {
 
     @Override
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
+        if (invalidated)
+            return ItemStack.EMPTY;
+
         ItemStack stackInSlot = items.get(slot);
         int count = stackInSlot.getCount();
         int extracted = Math.min(count, amount);
@@ -192,5 +202,16 @@ public class BankItemHandler implements IItemHandler {
     @Override
     public boolean isItemValid(int slot, ItemStack stack) {
         return stack.getItem().canFitInsideContainerItems();
+    }
+
+    public void setInvalidator(Runnable capabilityInvalidator) {
+        this.capabilityInvalidator = capabilityInvalidator;
+    }
+
+    public void invalidate() {
+        if (this.capabilityInvalidator != null) {
+            this.capabilityInvalidator.run();
+            this.invalidated = true;
+        }
     }
 }

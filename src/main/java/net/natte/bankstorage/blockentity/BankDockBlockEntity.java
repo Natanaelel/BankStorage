@@ -109,6 +109,7 @@ public class BankDockBlockEntity extends BlockEntity {
             bankItemStorage.usedByPlayerName = "World";
             PickupMode pickupMode = Util.getPickupMode(bankItem);
             this.bankItemHandler = bankItemStorage.getItemHandler(pickupMode);
+            this.bankItemHandler.setInvalidator(this::setChanged);
         }
         return this.bankItemHandler;
     }
