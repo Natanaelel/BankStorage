@@ -8,11 +8,16 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.natte.bankstorage.options.PickupMode;
+import org.jetbrains.annotations.Nullable;
 
 public class BankCombinedStorage implements Storage<ItemVariant> {
 
     private List<BankSingleStackStorage> parts;
     private PickupMode pickupMode;
+
+    @Nullable
+    private Runnable invalidator;
+    private boolean invalidated = false;
 
     public BankCombinedStorage(List<BankSingleStackStorage> parts, PickupMode pickupMode) {
         this.parts = parts;
@@ -25,6 +30,9 @@ public class BankCombinedStorage implements Storage<ItemVariant> {
 
     @Override
     public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
+        if (invalidated)
+            return 0;
+
         long amount = 0;
         switch (this.pickupMode) {
             case NONE:
@@ -56,6 +64,9 @@ public class BankCombinedStorage implements Storage<ItemVariant> {
 
     @Override
     public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
+        if (invalidated)
+            return 0;
+
         return extractFromAnySlot(resource, maxAmount, transaction);
     }
 
@@ -138,4 +149,14 @@ public class BankCombinedStorage implements Storage<ItemVariant> {
         return false;
     }
 
+    public void setInvalidator(Runnable invalidator) {
+        this.invalidator = invalidator;
+    }
+
+    public void invalidate() {
+        if (this.invalidator != null) {
+            this.invalidator.run();
+            this.invalidated = true;
+        }
+    }
 }

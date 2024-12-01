@@ -62,8 +62,8 @@ public class BankScreenHandler extends ScreenHandler {
     // then be synced to the client.
 
     public BankScreenHandler(int syncId, PlayerInventory playerInventory,
-            Inventory inventory, BankType type,
-            ScreenHandlerContext context) {
+                             Inventory inventory, BankType type,
+                             ScreenHandlerContext context) {
         super(type.getScreenHandlerType(), syncId);
         this.context = context;
 
@@ -113,6 +113,9 @@ public class BankScreenHandler extends ScreenHandler {
 
     @Override
     public boolean canUse(PlayerEntity player) {
+        if (this.inventory instanceof BankItemStorage bankItemStorage && bankItemStorage.isOutDated())
+            return false;
+
         return this.context.get((world, pos) -> {
             if (!(world.getBlockEntity(pos) instanceof BankDockBlockEntity blockEntity))
                 return false;
@@ -565,7 +568,7 @@ public class BankScreenHandler extends ScreenHandler {
 
     @Override
     public boolean handleSlotClick(PlayerEntity player, ClickType clickType, Slot slot, ItemStack stack,
-            ItemStack cursorStack) {
+                                   ItemStack cursorStack) {
 
         // prevent dupe by putting item inside multiple bundles at the same time
         FeatureSet featureSet = player.getWorld().getEnabledFeatures();

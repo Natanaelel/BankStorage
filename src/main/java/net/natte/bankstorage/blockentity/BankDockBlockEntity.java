@@ -1,10 +1,5 @@
 package net.natte.bankstorage.blockentity;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jetbrains.annotations.Nullable;
-
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
@@ -22,6 +17,10 @@ import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.storage.BankCombinedStorage;
 import net.natte.bankstorage.storage.BankSingleStackStorage;
 import net.natte.bankstorage.util.Util;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BankDockBlockEntity extends BlockEntity {
 
@@ -83,8 +82,8 @@ public class BankDockBlockEntity extends BlockEntity {
     }
 
     private BankItemStorage getInventory() {
-        
-        if(this.world.isClient)
+
+        if (this.world.isClient)
             return null;
 
         if (Util.isBankLike(this.bankItem)) {
@@ -118,7 +117,10 @@ public class BankDockBlockEntity extends BlockEntity {
             storages.add(storage);
         }
 
-        return new BankCombinedStorage(storages, Util.getOrCreateOptions(this.bankItem).pickupMode);
+        BankCombinedStorage combinedStorage = new BankCombinedStorage(storages, Util.getOrCreateOptions(this.bankItem).pickupMode);
+        combinedStorage.setInvalidator(this::markDirty);
+        bankItemStorage.addInvalidator(combinedStorage::invalidate);
+        return combinedStorage;
     }
 
 }

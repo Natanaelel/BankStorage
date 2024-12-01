@@ -49,6 +49,10 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
     public String usedByPlayerName = "World";
     public LocalDateTime dateCreated = LocalDateTime.MIN;
 
+    @Nullable
+    private BankItemStorage upgraded = null;
+    private List<Runnable> invalidators = new ArrayList<>();
+
     public BankItemStorage(BankType type, UUID uuid) {
         super(type.rows * type.cols);
         this.type = type;
@@ -81,9 +85,20 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         BankItemStorage newBankItemStorage = new BankItemStorage(type, this.uuid);
         for (int i = 0; i < this.stacks.size(); ++i) {
             newBankItemStorage.stacks.set(i, this.stacks.get(i));
-            newBankItemStorage.lockedSlots = this.lockedSlots;
         }
+        newBankItemStorage.lockedSlots = this.lockedSlots;
+        onUpgrade(newBankItemStorage);
         return newBankItemStorage;
+    }
+
+    private void onUpgrade(BankItemStorage newBankItemStorage) {
+        this.upgraded = newBankItemStorage;
+        this.invalidators.forEach(Runnable::run);
+        this.invalidators.clear();
+    }
+
+    public boolean isOutDated() {
+        return this.upgraded != null;
     }
 
     @Override
@@ -95,8 +110,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
     public ExtendedScreenHandlerFactory withDockPosition(BlockPos pos) {
         return new ExtendedScreenHandlerFactory() {
 
-            public BankScreenHandler createMenu(int syncId, PlayerInventory playerInventory,
-                    PlayerEntity playerEntity) {
+            public BankScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity playerEntity) {
                 return new BankScreenHandler(syncId, playerInventory,
                         BankItemStorage.this,
                         BankItemStorage.this.type,
@@ -248,6 +262,7 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
     public List<ItemStack> getItems() {
         return this.stacks;
     }
+
     public List<ItemStack> getBlockItems() {
         List<ItemStack> items = new ArrayList<>();
         for (ItemStack stack : this.stacks) {
@@ -313,4 +328,8 @@ public class BankItemStorage extends SimpleInventory implements ExtendedScreenHa
         buf.writeItemStack(bankLikeItem);
     }
 
+    public void addInvalidator(Runnable invalidator) {
+        if (!this.invalidators.contains(invalidator))
+            this.invalidators.add(invalidator);
+    }
 }
