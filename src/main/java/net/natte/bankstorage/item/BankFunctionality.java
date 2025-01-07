@@ -19,6 +19,7 @@ import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.item.tooltip.BankTooltipData;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.options.BuildMode;
+import net.natte.bankstorage.options.PickupMode;
 import net.natte.bankstorage.screen.BankScreenHandlerFactory;
 import net.natte.bankstorage.util.Util;
 import org.jetbrains.annotations.Nullable;
@@ -151,6 +152,17 @@ public abstract class BankFunctionality extends Item {
                 .useOn(new UseOnContext(world, player, context.getHand(), blockToPlace, context.hitResult));
 
         blockToPlace.setCount(blockToPlace.getCount() == 1 ? count : count - 1);
+
+        // prevent blocks which calls setItemInHand in useOn to replace the bank
+        ItemStack itemInHand = player.getItemInHand(context.getHand());
+        if (itemInHand != bank) {
+            if (!world.isClientSide && !player.hasInfiniteMaterials()) {
+                ItemStack remaining = bankItemStorage.getItemHandler(PickupMode.ALL).insertItem(itemInHand.copy());
+                if (!remaining.isEmpty())
+                    player.getInventory().placeItemBackInInventory(remaining);
+            }
+            player.setItemInHand(context.getHand(), bank);
+        }
 
         if (world.isClientSide)
             CachedBankStorage.requestCacheUpdate(Util.getUUID(bank));
