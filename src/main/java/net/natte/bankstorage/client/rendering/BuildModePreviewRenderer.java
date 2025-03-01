@@ -4,7 +4,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
@@ -25,7 +27,7 @@ public class BuildModePreviewRenderer {
     private static final ResourceLocation WIDGET_TEXTURE = Util.ID("textures/gui/widgets.png");
 
     @Nullable
-    public UUID uuid;
+    private UUID uuid;
     private Minecraft client;
 
     private CachedBankStorage bankStorage;
@@ -41,6 +43,11 @@ public class BuildModePreviewRenderer {
     private boolean hasBank = false;
     private ItemStack bankItem = ItemStack.EMPTY;
     private BuildMode buildMode;
+    private short uniqueId;
+
+    // show name of selected item
+    private ItemStack lastSelectedItem = ItemStack.EMPTY;
+    public int itemHighlightTimer = 0;
 
     public void tick() {
         if (this.client == null)
@@ -54,34 +61,44 @@ public class BuildModePreviewRenderer {
         // request cache sync every 2 seconds if holding bank in buildmode
         if (this.hasBank && this.ticks++ % 40 == 0)
             CachedBankStorage.requestCacheUpdate(this.uuid);
+
+        if (this.itemHighlightTimer > 0) {
+            this.itemHighlightTimer--;
+        }
     }
 
     private void updateBank() {
         ItemStack oldBank = this.bankItem;
 
-        if (canRenderFrom(this.client.player.getMainHandItem())) {
-            this.bankItem = this.client.player.getMainHandItem();
-            this.renderingFromHand = InteractionHand.MAIN_HAND;
+
+        @Nullable InteractionHand hand = getHandToRenderFrom();
+        if (hand != null) {
+            this.renderingFromHand = hand;
+            this.bankItem = this.client.player.getItemInHand(hand);
             this.hasBank = true;
-        } else if (canRenderFrom(this.client.player.getOffhandItem())) {
-            this.bankItem = this.client.player.getOffhandItem();
-            this.renderingFromHand = InteractionHand.OFF_HAND;
-            this.hasBank = true;
-        } else
+        } else {
+            this.itemHighlightTimer = 0;
             this.hasBank = false;
+        }
 
         if (this.hasBank) {
+            BankOptions options = Util.getOrCreateOptions(this.bankItem);
+
+            boolean isHoldingNewBank = this.uniqueId != options.uniqueId();
+            this.uniqueId = options.uniqueId();
+
             this.uuid = Util.getUUID(this.bankItem);
-            this.buildMode = this.bankItem.getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT).buildMode();
+            this.buildMode = options.buildMode();
             this.mainArm = this.client.player.getMainArm();
             this.arm = this.renderingFromHand == InteractionHand.MAIN_HAND ? mainArm : mainArm.getOpposite();
             if (CachedBankStorage.markDirtyForPreview) {
                 this.bankStorage = CachedBankStorage.getBankStorage(uuid);
                 CachedBankStorage.markDirtyForPreview = false;
             }
-            if (oldBank != this.bankItem) {
+            if (isHoldingNewBank) {
                 this.selectedSlot = this.bankItem.getOrDefault(BankStorage.SelectedSlotComponentType, 0);
                 this.bankStorage = CachedBankStorage.getBankStorage(uuid);
+                this.itemHighlightTimer = 0;
             }
             if (this.bankStorage != null) {
                 this.selectedSlot = Mth.clamp(this.selectedSlot, 0, this.bankStorage.getBlockItems().size() - 1);
@@ -100,6 +117,15 @@ public class BuildModePreviewRenderer {
         if (cachedBankStorage == null)
             return false;
         return true;
+    }
+
+    @Nullable
+    private InteractionHand getHandToRenderFrom() {
+        if (canRenderFrom(this.client.player.getMainHandItem()))
+            return InteractionHand.MAIN_HAND;
+        if (canRenderFrom(this.client.player.getOffhandItem()))
+            return InteractionHand.OFF_HAND;
+        return null;
     }
 
     public void render(GuiGraphics context) {
@@ -201,6 +227,8 @@ public class BuildModePreviewRenderer {
         matrixStack.popPose();
 
         RenderSystem.disableBlend();
+
+        renderSelectedItemName(context);
     }
 
     private void renderHotbarItem(GuiGraphics context, int x, int y, ItemStack stack, int seed) {
@@ -214,6 +242,36 @@ public class BuildModePreviewRenderer {
         context.renderItemDecorations(this.client.font, stack.copyWithCount(1), x, y, null);
     }
 
+    private void renderSelectedItemName(GuiGraphics context) {
+        if (this.itemHighlightTimer > 0) {
+
+            if (this.lastSelectedItem.isEmpty())
+                return;
+
+            Component highlightTip = this.lastSelectedItem.getHoverName();
+            int i = this.client.font.width(highlightTip);
+            int j = (context.guiWidth() - i) / 2;
+            int k = context.guiHeight() - 45;
+
+
+            int l = (int) ((float) this.itemHighlightTimer * 256.0F / 10.0F);
+            if (l > 255) {
+                l = 255;
+            }
+            if (l <= 0)
+                return;
+
+            int handXOffset = this.arm == HumanoidArm.LEFT ? -158 : 129;
+            if (mainArm == HumanoidArm.LEFT)
+                handXOffset += 29;
+            j += handXOffset;
+
+            j = this.arm == HumanoidArm.RIGHT ? Math.max(j, context.guiWidth() / 2 + 129 - 35) : Math.min(j, (context.guiWidth()) / 2 - 158 + 29 + 35 - i);
+
+            context.drawStringWithBackdrop(client.font, highlightTip, j, k, i, FastColor.ARGB32.color(l, -1));
+        }
+    }
+
     @Nullable
     public ItemStack getItem() {
         return this.bankItem;
@@ -225,5 +283,11 @@ public class BuildModePreviewRenderer {
 
     public CachedBankStorage getStorage() {
         return bankStorage;
+    }
+
+    public void selectSlot(int newSelectedItemSlot) {
+        this.selectedSlot = newSelectedItemSlot;
+        this.itemHighlightTimer = (int) (40.0 * this.client.options.notificationDisplayTime().get());
+        this.lastSelectedItem = this.bankStorage.getSelectedItem(this.selectedSlot);
     }
 }
