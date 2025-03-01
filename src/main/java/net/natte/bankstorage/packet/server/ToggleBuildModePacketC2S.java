@@ -30,7 +30,7 @@ public record ToggleBuildModePacketC2S() implements CustomPacketPayload {
         if (bankItem == null)
             return;
 
-        BankOptions options = bankItem.getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT);
+        BankOptions options = Util.getOrCreateOptions(bankItem);
 
         BuildMode newBuildMode = Util.isBuildModeCycleKeyBound(context.player()) ? options.buildMode().toggle() : options.buildMode().next();
 

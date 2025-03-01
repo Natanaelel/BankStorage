@@ -23,8 +23,8 @@ public class PickBlockEvents {
         if (!Util.isBankLike(bankItem))
             return false;
 
-        BankOptions options = bankItem.getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT);
-        if (options.buildMode() != BuildMode.NORMAL)
+        BuildMode buildMode = bankItem.getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT).buildMode();
+        if (buildMode != BuildMode.NORMAL)
             return false;
 
         CachedBankStorage cachedBankStorage = CachedBankStorage.getBankStorage(bankItem);

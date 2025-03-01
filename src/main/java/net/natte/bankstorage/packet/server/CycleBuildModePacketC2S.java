@@ -30,7 +30,7 @@ public record CycleBuildModePacketC2S() implements CustomPacketPayload {
         if (bankItem == null)
             return;
 
-        BankOptions options = bankItem.getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT);
+        BankOptions options = Util.getOrCreateOptions(bankItem);
 
         if (!options.buildMode().isActive())
             return;

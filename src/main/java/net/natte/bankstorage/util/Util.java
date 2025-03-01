@@ -63,7 +63,7 @@ public class Util {
     public static BankOptions getOrCreateOptions(ItemStack itemStack) {
         BankOptions options = itemStack.get(BankStorage.OptionsComponentType);
         if (options == null) {
-            options = BankOptions.DEFAULT;
+            options = BankOptions.create();
             setOptions(itemStack, options);
         }
         return options;

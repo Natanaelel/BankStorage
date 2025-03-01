@@ -7,11 +7,11 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 import java.util.Objects;
+import java.util.Random;
 
-// revision increments only on serverside when an item's options should replace the client's BuildModePreviewRenderer.optimisticOptions, otherwise client options take priority
-public record BankOptions(PickupMode pickupMode, BuildMode buildMode, SortMode sortMode) {
+public record BankOptions(PickupMode pickupMode, BuildMode buildMode, SortMode sortMode, short uniqueId) {
 
-    public static final BankOptions DEFAULT = new BankOptions(PickupMode.NONE, BuildMode.NONE_NORMAL, SortMode.COUNT);
+    public static final BankOptions DEFAULT = new BankOptions(PickupMode.NONE, BuildMode.NONE_NORMAL, SortMode.COUNT, (short) 0);
 
     public static final StreamCodec<ByteBuf, BankOptions> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.BYTE,
@@ -20,20 +20,31 @@ public record BankOptions(PickupMode pickupMode, BuildMode buildMode, SortMode s
             o -> (byte) o.buildMode.ordinal(),
             ByteBufCodecs.BYTE,
             o -> (byte) o.sortMode.ordinal(),
+            ByteBufCodecs.SHORT,
+            BankOptions::uniqueId,
             BankOptions::of);
+
+    private static final Random random = new Random();
 
     public static final Codec<BankOptions> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.BYTE.fieldOf("pickup").forGetter(o -> (byte) o.pickupMode.ordinal()),
             Codec.BYTE.fieldOf("build").forGetter(o -> (byte) o.buildMode.ordinal()),
-            Codec.BYTE.fieldOf("sort").forGetter(o -> (byte) o.sortMode.ordinal())
+            Codec.BYTE.fieldOf("sort").forGetter(o -> (byte) o.sortMode.ordinal()),
+            Codec.SHORT.fieldOf("id").orElseGet(() -> (short) random.nextInt()).forGetter(o -> o.uniqueId)
     ).apply(instance, BankOptions::of));
 
 
-    public static BankOptions of(byte pickupMode, byte buildMode, byte sortMode) {
+    public static BankOptions of(byte pickupMode, byte buildMode, byte sortMode, short uniqueId) {
+
         return new BankOptions(
                 PickupMode.values()[pickupMode],
                 BuildMode.values()[buildMode],
-                SortMode.values()[sortMode]);
+                SortMode.values()[sortMode],
+                uniqueId);
+    }
+
+    public static BankOptions create(){
+        return new BankOptions(PickupMode.NONE, BuildMode.NONE_NORMAL, SortMode.COUNT, (short) random.nextInt());
     }
 
     @Override
@@ -51,8 +62,8 @@ public record BankOptions(PickupMode pickupMode, BuildMode buildMode, SortMode s
         return Objects.hash(pickupMode, buildMode, sortMode);
     }
 
-    public BankOptions withBuildMode(BuildMode newBuildMode){
-        return new BankOptions(pickupMode, newBuildMode, sortMode);
+    public BankOptions withBuildMode(BuildMode newBuildMode) {
+        return new BankOptions(pickupMode, newBuildMode, sortMode, uniqueId);
     }
 
     public BankOptions nextBuildMode() {
@@ -60,10 +71,10 @@ public record BankOptions(PickupMode pickupMode, BuildMode buildMode, SortMode s
     }
 
     public BankOptions withSortMode(SortMode newSortMode) {
-        return new BankOptions(pickupMode, buildMode, newSortMode);
+        return new BankOptions(pickupMode, buildMode, newSortMode, uniqueId);
     }
 
     public BankOptions nextPickupMode() {
-        return new BankOptions(pickupMode.next(), buildMode, sortMode);
+        return new BankOptions(pickupMode.next(), buildMode, sortMode, uniqueId);
     }
 }

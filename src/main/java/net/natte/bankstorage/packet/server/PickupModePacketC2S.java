@@ -39,7 +39,7 @@ public record PickupModePacketC2S() implements CustomPacketPayload {
 
         ItemStack bank = bankScreenHandler.getBankLikeItem();
 
-        bank.update(BankStorage.OptionsComponentType, BankOptions.DEFAULT, BankOptions::nextPickupMode);
+        Util.setOptions(bank, Util.getOrCreateOptions(bank).nextPickupMode());
 
         // dock.markDirty if has dock pos
         bankScreenHandler.getContext().execute(
@@ -53,7 +53,7 @@ public record PickupModePacketC2S() implements CustomPacketPayload {
         if (bank == null)
             return;
 
-        bank.update(BankStorage.OptionsComponentType, BankOptions.DEFAULT, BankOptions::nextPickupMode);
+        Util.setOptions(bank, Util.getOrCreateOptions(bank).nextPickupMode());
 
         player.displayClientMessage(Component.translatable("popup.bankstorage.pickupmode."
                 + bank.get(BankStorage.OptionsComponentType).pickupMode().toString().toLowerCase()), true);

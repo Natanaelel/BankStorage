@@ -33,8 +33,8 @@ public record SortPacketC2S(SortMode sortMode) implements CustomPacketPayload {
         if (!(screenHandler instanceof BankScreenHandler bankScreenHandler))
             return;
         ItemStack bankLikeItem = bankScreenHandler.getBankLikeItem();
-        bankLikeItem.update(BankStorage.OptionsComponentType, BankOptions.DEFAULT, options -> options.withSortMode(packet.sortMode));
 
+        Util.setOptions(bankLikeItem, Util.getOrCreateOptions(bankLikeItem).withSortMode(packet.sortMode));
 
         BankItemStorage bankItemStorage = bankScreenHandler.getBankItemStorage();
 

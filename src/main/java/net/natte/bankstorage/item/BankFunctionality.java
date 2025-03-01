@@ -76,7 +76,7 @@ public abstract class BankFunctionality extends Item {
     }
 
     private void toggleBuildMode(ItemStack bankItem, ServerPlayer player) {
-        BankOptions options = bankItem.getOrDefault(BankStorage.OptionsComponentType, BankOptions.DEFAULT);
+        BankOptions options = Util.getOrCreateOptions(bankItem);
         BuildMode newBuildMode = Util.isBuildModeCycleKeyBound(player) ? options.buildMode().toggle() : options.buildMode().next();
         bankItem.set(BankStorage.OptionsComponentType, options.withBuildMode(newBuildMode));
 
