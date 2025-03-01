@@ -10,7 +10,7 @@
 			"item": "minecraft:coal_block"
 		},
 		"B": {
-			"item": "minecraft:barrel"
+			"tag": "c:barrels/wooden"
 		}
 	},
 	"result": {
