@@ -2,9 +2,12 @@ package net.natte.bankstorage.client.rendering;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
@@ -248,7 +251,15 @@ public class BuildModePreviewRenderer {
             if (this.lastSelectedItem.isEmpty())
                 return;
 
-            Component highlightTip = this.lastSelectedItem.getHoverName();
+            MutableComponent mutablecomponent = Component.empty()
+                    .append(this.lastSelectedItem.getHoverName())
+                    .withStyle(this.lastSelectedItem.getRarity().getStyleModifier());
+            if (this.lastSelectedItem.has(DataComponents.CUSTOM_NAME)) {
+                mutablecomponent.withStyle(ChatFormatting.ITALIC);
+            }
+            Component highlightTip = this.lastSelectedItem.getHighlightTip(mutablecomponent);
+
+
             int i = this.client.font.width(highlightTip);
             int j = (context.guiWidth() - i) / 2;
             int k = context.guiHeight() - 45;
