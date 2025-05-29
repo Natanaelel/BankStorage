@@ -37,9 +37,10 @@ public class BankStorageClient {
 
     public static final KeyMapping toggleBuildModeKeyBinding = new KeyMapping("key.bankstorage.togglebuildmode", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.bankstorage");
     public static final KeyMapping cycleBuildModeKeyBinding = new KeyMapping("key.bankstorage.cyclebuildmode", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.bankstorage");
-    public static final KeyMapping togglePickupModeKeyBinding = new KeyMapping("key.bankstorage.togglepickupmode", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_P, "category.bankstorage");
+    public static final KeyMapping togglePickupModeKeyBinding = new KeyMapping("key.bankstorage.togglepickupmode", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.bankstorage");
     public static final KeyMapping lockSlotKeyBinding = new KeyMapping("key.bankstorage.lockslot", KeyConflictContext.GUI, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, "category.bankstorage");
     public static final KeyMapping openBankFromKeyBinding = new KeyMapping("key.bankstorage.openbankfromkeybind", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.bankstorage");
+    public static final KeyMapping enableBlockSelectionScrollKeyBinding = new KeyMapping("key.bankstorage.enablescroll", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.bankstorage");
 
     public static final BuildModePreviewRenderer buildModePreviewRenderer = new BuildModePreviewRenderer();
 
@@ -114,6 +115,7 @@ public class BankStorageClient {
         event.register(togglePickupModeKeyBinding);
         event.register(lockSlotKeyBinding);
         event.register(openBankFromKeyBinding);
+        event.register(enableBlockSelectionScrollKeyBinding);
     }
 
     public void handleInputs() {

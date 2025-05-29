@@ -26,7 +26,7 @@ public class MouseEvents {
         if (player == null)
             return;
 
-        if (!player.isShiftKeyDown())
+        if (!isScrollEnabled(player))
             return;
 
         BuildModePreviewRenderer preview = BankStorageClient.buildModePreviewRenderer;
@@ -52,6 +52,14 @@ public class MouseEvents {
         PacketDistributor.sendToServer(new SelectedSlotPacketC2S(preview.renderingFromHand == InteractionHand.MAIN_HAND, newSelectedItemSlot));
 
         event.setCanceled(true);
+    }
+
+    private static boolean isScrollEnabled(LocalPlayer player) {
+        if (BankStorageClient.enableBlockSelectionScrollKeyBinding.isUnbound()) {
+            return player.isShiftKeyDown();
+        } else {
+            return BankStorageClient.enableBlockSelectionScrollKeyBinding.isDown();
+        }
     }
 
     private static boolean isNormalBuildMode(ItemStack itemStack) {

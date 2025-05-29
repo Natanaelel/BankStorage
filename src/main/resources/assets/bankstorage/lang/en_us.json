@@ -29,6 +29,7 @@
   "key.bankstorage.togglepickupmode": "Toggle pickup mode",
   "key.bankstorage.lockslot": "Filter Slot",
   "key.bankstorage.openbankfromkeybind": "Open bank",
+  "key.bankstorage.enablescroll": "Enable block selection scroll",
 
   "title.bankstorage.pickupmode.no_pickup": "No Pickup",
   "tooltip.bankstorage.pickupmode.no_pickup": "Items will not get picked or inserted",
