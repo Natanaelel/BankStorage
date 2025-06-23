@@ -46,8 +46,8 @@
   "title.bankstorage.sortmode.mod": "排序",
   "tooltip.bankstorage.sortmode.mod": "按Mod排序",
 
-  "tooptip.bankstorage.stacklimit": "§7堆叠上限: %s",
-  "tooptip.bankstorage.numslots": "§7槽位数量: %s",
+  "tooltip.bankstorage.stacklimit": "§7堆叠上限: %s",
+  "tooltip.bankstorage.numslots": "§7槽位数量: %s",
 
   "command.bankstorage.hoverinfo": "点击获取生成指令",
   "command.bankstorage.bankinfo": "%s含%d种物品 %s\n",
