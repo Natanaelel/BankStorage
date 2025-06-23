@@ -1,0 +1,69 @@
+{
+  "item.bankstorage.bank_1": "存储核心t1",
+  "item.bankstorage.bank_2": "存储核心t2",
+  "item.bankstorage.bank_3": "存储核心t3",
+  "item.bankstorage.bank_4": "存储核心t4",
+  "item.bankstorage.bank_5": "存储核心t5",
+  "item.bankstorage.bank_6": "存储核心t6",
+  "item.bankstorage.bank_7": "存储核心t7",
+
+  "item.bankstorage.bank_link": "存储核心链接器",
+
+  "block.bankstorage.bank_dock": "存储基座",
+
+  "popup.bankstorage.buildmode.none_normal": "背包模式",
+  "popup.bankstorage.buildmode.none_random": "背包模式",
+  "popup.bankstorage.buildmode.normal": "建造模式",
+  "popup.bankstorage.buildmode.random": "随机建造模式",
+
+  "popup.bankstorage.unlinked": "此链接器未链接到核心。用核心制作一个链接器来链接它。",
+
+  "popup.bankstorage.pickupmode.none": "不拾取物品",
+  "popup.bankstorage.pickupmode.all": "拾取所有物品",
+  "popup.bankstorage.pickupmode.filtered": "拾取过滤物品",
+  "popup.bankstorage.pickupmode.void": "销毁多余物品",
+ 
+  "category.bankstorage": "核心仓储",
+  "key.bankstorage.togglebuildmode": "切换建造模式",
+  "key.bankstorage.cyclebuildmode": "选择建造模式",
+  "key.bankstorage.togglepickupmode": "切换拾取模式",
+  "key.bankstorage.lockslot": "过滤槽位",
+  "key.bankstorage.openbankfromkeybind": "打开核心",
+
+  "title.bankstorage.pickupmode.no_pickup": "不拾取",
+  "tooltip.bankstorage.pickupmode.no_pickup": "不会拾取任何物品",
+  "title.bankstorage.pickupmode.pickup_all": "拾取所有",
+  "tooltip.bankstorage.pickupmode.pickup_all": "拾取所有物品",
+  "title.bankstorage.pickupmode.filtered": "拾取过滤",
+  "tooltip.bankstorage.pickupmode.filtered": "只拾取已存储物品",
+  "title.bankstorage.pickupmode.void_overflow": "销毁溢出",
+  "tooltip.bankstorage.pickupmode.void_overflow": "溢出物品将会销毁",
+
+  "title.bankstorage.sortmode.count": "排序",
+  "tooltip.bankstorage.sortmode.count": "按物品数量排序",
+  "title.bankstorage.sortmode.name": "排序",
+  "tooltip.bankstorage.sortmode.name": "按物品名称排序",
+  "title.bankstorage.sortmode.mod": "排序",
+  "tooltip.bankstorage.sortmode.mod": "按Mod排序",
+
+  "tooptip.bankstorage.stacklimit": "§7堆叠上限: %s",
+  "tooptip.bankstorage.numslots": "§7槽位数量: %s",
+
+  "command.bankstorage.hoverinfo": "点击获取give命令",
+  "command.bankstorage.bankinfo": "%s %d 物品 %s\n",
+  "command.bankstorage.unknownid": "没有该id的存储核心",
+
+  "admin_restore_bank.bankstorage.cleared_all_filters": "已清除所有过滤器。",
+  "admin_restore_bank.bankstorage.cleared_type_filters": "已清除类型过滤器。",
+  "admin_restore_bank.bankstorage.cleared_player_filters": "已清除玩家过滤器。",
+  "admin_restore_bank.bankstorage.cleared_item_filters": "已清除物品过滤器。",
+
+  "admin_restore_bank.bankstorage.added_type_filter": "已添加类型过滤器。",
+  "admin_restore_bank.bankstorage.added_player_filter": "已添加玩家过滤器。",
+  "admin_restore_bank.bankstorage.added_item_filter": "已添加物品过滤器。",
+
+  "admin_restore_bank.bankstorage.listed_banks_num": "（已列出%d个存储核心）",
+
+  "tag.item.bankstorage.banks": "存储核心",
+  "emi.info.bankstorage.tips": "§n拾取模式§r\n全部拾取：所有物品将自动存入存储核心\n过滤拾取：仅设定过滤的物品会存入存储核心。\n溢出销毁：超出容量的物品将被销毁。\n\n§n建造模式§r\n直接使用存储核心中的方块建造。\n潜行时滚动滑轮来选择方块类型。\n随机建造模式：随机选取方块建造。\n潜行时右键来切换建造模式。\n\n§n槽位过滤§r\nAlt点击对指定槽位设定物品过滤。\n\n§n存储基座§r\n手持存储核心右键将其放入基座\n潜行右键基座取出存储核心。\n\n§n存储核心链接器§r\n链接另一存储核心，实现多点同步访问同一库存。"
+}
