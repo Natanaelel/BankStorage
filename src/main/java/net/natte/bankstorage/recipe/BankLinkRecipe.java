@@ -21,11 +21,6 @@ public class BankLinkRecipe extends ShapedRecipe {
     }
 
     @Override
-    public boolean isSpecial() {
-        return true;
-    }
-
-    @Override
     public ItemStack assemble(CraftingInput recipeInputInventory, HolderLookup.Provider registryLookup) {
         Optional<ItemStack> maybeBankItemStack = recipeInputInventory.items().stream()
                 .filter(Util::isBankLike).findFirst();

@@ -9,6 +9,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.neoforged.fml.loading.FMLLoader;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NbtOps;
@@ -27,7 +28,8 @@ public class BankPersistentState extends SavedData {
 
         state.BANK_MAP.clear();
 
-        BankStorage.LOGGER.debug("Loading banks from nbt");
+        if (!FMLLoader.isProduction())
+            BankStorage.LOGGER.debug("Loading banks from nbt");
 
         List<BankItemStorage> banks = BankSerializer.CODEC
                 .parse(registryLookup.createSerializationContext(NbtOps.INSTANCE), nbtCompound.get(BANK_DATA_KEY))
@@ -37,7 +39,8 @@ public class BankPersistentState extends SavedData {
             state.BANK_MAP.put(bank.uuid(), bank);
         }
 
-        BankStorage.LOGGER.debug("Loading done");
+        if (!FMLLoader.isProduction())
+            BankStorage.LOGGER.debug("Loading done");
 
         return state;
     }
@@ -45,14 +48,16 @@ public class BankPersistentState extends SavedData {
     @Override
     public CompoundTag save(CompoundTag nbtCompound, HolderLookup.Provider registryLookup) {
 
-        BankStorage.LOGGER.debug("Saving banks to nbt");
+        if (!FMLLoader.isProduction())
+            BankStorage.LOGGER.debug("Saving banks to nbt");
 
         Tag bankNbt = BankSerializer.CODEC
                 .encodeStart(registryLookup.createSerializationContext(NbtOps.INSTANCE), getBankItemStorages())
                 .getOrThrow();
 
         nbtCompound.put(BANK_DATA_KEY, bankNbt);
-        BankStorage.LOGGER.debug("Saving done");
+        if (!FMLLoader.isProduction())
+            BankStorage.LOGGER.debug("Saving done");
 
         return nbtCompound;
     }
