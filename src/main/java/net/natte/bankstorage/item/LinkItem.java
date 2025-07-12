@@ -34,8 +34,8 @@ public class LinkItem extends BankFunctionality implements DyeableItem {
 
         BankType type = getType(stack);
         Text formattedStackLimit = Text.literal(NUMBER_FORMAT.format(type.stackLimit));
-        tooltip.add(Text.translatable("tooptip.bankstorage.stacklimit", formattedStackLimit));
-        tooltip.add(Text.translatable("tooptip.bankstorage.numslots", Text.literal(String.valueOf(type.size()))));
+        tooltip.add(Text.translatable("tooltip.bankstorage.stacklimit", formattedStackLimit));
+        tooltip.add(Text.translatable("tooltip.bankstorage.numslots", Text.literal(String.valueOf(type.size()))));
         super.appendTooltip(stack, world, tooltip, context);
     }
 

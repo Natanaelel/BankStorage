@@ -38,8 +38,8 @@ public class BankItem extends BankFunctionality implements DyeableItem {
                 tooltip.add(Text.literal(Util.getUUID(stack).toString()).formatted(Formatting.DARK_AQUA));
         }
         Text formattedStackLimit = Text.literal(NUMBER_FORMAT.format(this.type.stackLimit));
-        tooltip.add(Text.translatable("tooptip.bankstorage.stacklimit", formattedStackLimit));
-        tooltip.add(Text.translatable("tooptip.bankstorage.numslots", Text.literal(String.valueOf(this.type.size()))));
+        tooltip.add(Text.translatable("tooltip.bankstorage.stacklimit", formattedStackLimit));
+        tooltip.add(Text.translatable("tooltip.bankstorage.numslots", Text.literal(String.valueOf(this.type.size()))));
         super.appendTooltip(stack, world, tooltip, context);
     }
 }
