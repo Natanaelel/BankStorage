@@ -62,6 +62,7 @@ public class BankStorageClient {
 
         NeoForge.EVENT_BUS.addListener(this::registerTickEvents);
         NeoForge.EVENT_BUS.addListener(MouseEvents::onScroll);
+        NeoForge.EVENT_BUS.addListener(InventoryInteractionRenderer::onDrawScreen);
     }
 
     private void registerItemColors(RegisterColorHandlersEvent.Item event) {

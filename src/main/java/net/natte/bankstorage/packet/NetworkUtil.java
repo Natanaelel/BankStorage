@@ -18,6 +18,6 @@ public class NetworkUtil {
         BankItemStorage bankItemStorage = Util.getBankItemStorage(uuid);
         List<ItemStack> items = bankItemStorage.getItems();
         PacketDistributor.sendToPlayer(player, new RequestBankStoragePacketS2C(
-                new CachedBankStorage(items, uuid, bankItemStorage.getRevision())));
+                new CachedBankStorage(items, bankItemStorage.getLockedSlots(), uuid, bankItemStorage.getRevision())));
     }
 }

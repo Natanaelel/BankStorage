@@ -5,8 +5,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -214,5 +217,113 @@ public abstract class BankFunctionality extends Item {
     @Override
     public boolean isNotReplaceableByPickAction(ItemStack stack, Player player, int inventorySlot) {
         return true;
+    }
+
+    /**
+     * Inserts an item into the bank. On the client this is a no-op (returns the
+     * input stack unchanged). On the server, inserts into the BankItemStorage
+     * using the ALL pickup mode.
+     *
+     * @param bankStack the bank item stack
+     * @param toInsert  the item stack to insert
+     * @param simulate  if true, only simulate the insertion
+     * @return the remainder that could not be inserted, or the original stack on client
+     */
+    private ItemStack stash(ItemStack bankStack, ItemStack toInsert, Player player, boolean simulate) {
+        if (bankStack.getCount() != 1 || toInsert.isEmpty() || Util.isDisallowedInBank(toInsert)) {
+            return toInsert;
+        }
+
+        if (player.level().isClientSide) {
+            return toInsert;
+        }
+
+        BankItemStorage bankItemStorage = Util.getBankItemStorage(bankStack);
+        if (bankItemStorage == null) {
+            return toInsert;
+        }
+
+        return bankItemStorage.getItemHandler(PickupMode.ALL).insertItem(0, toInsert.copy(), simulate);
+    }
+
+    private ItemStack getClientStashRemainder(ItemStack bankStack, ItemStack toInsert) {
+        if (bankStack.getCount() != 1 || toInsert.isEmpty() || Util.isDisallowedInBank(toInsert)) {
+            return toInsert;
+        }
+
+        CachedBankStorage cachedBankStorage = CachedBankStorage.getAndThrottleUpdate(bankStack, 20);
+        if (cachedBankStorage == null) {
+            return toInsert;
+        }
+
+        return cachedBankStorage.getStashRemainder(toInsert, Util.getType(bankStack).stackLimit);
+    }
+
+    /**
+     * Called when the player right-clicks on a bank slot while holding an item on the cursor.
+     * Inserts the cursor item into the bank.
+     */
+    @Override
+    public boolean overrideOtherStackedOnMe(ItemStack bankStack, ItemStack cursorStack,
+                                            Slot slot, ClickAction action, Player player,
+                                            SlotAccess carriedAccess) {
+        if (hasCreativeScreenContainerOpen(player) || bankStack.getCount() != 1
+                || action != ClickAction.SECONDARY || !slot.mayPlace(bankStack)) {
+            return super.overrideOtherStackedOnMe(bankStack, cursorStack, slot, action, player, carriedAccess);
+        }
+
+        ItemStack result = player.level().isClientSide
+                ? getClientStashRemainder(bankStack, cursorStack)
+                : stash(bankStack, cursorStack, player, false);
+        if (result.getCount() != cursorStack.getCount()) {
+            carriedAccess.set(result);
+            slot.set(bankStack);
+            return true;
+        }
+
+        return super.overrideOtherStackedOnMe(bankStack, cursorStack, slot, action, player, carriedAccess);
+    }
+
+    /**
+     * Called when the player has a bank on the cursor and right-clicks on another slot.
+     * Takes items from the clicked slot and inserts them into the bank.
+     */
+    @Override
+    public boolean overrideStackedOnOther(ItemStack bankStack, Slot slot, ClickAction action, Player player) {
+        if (hasCreativeScreenContainerOpen(player) || bankStack.getCount() != 1
+                || action != ClickAction.SECONDARY || !slot.mayPickup(player)) {
+            return super.overrideStackedOnOther(bankStack, slot, action, player);
+        }
+
+        ItemStack stackToStash = slot.getItem();
+        if (stackToStash.isEmpty()) {
+            return super.overrideStackedOnOther(bankStack, slot, action, player);
+        }
+
+        ItemStack stashResult = player.level().isClientSide
+                ? getClientStashRemainder(bankStack, stackToStash)
+                : stash(bankStack, stackToStash, player, true);
+        if (stashResult.getCount() < stackToStash.getCount()) {
+            int countToTake = stackToStash.getCount() - stashResult.getCount();
+            while (countToTake > 0) {
+                ItemStack takeResult = slot.safeTake(countToTake, countToTake, player);
+                if (takeResult.isEmpty()) {
+                    break;
+                }
+                if (!player.level().isClientSide) {
+                    stash(bankStack, takeResult, player, false);
+                }
+                countToTake -= takeResult.getCount();
+            }
+            return true;
+        }
+
+        return super.overrideStackedOnOther(bankStack, slot, action, player);
+    }
+
+    private boolean hasCreativeScreenContainerOpen(Player player) {
+        return player.level().isClientSide()
+                && player.containerMenu.getClass().getName()
+                .equals("net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen$ItemPickerMenu");
     }
 }

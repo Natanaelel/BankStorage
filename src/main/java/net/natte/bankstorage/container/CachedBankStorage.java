@@ -7,6 +7,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.natte.bankstorage.item.BankStashResult;
 import net.natte.bankstorage.options.BankOptions;
 import net.natte.bankstorage.util.Util;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -30,6 +31,8 @@ public class CachedBankStorage {
     public static final StreamCodec<RegistryFriendlyByteBuf, CachedBankStorage> STREAM_CODEC = StreamCodec.composite(
             ItemStack.OPTIONAL_LIST_STREAM_CODEC,
             o -> o.items,
+            ByteBufCodecs.map(HashMap::newHashMap, ByteBufCodecs.INT, ItemStack.OPTIONAL_STREAM_CODEC),
+            o -> o.lockedSlots,
             UUIDUtil.STREAM_CODEC,
             o -> o.uuid,
             ByteBufCodecs.SHORT,
@@ -48,13 +51,15 @@ public class CachedBankStorage {
     public static boolean markDirtyForPreview = false;
 
     private final List<ItemStack> items;
+    private final Map<Integer, ItemStack> lockedSlots;
     private final List<ItemStack> nonEmptyItems;
     private final List<ItemStack> blockItems;
     public final UUID uuid;
     public short revision;
 
-    public CachedBankStorage(List<ItemStack> items, UUID uuid, short revision) {
+    public CachedBankStorage(List<ItemStack> items, Map<Integer, ItemStack> lockedSlots, UUID uuid, short revision) {
         this.items = items;
+        this.lockedSlots = lockedSlots;
         this.uuid = uuid;
         this.revision = revision;
 
@@ -145,6 +150,117 @@ public class CachedBankStorage {
 
     public IItemHandler getReadOnlyItemHandler() {
         return new ClientReadOnlyItemHandler(this);
+    }
+
+    /**
+     * Checks whether the given item stack can be stashed into this bank.
+     * Used on the client side to render inventory interaction indicators.
+     *
+     * @param stackToInsert the item being held on the cursor
+     * @param stackLimit the maximum items per slot in this bank type
+     * @return the stash result indicating match, space, or no space
+     */
+    public BankStashResult getItemStashable(ItemStack stackToInsert, int stackLimit) {
+        ItemStack remainder = getStashRemainder(stackToInsert, stackLimit);
+        if (remainder.getCount() == stackToInsert.getCount()) {
+            return BankStashResult.NO_SPACE;
+        }
+
+        for (ItemStack slotStack : items) {
+            if (ItemStack.isSameItemSameComponents(slotStack, stackToInsert)
+                    && slotStack.getCount() < stackLimit) {
+                return BankStashResult.MATCH_AND_SPACE;
+            }
+        }
+
+        for (Map.Entry<Integer, ItemStack> lockedSlot : lockedSlots.entrySet()) {
+            ItemStack lockedStack = lockedSlot.getValue();
+            if (ItemStack.isSameItemSameComponents(lockedStack, stackToInsert)
+                    && getSlotCount(lockedSlot.getKey()) < stackLimit) {
+                return BankStashResult.MATCH_AND_SPACE;
+            }
+        }
+
+        return BankStashResult.SPACE;
+    }
+
+    public ItemStack getStashRemainder(ItemStack stackToInsert, int stackLimit) {
+        if (stackToInsert.isEmpty() || Util.isDisallowedInBank(stackToInsert)) {
+            return stackToInsert;
+        }
+
+        int originalCount = stackToInsert.getCount();
+        int remaining = originalCount;
+        int[] simulatedCounts = items.stream().mapToInt(ItemStack::getCount).toArray();
+
+        remaining = simulateInsertIntoLockedSlots(stackToInsert, remaining, stackLimit, simulatedCounts);
+        remaining = simulateInsertIntoNonEmptySlots(stackToInsert, remaining, stackLimit, simulatedCounts);
+        remaining = simulateInsertIntoAnySlots(stackToInsert, remaining, stackLimit, simulatedCounts);
+
+        if (remaining == originalCount) {
+            return stackToInsert;
+        }
+        return remaining == 0 ? ItemStack.EMPTY : stackToInsert.copyWithCount(remaining);
+    }
+
+    private int simulateInsertIntoLockedSlots(ItemStack stackToInsert, int remaining, int stackLimit,
+                                              int[] simulatedCounts) {
+        for (Map.Entry<Integer, ItemStack> lockedSlot : lockedSlots.entrySet()) {
+            if (remaining == 0) {
+                break;
+            }
+            if (ItemStack.isSameItemSameComponents(lockedSlot.getValue(), stackToInsert)) {
+                remaining = simulateInsertIntoSlot(lockedSlot.getKey(), remaining, stackLimit, simulatedCounts);
+            }
+        }
+        return remaining;
+    }
+
+    private int simulateInsertIntoNonEmptySlots(ItemStack stackToInsert, int remaining, int stackLimit,
+                                                int[] simulatedCounts) {
+        for (int slot = 0; slot < items.size(); ++slot) {
+            if (remaining == 0) {
+                break;
+            }
+            ItemStack slotStack = items.get(slot);
+            if (!slotStack.isEmpty() && ItemStack.isSameItemSameComponents(slotStack, stackToInsert)) {
+                remaining = simulateInsertIntoSlot(slot, remaining, stackLimit, simulatedCounts);
+            }
+        }
+        return remaining;
+    }
+
+    private int simulateInsertIntoAnySlots(ItemStack stackToInsert, int remaining, int stackLimit,
+                                           int[] simulatedCounts) {
+        for (int slot = 0; slot < items.size(); ++slot) {
+            if (remaining == 0) {
+                break;
+            }
+            ItemStack lockedStack = lockedSlots.get(slot);
+            ItemStack slotStack = items.get(slot);
+            if (lockedStack != null
+                    ? ItemStack.isSameItemSameComponents(lockedStack, stackToInsert)
+                    : slotStack.isEmpty() || ItemStack.isSameItemSameComponents(slotStack, stackToInsert)) {
+                remaining = simulateInsertIntoSlot(slot, remaining, stackLimit, simulatedCounts);
+            }
+        }
+        return remaining;
+    }
+
+    private int simulateInsertIntoSlot(int slot, int remaining, int stackLimit, int[] simulatedCounts) {
+        if (slot < 0 || slot >= simulatedCounts.length) {
+            return remaining;
+        }
+        int inserted = Math.min(Math.max(0, stackLimit - simulatedCounts[slot]), remaining);
+        simulatedCounts[slot] += inserted;
+        return remaining - inserted;
+    }
+
+    private int getSlotCount(int slot) {
+        if (slot < 0 || slot >= items.size()) {
+            return 0;
+        }
+        return items.get(slot).getCount();
     }
 }
 

@@ -47,6 +47,8 @@
   "title.bankstorage.sortmode.mod": "Sort",
   "tooltip.bankstorage.sortmode.mod": "Sort by mod",
 
+  "tooltip.bankstorage.right_click_to_insert": "Right-click to insert into Bank",
+
   "tooltip.bankstorage.stacklimit": "§7Stack limit: %s",
   "tooltip.bankstorage.numslots": "§7Number of slots: %s",
 
