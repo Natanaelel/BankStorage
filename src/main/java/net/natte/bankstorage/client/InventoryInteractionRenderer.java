@@ -24,6 +24,9 @@ import java.util.Optional;
  * Renders stash indicators on bank item slots in the player's inventory when
  * an item is held on the cursor.
  *
+ * <p>The in-inventory stash UX is inspired by Sophisticated Backpacks, implemented
+ * here against BankStorage's own storage, cache, and synchronization model.
+ *
  * <p>Green "+" means the bank already has the item and can merge it.
  * Yellow "+" means the bank has space but doesn't yet have this item type.
  * No indicator means the bank has no space for this item.
