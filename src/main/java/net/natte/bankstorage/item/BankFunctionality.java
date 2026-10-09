@@ -14,6 +14,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.natte.bankstorage.BankStorage;
+import net.natte.bankstorage.compat.FramedBlocksCompat;
 import net.natte.bankstorage.container.BankItemStorage;
 import net.natte.bankstorage.container.CachedBankStorage;
 import net.natte.bankstorage.item.tooltip.BankTooltipData;
@@ -148,21 +149,34 @@ public abstract class BankFunctionality extends Item {
         // https://github.com/Mari023/AE2WirelessTerminalLibrary/blob/9a971887fcc7dced398297a2c6cb9057633b9883/src/main/java/de/mari_023/ae2wtlib/AE2wtlibEvents.java#L35
         int count = blockToPlace.getCount();
         blockToPlace.setCount(1);
-        InteractionResult useResult = blockToPlace
-                .useOn(new UseOnContext(world, player, context.getHand(), blockToPlace, context.hitResult));
 
-        blockToPlace.setCount(blockToPlace.getCount() == 1 ? count : count - 1);
+        // replace bank in hand with block
+        player.setItemInHand(context.getHand(), blockToPlace);
 
-        // prevent blocks which calls setItemInHand in useOn to replace the bank
+        InteractionResult useResult = null;
+
+        // try to use block on framed block
+        if (blockToPlace.doesSneakBypassUse(world, context.getClickedPos(), player) || !player.isSecondaryUseActive()) {
+            useResult = FramedBlocksCompat.handleInteractionIfIsFramedBlock(world.getBlockEntity(context.getClickedPos()), player, context.getHand(), context.hitResult);
+        }
+        // otherwise use block normally
+        if (useResult == null || !useResult.consumesAction()) {
+            useResult = blockToPlace.useOn(new UseOnContext(world, player, context.getHand(), blockToPlace, context.hitResult));
+        }
+        int usedItems = (1 - blockToPlace.getCount());
+        blockToPlace.setCount(count - usedItems);
+
+        // prevent blocks which calls setItemInHand in useOn to replace the bank (snow bucket)
         ItemStack itemInHand = player.getItemInHand(context.getHand());
-        if (itemInHand != bank) {
+        if (itemInHand != blockToPlace) {
             if (!world.isClientSide && !player.hasInfiniteMaterials()) {
                 ItemStack remaining = bankItemStorage.getItemHandler(PickupMode.ALL).insertItem(itemInHand.copy());
                 if (!remaining.isEmpty())
                     player.getInventory().placeItemBackInInventory(remaining);
             }
-            player.setItemInHand(context.getHand(), bank);
         }
+        // restore hand to bank
+        player.setItemInHand(context.getHand(), bank);
 
         if (world.isClientSide)
             CachedBankStorage.requestCacheUpdate(Util.getUUID(bank));

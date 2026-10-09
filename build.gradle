@@ -26,6 +26,15 @@ repositories {
 
     // rei
     maven { url "https://maven.shedaniel.me/" }
+
+    // framedblocks
+    maven {
+        name = 'CurseMaven'
+        url = 'https://www.cursemaven.com'
+        content {
+            includeGroup('curse.maven')
+        }
+    }
 }
 
 base {
@@ -122,6 +131,8 @@ dependencies {
     compileOnly "dev.emi:emi-neoforge:${project.emi_version}"
     // optional rei dep
     compileOnly "me.shedaniel:RoughlyEnoughItems-neoforge:${project.rei_version}"
+    // optional framedblocks dep
+    compileOnly "curse.maven:framedblocks-441647:8780141"
 
     localRuntimeOnly "dev.emi:emi-neoforge:${project.emi_version}"
 //    localRuntimeOnly "me.shedaniel:RoughlyEnoughItems-neoforge:${project.rei_version}"

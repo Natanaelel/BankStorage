@@ -22,6 +22,7 @@ import net.minecraft.world.level.material.MapColor;
 import net.natte.bankstorage.block.BankDockBlock;
 import net.natte.bankstorage.blockentity.BankDockBlockEntity;
 import net.natte.bankstorage.command.RestoreBankCommands;
+import net.natte.bankstorage.compat.FramedBlocksCompat;
 import net.natte.bankstorage.container.BankType;
 import net.natte.bankstorage.item.LinkItem;
 import net.natte.bankstorage.options.BankOptions;
@@ -139,6 +140,7 @@ public class BankStorage {
                 itemEntity.setUnlimitedLifetime();
         });
         modBus.addListener(this::registerCauldronInteractions);
+        FramedBlocksCompat.initialize();
     }
 
     private void registerCauldronInteractions(FMLCommonSetupEvent event) {
